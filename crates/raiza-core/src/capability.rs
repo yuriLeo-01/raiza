@@ -119,7 +119,7 @@ pub enum ConnectionKind {
 ///
 /// Capacidades que podem ser alteradas têm a flag `writable`. Ela é `false` quando o
 /// hardware não aceita escrita **ou** quando o perfil ainda não foi verificado (pilar 1).
-/// Bateria e conexão são sempre somente leitura.
+/// Bateria é sempre somente leitura.
 ///
 /// Em serde, o campo `kind` traz o [`CapabilityKind`] em `snake_case`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -196,12 +196,15 @@ pub enum Capability {
         /// Se aceita escrita.
         writable: bool,
     },
-    /// Estado da conexão.
+    /// Estado da conexão. Quando gravável, permite conectar e desconectar
+    /// (ex.: Bluetooth via BlueZ).
     Connection {
         /// Meio de conexão.
         medium: ConnectionKind,
         /// Se está conectado agora.
         connected: bool,
+        /// Se aceita escrita (conectar/desconectar).
+        writable: bool,
     },
 }
 
@@ -225,7 +228,7 @@ impl Capability {
     /// Se a capacidade aceita escrita.
     pub fn is_writable(&self) -> bool {
         match self {
-            Capability::Battery { .. } | Capability::Connection { .. } => false,
+            Capability::Battery { .. } => false,
             Capability::Dpi { writable, .. }
             | Capability::PollingRate { writable, .. }
             | Capability::Rgb { writable, .. }
@@ -233,14 +236,15 @@ impl Capability {
             | Capability::Mute { writable, .. }
             | Capability::Brightness { writable, .. }
             | Capability::Contrast { writable, .. }
-            | Capability::Rumble { writable, .. } => *writable,
+            | Capability::Rumble { writable, .. }
+            | Capability::Connection { writable, .. } => *writable,
         }
     }
 
     /// Marca a capacidade como somente leitura (ex.: perfil não verificado, pilar 1).
     pub fn set_read_only(&mut self) {
         match self {
-            Capability::Battery { .. } | Capability::Connection { .. } => {}
+            Capability::Battery { .. } => {}
             Capability::Dpi { writable, .. }
             | Capability::PollingRate { writable, .. }
             | Capability::Rgb { writable, .. }
@@ -248,7 +252,8 @@ impl Capability {
             | Capability::Mute { writable, .. }
             | Capability::Brightness { writable, .. }
             | Capability::Contrast { writable, .. }
-            | Capability::Rumble { writable, .. } => *writable = false,
+            | Capability::Rumble { writable, .. }
+            | Capability::Connection { writable, .. } => *writable = false,
         }
     }
 
@@ -270,6 +275,9 @@ impl Capability {
                 *current = *v;
             }
             (Capability::Mute { muted, .. }, CapabilityValue::Mute(v)) => *muted = *v,
+            (Capability::Connection { connected, .. }, CapabilityValue::Connection(v)) => {
+                *connected = *v;
+            }
             (
                 Capability::Rgb {
                     zones,
@@ -452,6 +460,7 @@ pub(crate) mod tests {
             Capability::Connection {
                 medium: ConnectionKind::Bluetooth,
                 connected: true,
+                writable: true,
             },
         ]
     }

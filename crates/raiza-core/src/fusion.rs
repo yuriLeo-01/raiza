@@ -105,6 +105,7 @@ mod tests {
                 Capability::Connection {
                     medium: ConnectionKind::Bluetooth,
                     connected: true,
+                    writable: true,
                 },
             ],
         }
@@ -139,6 +140,7 @@ mod tests {
                 Capability::Connection {
                     medium: ConnectionKind::Other,
                     connected: false,
+                    writable: false,
                 },
             ],
         }

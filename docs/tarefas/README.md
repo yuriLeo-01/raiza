@@ -9,7 +9,7 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
 | T01 | [Contratos do `raiza-core`](T01-contratos-core.md) | claude (líder) | — | ✅ |
-| T02 | [Especificação da API D-Bus](T02-api-dbus.md) | claude (líder) | T01 | ⬜ |
+| T02 | [Especificação da API D-Bus](T02-api-dbus.md) | claude (líder) | T01 | 🟦 |
 | T03 | [CI no GitHub Actions](T03-ci.md) | hydrogen | — | ✅ |
 
 ## F1: Daemon base
@@ -17,7 +17,7 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
 | T04 | [Esqueleto do `raizad`](T04-daemon-base.md) | claude | T01, T02 | ⬜ |
-| T05 | [Provedor udev: descoberta e hotplug](T05-provider-udev.md) | hydrogen | T01 | ⬜ |
+| T05 | [Provedor udev: descoberta e hotplug](T05-provider-udev.md) | hydrogen | T01 | 🟦 |
 | T06 | [`raiza-ctl`: CLI cliente](T06-raiza-ctl.md) | hydrogen | T02 | ⬜ |
 | T07 | [Regra udev e unidade systemd do usuário](T07-udev-systemd.md) | hydrogen | — | ✅ |
 
@@ -25,11 +25,11 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
-| T08 | [Provedor BlueZ + UPower](T08-provider-bluez-upower.md) | hydrogen | T01 | ⬜ |
-| T09 | [Provedor PipeWire](T09-provider-pipewire.md) | hydrogen | T01 | ⬜ |
-| T10 | [Provedor DDC/CI (monitores)](T10-provider-ddc.md) | hydrogen | T01 | ⬜ |
-| T11 | [Provedor evdev (controles)](T11-provider-evdev.md) | hydrogen | T01 | ⬜ |
-| T12 | [Provedor OpenRGB](T12-provider-openrgb.md) | hydrogen | T01 | ⬜ |
+| T08 | [Provedor BlueZ + UPower](T08-provider-bluez-upower.md) | hydrogen | T01 | 🟦 |
+| T09 | [Provedor PipeWire](T09-provider-pipewire.md) | hydrogen | T01 | 🟦 |
+| T10 | [Provedor DDC/CI (monitores)](T10-provider-ddc.md) | hydrogen | T01 | 🟦 |
+| T11 | [Provedor evdev (controles)](T11-provider-evdev.md) | hydrogen | T01 | 🟦 |
+| T12 | [Provedor OpenRGB](T12-provider-openrgb.md) | hydrogen | T01 | 🟦 |
 
 ## F3: Interface GTK4/libadwaita
 
@@ -42,7 +42,7 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
-| T15 | [Formato e validação de perfis](T15-perfis-formato.md) | claude (líder) | T01 | ⬜ |
+| T15 | [Formato e validação de perfis](T15-perfis-formato.md) | claude (líder) | T01 | 🟦 |
 | T16 | [Executor de perfis via hidraw](T16-perfis-executor.md) | claude | T15, T04 | ⬜ |
 | T17 | [Protocolo do mouse Rapoo 24ae:1423](T17-protocolo-rapoo.md) | humano + hydrogen | T15 | ⬜ |
 | T18 | [Protocolo do teclado Akko 3151:502f / 36eb:1087](T18-protocolo-akko.md) | humano + hydrogen | T15 | ⬜ |

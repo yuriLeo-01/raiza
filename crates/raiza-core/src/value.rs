@@ -38,6 +38,8 @@ pub enum CapabilityValue {
     Brightness(u32),
     /// Novo contraste.
     Contrast(u32),
+    /// Conecta (`true`) ou desconecta (`false`).
+    Connection(bool),
     /// Dispara um pulso de vibração.
     Rumble {
         /// Intensidade de 0 a 100.
@@ -59,6 +61,7 @@ impl CapabilityValue {
             CapabilityValue::Brightness(_) => CapabilityKind::Brightness,
             CapabilityValue::Contrast(_) => CapabilityKind::Contrast,
             CapabilityValue::Rumble { .. } => CapabilityKind::Rumble,
+            CapabilityValue::Connection(_) => CapabilityKind::Connection,
         }
     }
 
@@ -107,7 +110,8 @@ impl CapabilityValue {
                     _ => Ok(()),
                 }
             }
-            (CapabilityValue::Mute(_), Capability::Mute { .. }) => Ok(()),
+            (CapabilityValue::Mute(_), Capability::Mute { .. })
+            | (CapabilityValue::Connection(_), Capability::Connection { .. }) => Ok(()),
             (
                 CapabilityValue::Rumble {
                     strength,
@@ -169,6 +173,7 @@ mod tests {
                 strength: 100,
                 duration_ms: 2000,
             },
+            CapabilityValue::Connection(false),
         ]
     }
 

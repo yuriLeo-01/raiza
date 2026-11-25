@@ -81,6 +81,61 @@ impl DeviceId {
             )))
         }
     }
+
+    /// Regra única para o campo `instance` de [`DeviceId::Usb`].
+    ///
+    /// Todo provedor que gera um id USB (udev, PipeWire, UPower, evdev, OpenRGB...) deve
+    /// usar esta função, para que o mesmo aparelho receba o mesmo id e a fusão funcione.
+    ///
+    /// - `serial`: atributo `serial` do dispositivo USB no sysfs (o mesmo que
+    ///   `ID_SERIAL_SHORT` do udev). Espaços nas pontas são ignorados; vazio conta como ausente.
+    /// - `port`: nome do dispositivo USB no sysfs, ex.: `1-3.2` (o diretório em
+    ///   `/sys/bus/usb/devices/`).
+    /// - `same_model_ports`: `port` de **todos** os dispositivos USB conectados com o
+    ///   mesmo vendor:product e **sem** serial, incluindo o próprio.
+    ///
+    /// Com serial, a instância é o serial (estável entre portas). Sem serial, é a posição
+    /// de `port` em `same_model_ports` em ordem lexicográfica: `0` quando só há um
+    /// aparelho daquele modelo (o caso comum), estável entre portas e reinícios.
+    pub fn usb_instance(serial: Option<&str>, port: &str, same_model_ports: &[&str]) -> String {
+        if let Some(serial) = serial.map(str::trim).filter(|s| !s.is_empty()) {
+            return serial.to_owned();
+        }
+        let mut ports: Vec<&str> = same_model_ports.to_vec();
+        if !ports.contains(&port) {
+            ports.push(port);
+        }
+        ports.sort_unstable();
+        ports.dedup();
+        let index = ports.iter().position(|p| *p == port).unwrap_or(0);
+        index.to_string()
+    }
+
+    /// Cria um id de monitor a partir do EDID, no formato `display:FAB-PROD-SERIAL`.
+    ///
+    /// - `manufacturer`: id PNP de 3 letras do EDID (ex.: `GSM` para LG);
+    /// - `product_code`: código de produto do EDID (vira 4 dígitos hex maiúsculos);
+    /// - `serial`: o descritor de texto de serial do EDID, se houver; senão o número de
+    ///   série numérico em decimal; se nenhum existir, `0`.
+    pub fn display(
+        manufacturer: &str,
+        product_code: u16,
+        serial: &str,
+    ) -> Result<Self, ParseDeviceIdError> {
+        let valid = manufacturer.len() == 3 && manufacturer.chars().all(|c| c.is_ascii_uppercase());
+        if !valid {
+            return Err(ParseDeviceIdError(format!(
+                "fabricante EDID inválido: {manufacturer}"
+            )));
+        }
+        let serial = match serial.trim() {
+            "" => "0",
+            s => s,
+        };
+        Ok(DeviceId::Display {
+            key: format!("{manufacturer}-{product_code:04X}-{serial}"),
+        })
+    }
 }
 
 impl fmt::Display for DeviceId {
@@ -203,6 +258,39 @@ mod tests {
                 .to_string(),
             "bt:AA:BB:CC:DD:EE:FF"
         );
+    }
+
+    #[test]
+    fn instancia_usb() {
+        // Serial manda, com espaços removidos.
+        assert_eq!(
+            DeviceId::usb_instance(Some(" ABC123 "), "1-3", &[]),
+            "ABC123"
+        );
+        // Sem serial (ou vazio): índice pela ordem das portas.
+        assert_eq!(DeviceId::usb_instance(None, "1-3", &["1-3"]), "0");
+        assert_eq!(DeviceId::usb_instance(Some("  "), "1-3", &[]), "0");
+        let portas = ["3-1", "1-4.2", "1-3"];
+        assert_eq!(DeviceId::usb_instance(None, "1-3", &portas), "0");
+        assert_eq!(DeviceId::usb_instance(None, "1-4.2", &portas), "1");
+        assert_eq!(DeviceId::usb_instance(None, "3-1", &portas), "2");
+        // A ordem da entrada não importa: provedores diferentes chegam ao mesmo índice.
+        assert_eq!(
+            DeviceId::usb_instance(None, "3-1", &["1-3", "3-1", "1-4.2"]),
+            "2"
+        );
+    }
+
+    #[test]
+    fn id_de_monitor() {
+        let id = DeviceId::display("GSM", 0x5b09, "123456").unwrap();
+        assert_eq!(id.to_string(), "display:GSM-5B09-123456");
+        assert_eq!(
+            DeviceId::display("GSM", 0x5b09, " ").unwrap().to_string(),
+            "display:GSM-5B09-0"
+        );
+        assert!(DeviceId::display("gsm", 1, "1").is_err());
+        assert!(DeviceId::display("GSMX", 1, "1").is_err());
     }
 
     #[test]

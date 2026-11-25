@@ -50,6 +50,28 @@ raizad ◄──── D-Bus ───────┤
   o `read`/`write` daquela capacidade.
 - **Testes**: a feature `mock` do `raiza-core` expõe `mock::MockProvider`.
 
+### Identidade: como cada provedor gera o `DeviceId`
+
+A fusão só funciona se todo provedor chegar ao **mesmo** id para o mesmo aparelho. Regras:
+
+| Aparelho | Id | Como obter |
+|---|---|---|
+| USB (com fio ou dongle) | `DeviceId::usb(vid, pid, DeviceId::usb_instance(serial, porta, portas_do_mesmo_modelo_sem_serial))` | Suba no sysfs até o dispositivo USB pai (`/sys/bus/usb/devices/<porta>`, com `idVendor`, `idProduct`, `serial`) |
+| Bluetooth | `DeviceId::bluetooth(mac)` | BlueZ: `Address`; PipeWire: `api.bluez5.address`; evdev/HID: atributo `uniq` |
+| Monitor (DDC/CI) | `DeviceId::display(fabricante_pnp, código_produto, serial)` | EDID |
+| Sem nada disso | `DeviceId::Other { provider, key }` | Chave estável do próprio provedor (não funde) |
+
+Nunca invente outro formato de instância USB: use `DeviceId::usb_instance`.
+
+### Prioridade dos provedores
+
+O daemon registra os provedores nesta ordem. Na fusão, para cada capacidade, vence o primeiro:
+
+1. `hid-perfis` 2. `openrgb` 3. `bluez` 4. `upower` 5. `pipewire` 6. `ddc` 7. `evdev` 8. `udev`
+
+Os específicos vêm antes dos genéricos. O `udev` vem por último: ele só garante que todo
+aparelho apareça, com `Connection` somente leitura.
+
 ## API D-Bus (resumo, especificada em T02)
 
 - Serviço `io.github.yurileo01.Raiza` no barramento de sessão, objeto `/io/github/yurileo01/Raiza`.
