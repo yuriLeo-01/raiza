@@ -1,7 +1,7 @@
 # T19: PKGBUILD para o AUR e guia de instalação
 
 - **Fase:** F5
-- **Agente sugerido:** hydrogen
+- **Agente sugerido:** claude
 - **Depende de:** T04, T07, T13
 - **Escopo:** `packaging/aur/**`, `docs/INSTALACAO.md`, `README.md` (seção de instalação)
 

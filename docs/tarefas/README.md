@@ -5,7 +5,8 @@ Legenda de status: ⬜ a fazer · 🟦 em andamento · 🟨 em revisão · ✅ n
 **Escopo (2026-11-25):** foco em mouse, teclado, headset e microfone. Controles com prioridade
 menor. Monitores fora do escopo. OpenRGB adiado. Veja `docs/PILARES.md`.
 
-O agente é o sugerido. O líder pode trocar ao despachar.
+O agente é o sugerido. O líder pode trocar ao despachar. Subagentes: só Claude (o hydrogen foi
+descartado em 2026-11-25); `sonnet` para tarefas simples.
 
 ## F0: Fundação (contratos; o líder faz)
 
@@ -21,7 +22,7 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 |---|---|---|---|---|
 | T04 | [Esqueleto do `raizad`](T04-daemon-base.md) | claude | T01, T02 | ⬜ |
 | T05 | [Provedor udev: descoberta e hotplug](T05-provider-udev.md) | claude | T01 | ✅ |
-| T06 | [`raiza-ctl`: CLI cliente](T06-raiza-ctl.md) | hydrogen | T02 | ⬜ |
+| T06 | [`raiza-ctl`: CLI cliente](T06-raiza-ctl.md) | claude | T02 | ⬜ |
 | T07 | [Regra udev e unidade systemd do usuário](T07-udev-systemd.md) | hydrogen | — | ✅ |
 
 ## F2: Provedores genéricos (aproveitar o que já existe)
@@ -32,14 +33,14 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 | T09 | [Provedor PipeWire](T09-provider-pipewire.md) | claude | T01 | 🟦 |
 | T10 | [Provedor DDC/CI (monitores)](T10-provider-ddc.md) | — | T01 | ❌ cancelada: monitores fora do escopo |
 | T11 | [Provedor evdev (controles)](T11-provider-evdev.md) | claude | T01 | ⬜ prioridade menor |
-| T12 | [Provedor OpenRGB](T12-provider-openrgb.md) | hydrogen | T01 | ⏸ adiada |
+| T12 | [Provedor OpenRGB](T12-provider-openrgb.md) | claude | T01 | ⏸ adiada |
 
 ## F3: Interface GTK4/libadwaita
 
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
 | T13 | [App base: lista de dispositivos](T13-gtk-base.md) | claude | T02, T04 | ⬜ |
-| T14 | [Páginas por capacidade](T14-gtk-capacidades.md) | hydrogen | T13 | ⬜ |
+| T14 | [Páginas por capacidade](T14-gtk-capacidades.md) | claude | T13 | ⬜ |
 
 ## F4: Perfis HID declarativos (dispositivos sem suporte)
 
@@ -47,7 +48,7 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 |---|---|---|---|---|
 | T15 | [Formato e validação de perfis](T15-perfis-formato.md) | claude (líder) | T01 | ✅ |
 | T16 | [Executor de perfis via hidraw](T16-perfis-executor.md) | claude | T15, T04 | ⬜ |
-| T17 | [Protocolo do mouse Rapoo 24ae:1423](T17-protocolo-rapoo.md) | humano + hydrogen | T15 | ⬜ |
+| T17 | [Protocolo do mouse Rapoo 24ae:1423](T17-protocolo-rapoo.md) | humano + claude | T15 | ⬜ |
 | T18 | [Protocolo do teclado Akko (3151:502f com fio + dongle próprio)](T18-protocolo-akko.md) | humano + claude | T15 | ⬜ |
 | T20 | [Headset Akko S9 Ultra 36eb:1087: protocolo, bateria, sidetone e EQ](T20-headset-akko-s9.md) | humano + claude | T15 | ⬜ |
 | T21 | [Capacidades `Sidetone` e `Equalizer` (contrato)](T21-sidetone-eq.md) | claude (líder) | T20 | ⬜ |
@@ -56,7 +57,7 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
-| T19 | [PKGBUILD para o AUR e guia de instalação](T19-aur.md) | hydrogen | T04, T07, T13 | ⬜ |
+| T19 | [PKGBUILD para o AUR e guia de instalação](T19-aur.md) | claude | T04, T07, T13 | ⬜ |
 
 ## Ordem sugerida das levas
 

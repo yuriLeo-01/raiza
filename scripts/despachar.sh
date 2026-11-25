@@ -2,11 +2,11 @@
 # Despacha uma ficha de tarefa para um subagente numa worktree nova do Orca.
 #
 # Uso:
-#   scripts/despachar.sh TNN [claude|hydrogen] [esforço] [--dry-run]
+#   scripts/despachar.sh TNN [claude|sonnet] [esforço] [--dry-run]
 #
-#   agente  : padrão = "Agente sugerido" da ficha (claude ou hydrogen)
-#   esforço : hydrogen -> low|medium|high|xhigh (padrão high, escolhe o modelo gemini-4-hydrogen-<esforço>)
-#             claude   -> low|medium|high|xhigh|max (padrão: o do Orca)
+#   agente  : padrão = "Agente sugerido" da ficha. claude = modelo padrão do Orca;
+#             sonnet = Claude Sonnet (tarefas simples). O hydrogen foi descartado.
+#   esforço : low|medium|high|xhigh|max (padrão: o do Orca)
 set -euo pipefail
 
 raiz=$(git -C "$(dirname "$0")/.." rev-parse --show-toplevel)
@@ -31,7 +31,7 @@ if [[ -z $agente ]]; then
   sugerido=$(grep -m1 -i 'Agente sugerido' "$ficha" | tr 'A-Z' 'a-z')
   case $sugerido in
     *humano*) echo "$id exige o mantenedor (capturas/hardware). Despache só se as capturas já estiverem na main; passe o agente explicitamente." >&2; exit 1 ;;
-    *hydrogen*) agente=hydrogen ;;
+    *sonnet*) agente=sonnet ;;
     *) agente=claude ;;
   esac
 fi
@@ -59,9 +59,10 @@ $(cat "$ficha")"
 
 cmd=("$orca" worktree create --repo "path:$raiz" --name "$nome" --no-parent --base-branch main)
 case $agente in
-  hydrogen) cmd+=(--agent antigravity --model "gemini-4-hydrogen-${esforco:-high}") ;;
+  sonnet)   cmd+=(--agent claude --model claude-sonnet-5-5); [[ -n $esforco ]] && cmd+=(--effort "$esforco") ;;
+  hydrogen) echo "o hydrogen foi descartado (2026-11-25); use claude ou sonnet" >&2; exit 2 ;;
   claude)   cmd+=(--agent claude); [[ -n $esforco ]] && cmd+=(--effort "$esforco") ;;
-  *) echo "agente desconhecido: $agente (use claude ou hydrogen)" >&2; exit 2 ;;
+  *) echo "agente desconhecido: $agente (use claude ou sonnet)" >&2; exit 2 ;;
 esac
 cmd+=(--comment "$id em andamento ($agente)" --prompt "$prompt" --json)
 

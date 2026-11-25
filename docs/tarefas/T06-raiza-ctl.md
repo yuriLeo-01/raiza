@@ -1,7 +1,7 @@
 # T06: `raiza-ctl` (CLI cliente)
 
 - **Fase:** F1
-- **Agente sugerido:** hydrogen
+- **Agente sugerido:** claude
 - **Depende de:** T02
 - **Escopo:** `crates/raiza-ctl/**`
 

@@ -3,7 +3,7 @@
 # T12: Provedor OpenRGB
 
 - **Fase:** F2
-- **Agente sugerido:** hydrogen
+- **Agente sugerido:** claude
 - **Depende de:** T01
 - **Escopo:** `crates/raiza-provider-openrgb/**`
 

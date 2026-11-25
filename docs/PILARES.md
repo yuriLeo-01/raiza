@@ -55,7 +55,7 @@ entrarem em conflito, vale a ordem da lista.
 
 ### 7. Feito por agentes, com um líder
 - O Claude é o **líder técnico**: define contratos, divide o trabalho em tarefas
-  isoladas, despacha subagentes (Claude ou Gemini 4 Hydrogen pelo Antigravity) em
+  isoladas, despacha subagentes Claude em
   worktrees do Orca, revisa e integra.
 - Cada tarefa é pequena, tem escopo de arquivos definido e critérios de aceite
   verificáveis (`cargo test`, `cargo clippy`).

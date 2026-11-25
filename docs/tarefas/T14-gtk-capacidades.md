@@ -1,7 +1,7 @@
 # T14: Páginas por capacidade (GTK)
 
 - **Fase:** F3
-- **Agente sugerido:** hydrogen
+- **Agente sugerido:** claude
 - **Depende de:** T13
 - **Escopo:** `crates/raiza-gtk/src/capabilities/**` (e o registro dos widgets em um único ponto do app)
 

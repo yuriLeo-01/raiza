@@ -5,7 +5,7 @@
 | Papel | Quem | Faz |
 |---|---|---|
 | **Líder** | Claude, na worktree `main` | Mantém pilares, arquitetura e contratos (`raiza-core`, API D-Bus). Escreve as fichas de tarefa, despacha, revisa e faz merge. |
-| **Subagente** | Claude ou Gemini 4 Hydrogen (via `agy`) | Executa **uma** ficha de tarefa numa worktree própria, dentro do escopo de arquivos da ficha. |
+| **Subagente** | Claude (Opus por padrão, Sonnet para tarefas simples) | Executa **uma** ficha de tarefa numa worktree própria, dentro do escopo de arquivos da ficha. |
 | **Humano** | Mantenedor | Aprova pilares e roadmap, decide prioridades, testa com hardware real e faz capturas USB. |
 
 ## Qual agente usar
@@ -13,7 +13,7 @@
 | Situação | Agente |
 |---|---|
 | Contratos, API pública, decisões de arquitetura, código de risco (motor de perfis HID, escrita em dispositivo) | `claude` |
-| Provedores bem delimitados, CLI, CI, empacotamento, telas da interface, testes | `hydrogen` (`gemini-4-hydrogen-high`) |
+| Provedores bem delimitados, CLI, CI, empacotamento, telas da interface, testes | `claude`, ou `sonnet` se a tarefa for simples |
 | Tarefa grande ou ambígua | o líder quebra em tarefas menores antes de despachar |
 | Revisão cruzada | o agente que **não** escreveu o código |
 
@@ -24,7 +24,7 @@
    ```sh
    scripts/despachar.sh T08            # usa o agente sugerido na ficha
    scripts/despachar.sh T08 claude     # força Claude
-   scripts/despachar.sh T08 hydrogen xhigh
+   scripts/despachar.sh T08 sonnet       # Claude Sonnet, tarefas simples
    ```
    O script cria uma worktree `tNN-nome` no Orca, a partir da `main`, e inicia o agente
    com a ficha como prompt.
@@ -36,6 +36,8 @@
    `docs/tarefas/README.md` e despacha as tarefas que dependiam dela.
 
 ## Paralelismo
+
+- **No máximo 2 subagentes ao mesmo tempo** (cota). O Gemini 4 Hydrogen foi descartado em 2026-11-25.
 
 - Só despache tarefas cujas dependências já estejam na `main`.
 - Duas tarefas em paralelo nunca podem ter escopos de arquivos sobrepostos.
