@@ -30,9 +30,9 @@ CLI para usar e depurar o daemon: `raiza-ctl list`, `raiza-ctl get <id>`, `raiza
 7. Separe a lógica (parsing → `CapabilityValue`, formatação) do I/O, para testar sem D-Bus.
 
 ## Critérios de aceite
-- [ ] Testes de parsing de cada forma do `set` (válidas e inválidas) e da formatação de `list`/`get`/`watch`
-- [ ] Teste ponta a ponta com servidor D-Bus falso (p2p): `list`, `get`, `set` (sucesso e `OutOfRange`) e um evento de `watch`
-- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam
+- [x] Testes de parsing de cada forma do `set` (válidas e inválidas) e da formatação de `list`/`get`/`watch`
+- [x] Teste ponta a ponta com servidor D-Bus falso (p2p): `list`, `get`, `set` (sucesso e `OutOfRange`) e um evento de `watch`
+- [x] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam
 
 ## Como testar com hardware real (para o mantenedor)
 Depois da T04: `systemctl --user start raizad` (ou `cargo run -p raizad`), `cargo run -p raiza-ctl -- list`, e `set` de volume no fifine: `cargo run -p raiza-ctl -- set usb:3142:a010:0 volume 50`.
