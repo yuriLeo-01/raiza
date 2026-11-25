@@ -16,6 +16,6 @@ Contrato estável entre o daemon e qualquer cliente (GTK, CLI, KDE futuro).
 5. Mapeamento de `RaizaError` para erros D-Bus nomeados (`io.github.yurileo01.Raiza1.Error.ReadOnly` etc.).
 
 ## Critérios de aceite
-- [ ] `docs/DBUS.md` tem exemplos de chamada com `busctl --user`
-- [ ] O proxy compila com `--features dbus`
-- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam
+- [x] `docs/DBUS.md` tem exemplos de chamada com `busctl --user`
+- [x] O proxy compila com `--features dbus`
+- [x] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam

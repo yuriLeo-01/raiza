@@ -17,12 +17,15 @@ Rust: daemon `raizad`, API D-Bus, interfaces nativas. Leia `docs/PILARES.md` ant
      precisa bastar sozinha: o subagente não vê esta conversa.
   2. Despache com `scripts/despachar.sh TNN [claude|hydrogen] [esforço]`.
   3. Revise o diff contra os critérios de aceite e os pilares. Rode
-     `cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test`.
+     `cargo fmt --all --check && cargo clippy --all-targets --all-features -- -D warnings && cargo test --all-features`.
   4. Faça merge na `main` (provedor novo: registre-o no `raizad`), atualize o status em
      `docs/tarefas/README.md` e despache as tarefas desbloqueadas.
 - Contratos públicos (`crates/raiza-core`, `docs/DBUS.md`) são seus. Não delegue mudanças neles.
 - Não despache tarefas com escopos de arquivos sobrepostos ao mesmo tempo.
 - Antes de despachar uma leva de tarefas, mostre ao mantenedor quais vão sair e com qual agente.
+- **No máximo 2 subagentes em paralelo.** As cotas são pequenas: em 2026-11-25, 6 agentes hydrogen
+  em paralelo esgotaram a cota semanal do Antigravity em minutos. Antes de despachar hydrogen,
+  confira o "Gemini wk" no rodapé do Orca e prefira `medium`.
 - O CLI do Orca fica em `~/.config/orca/linux-orca-cli-shim/orca`. Fora de um terminal do Orca,
   nunca rode `orca` puro: no Linux ele pode abrir o leitor de tela do GNOME.
 

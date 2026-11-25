@@ -10,7 +10,10 @@
 //!   visto por provedores diferentes;
 //! - [`RaizaError`]: os erros comuns.
 //!
-//! Com a feature `mock`, o módulo [`mock`] oferece um provedor falso para testes.
+//! Features:
+//! - `mock`: o módulo `mock` oferece um provedor falso para testes;
+//! - `dbus`: o módulo `dbus` traz o proxy e o cliente tipado da API D-Bus (`docs/DBUS.md`).
+//!
 //! Veja `docs/ARQUITETURA.md`.
 
 #![warn(missing_docs)]
@@ -25,6 +28,9 @@ mod value;
 
 #[cfg(any(test, feature = "mock"))]
 pub mod mock;
+
+#[cfg(feature = "dbus")]
+pub mod dbus;
 
 pub use capability::{Capability, CapabilityKind, Color, ConnectionKind, Level, RgbZone};
 pub use device::{DeviceInfo, DeviceKind, ProviderId};

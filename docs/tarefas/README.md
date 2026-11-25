@@ -9,7 +9,7 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
 | T01 | [Contratos do `raiza-core`](T01-contratos-core.md) | claude (líder) | — | ✅ |
-| T02 | [Especificação da API D-Bus](T02-api-dbus.md) | claude (líder) | T01 | 🟦 |
+| T02 | [Especificação da API D-Bus](T02-api-dbus.md) | claude (líder) | T01 | ✅ |
 | T03 | [CI no GitHub Actions](T03-ci.md) | hydrogen | — | ✅ |
 
 ## F1: Daemon base
@@ -17,7 +17,7 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
 | T04 | [Esqueleto do `raizad`](T04-daemon-base.md) | claude | T01, T02 | ⬜ |
-| T05 | [Provedor udev: descoberta e hotplug](T05-provider-udev.md) | hydrogen | T01 | 🟦 |
+| T05 | [Provedor udev: descoberta e hotplug](T05-provider-udev.md) | claude | T01 | 🟦 |
 | T06 | [`raiza-ctl`: CLI cliente](T06-raiza-ctl.md) | hydrogen | T02 | ⬜ |
 | T07 | [Regra udev e unidade systemd do usuário](T07-udev-systemd.md) | hydrogen | — | ✅ |
 
@@ -25,11 +25,11 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
-| T08 | [Provedor BlueZ + UPower](T08-provider-bluez-upower.md) | hydrogen | T01 | 🟦 |
-| T09 | [Provedor PipeWire](T09-provider-pipewire.md) | hydrogen | T01 | 🟦 |
-| T10 | [Provedor DDC/CI (monitores)](T10-provider-ddc.md) | hydrogen | T01 | 🟦 |
-| T11 | [Provedor evdev (controles)](T11-provider-evdev.md) | hydrogen | T01 | 🟦 |
-| T12 | [Provedor OpenRGB](T12-provider-openrgb.md) | hydrogen | T01 | 🟦 |
+| T08 | [Provedor BlueZ + UPower](T08-provider-bluez-upower.md) | claude | T01 | 🟦 |
+| T09 | [Provedor PipeWire](T09-provider-pipewire.md) | hydrogen | T01 | ⏸ |
+| T10 | [Provedor DDC/CI (monitores)](T10-provider-ddc.md) | hydrogen | T01 | ⏸ |
+| T11 | [Provedor evdev (controles)](T11-provider-evdev.md) | hydrogen | T01 | ⏸ |
+| T12 | [Provedor OpenRGB](T12-provider-openrgb.md) | hydrogen | T01 | ⏸ |
 
 ## F3: Interface GTK4/libadwaita
 
@@ -57,6 +57,8 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 
 1. **Leva 1:** T01 (líder) em paralelo com T03 e T07.
 2. **Leva 2:** T02 (líder) em paralelo com T05, T08, T09, T10, T11, T12 e T15 (líder).
+   No máximo 2 subagentes por vez (cota). A cota do hydrogen acabou em 2026-11-25: T05 e T08 foram
+   com Claude; T09–T12 ficam ⏸ na fila e saem com Claude, 2 por vez, nesta ordem: T09, T10, T12, T11.
 3. **Leva 3:** T04, T06, T16, T17, T18.
 4. **Leva 4:** T13, depois T14.
 5. **Leva 5:** T19.
