@@ -10,7 +10,7 @@ Documentar o protocolo HID do mouse Rapoo 24ae:1423 e escrever o perfil dele, in
 
 ## Contexto
 O fabricante não tem software para Linux. Capacidades desejadas: DPI (estágios), polling rate, RGB e bateria (se for sem fio).
-**Esta tarefa depende de capturas feitas pelo mantenedor**: tráfego USB do software oficial no Windows (USBPcap + Wireshark), mudando uma configuração por vez e anotando o valor. Os arquivos `.pcapng` ficam em `docs/protocolos/capturas/rapoo-24ae-1423/`.
+**Esta tarefa depende de capturas feitas pelo mantenedor**: tráfego USB do software oficial numa VM Windows com o dispositivo repassado, capturado no Linux com usbmon via `scripts/capturar-usb.sh`, mudando uma configuração por vez e anotando o valor. O roteiro da T20 (`docs/tarefas/notas/T20.md`) é o modelo. Os arquivos `.pcapng` ficam em `docs/protocolos/capturas/rapoo-24ae-1423/`.
 
 ## O que fazer
 1. Sem capturas na pasta: **pare** e escreva em `docs/tarefas/notas/T17.md` o roteiro exato de captura que o mantenedor deve seguir (quais configurações mudar, em que ordem, e como nomear os arquivos).

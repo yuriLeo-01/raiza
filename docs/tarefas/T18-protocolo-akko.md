@@ -16,7 +16,7 @@ O teclado se conecta de dois jeitos:
 Atenção: o dongle `36eb:1087` ("Akko S9 Ultra") **não** é deste teclado: é de um headset (T20).
 
 O fabricante não tem software para Linux. Capacidades desejadas: RGB (modo, cor) e, sem fio, bateria.
-**Esta tarefa depende de capturas feitas pelo mantenedor**: tráfego USB do software oficial no Windows (USBPcap + Wireshark), mudando uma configuração por vez e anotando o valor. Os arquivos `.pcapng` ficam em `docs/protocolos/capturas/akko-3151-502f/`. O guia de captura está em `docs/PERFIS.md`.
+**Esta tarefa depende de capturas feitas pelo mantenedor**: tráfego USB do software oficial numa VM Windows com o dispositivo repassado, capturado no Linux com usbmon via `scripts/capturar-usb.sh`, mudando uma configuração por vez e anotando o valor. O roteiro da T20 (`docs/tarefas/notas/T20.md`) é o modelo. Os arquivos `.pcapng` ficam em `docs/protocolos/capturas/akko-3151-502f/`. O guia de captura está em `docs/PERFIS.md`.
 
 **O mesmo teclado com dois ids.** Cada conexão tem o próprio `DeviceId` (`usb:3151:502f:…` e `usb:<dongle>:…`). Regra do projeto (`docs/ARQUITETURA.md`, "Um aparelho, duas conexões"):
 - se o protocolo é **o mesmo** nas duas conexões, escreva **um** perfil com `match` em lista: primeiro o cabo (conexão preferida), depois o dongle;

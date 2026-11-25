@@ -128,6 +128,12 @@ enviar nada por conta própria.
 
 ### No Linux, com usbmon e Wireshark
 
+O jeito mais prático é `scripts/capturar-usb.sh <vid:pid> <pasta> <passo>`: ele grava um passo por
+arquivo e guarda **só** o tráfego do dispositivo (o resto do barramento, como o seu teclado, é
+descartado antes de salvar). O roteiro da T20 (`docs/tarefas/notas/T20.md`) é um exemplo completo.
+À mão:
+
+
 1. `sudo modprobe usbmon` e abra o Wireshark com permissão para capturar em `usbmonN`. O `N` é o
    barramento do dispositivo; veja `lsusb`: `Bus 003 Device 007` → `usbmon3`.
 2. Filtre pelo dispositivo: `usb.device_address == 7`.
