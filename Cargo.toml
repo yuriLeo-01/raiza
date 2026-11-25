@@ -1,0 +1,13 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2024"
+rust-version = "1.85"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/yuriLeo-01/raiza"
+
+[workspace.dependencies]
+raiza-core = { path = "crates/raiza-core" }
