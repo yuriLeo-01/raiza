@@ -854,7 +854,20 @@ dependencies = [
 name = "raizad"
 version = "0.0.1"
 dependencies = [
+ "anyhow",
+ "async-trait",
+ "futures-util",
  "raiza-core",
+ "raiza-provider-bluez",
+ "raiza-provider-udev",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "zbus",
 ]
 
 [[package]]
