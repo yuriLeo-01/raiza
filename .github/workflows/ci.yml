@@ -1,0 +1,65 @@
+name: CI
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: Formatação, lint e testes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar dependências de sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libudev-dev \
+            libhidapi-dev \
+            libdbus-1-dev \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            pkg-config
+
+      - name: Configurar toolchain Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Verificar formatação
+        run: cargo fmt --all --check
+
+      - name: Executar Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Executar testes
+        run: cargo test
+
+  audit:
+    name: Auditoria de dependências (não bloqueante)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar cargo-audit
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+
+      - name: Auditar dependências com cargo-audit
+        run: cargo audit
