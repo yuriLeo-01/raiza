@@ -1,0 +1,110 @@
+[
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "1d6b",
+      "idProduct": "0002",
+      "bDeviceClass": "09",
+      "removable": "unknown",
+      "serial": "0000:0b:00.4"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "1d6b",
+      "idProduct": "0002",
+      "bDeviceClass": "09",
+      "removable": "unknown",
+      "serial": "0000:08:00.0"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-1",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "24ae",
+      "idProduct": "1423",
+      "bDeviceClass": "00",
+      "removable": "removable",
+      "product": "Rapoo Gaming Device",
+      "manufacturer": "Rapoo"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-1/6-1:1.0",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "00",
+      "bInterfaceClass": "03",
+      "bInterfaceSubClass": "01",
+      "bInterfaceProtocol": "02"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-4/3-4.2",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "24ae",
+      "idProduct": "1423",
+      "bDeviceClass": "00",
+      "removable": "removable",
+      "product": "Rapoo Gaming Device",
+      "manufacturer": "Rapoo"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-4/3-4.2/3-4.2:1.0",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "00",
+      "bInterfaceClass": "03",
+      "bInterfaceSubClass": "01",
+      "bInterfaceProtocol": "02"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-4",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "1a86",
+      "idProduct": "8091",
+      "bDeviceClass": "09",
+      "removable": "removable",
+      "product": "USB HUB"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-4/3-4:1.0",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "00",
+      "bInterfaceClass": "09",
+      "bInterfaceSubClass": "00",
+      "bInterfaceProtocol": "00"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-0",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "24ae",
+      "idProduct": "1423",
+      "bDeviceClass": "00",
+      "removable": "removable",
+      "serial": "  ",
+      "product": "Rapoo Gaming Device"
+    }
+  }
+]

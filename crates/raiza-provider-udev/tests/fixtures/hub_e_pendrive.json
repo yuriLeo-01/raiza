@@ -1,0 +1,335 @@
+[
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "1d6b",
+      "idProduct": "0002",
+      "bDeviceClass": "09",
+      "removable": "unknown",
+      "serial": "0000:0b:00.4"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "1d6b",
+      "idProduct": "0002",
+      "bDeviceClass": "09",
+      "removable": "unknown",
+      "serial": "0000:08:00.0"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-2",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "1a86",
+      "idProduct": "8091",
+      "bDeviceClass": "09",
+      "removable": "removable",
+      "product": "USB HUB"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-2/3-2:1.0",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "00",
+      "bInterfaceClass": "09",
+      "bInterfaceSubClass": "00",
+      "bInterfaceProtocol": "02"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-2/3-2.1",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "24ae",
+      "idProduct": "1423",
+      "bDeviceClass": "00",
+      "removable": "unknown",
+      "serial": "RAPOO-TESTE-1",
+      "product": "Rapoo Gaming Device",
+      "manufacturer": "Rapoo"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-2/3-2.1/3-2.1:1.0",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "00",
+      "bInterfaceClass": "03",
+      "bInterfaceSubClass": "01",
+      "bInterfaceProtocol": "02"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-2/3-2.1/3-2.1:1.1",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "01",
+      "bInterfaceClass": "03",
+      "bInterfaceSubClass": "01",
+      "bInterfaceProtocol": "01"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-2/3-2.1/3-2.1:1.0/0003:24AE:1423.0002",
+    "subsystem": "hid",
+    "properties": {
+      "HID_NAME": "Rapoo Gaming Device"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-2/3-2.1/3-2.1:1.0/0003:24AE:1423.0002/hidraw/hidraw3",
+    "subsystem": "hidraw"
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-2/3-2.1/3-2.1:1.0/0003:24AE:1423.0002/input/input2",
+    "subsystem": "input",
+    "properties": {
+      "ID_BUS": "usb",
+      "ID_INPUT": "1",
+      "ID_INPUT_MOUSE": "1"
+    },
+    "attributes": {
+      "name": "Rapoo Gaming Device"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-2/3-2.1/3-2.1:1.0/0003:24AE:1423.0002/input/input2/event2",
+    "subsystem": "input",
+    "properties": {
+      "ID_BUS": "usb",
+      "ID_INPUT": "1",
+      "ID_INPUT_MOUSE": "1"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-2/3-2.1/3-2.1:1.1/0003:24AE:1423.0003",
+    "subsystem": "hid",
+    "properties": {
+      "HID_NAME": "Rapoo Gaming Device"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-2/3-2.1/3-2.1:1.1/0003:24AE:1423.0003/hidraw/hidraw4",
+    "subsystem": "hidraw"
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-2/3-2.1/3-2.1:1.1/0003:24AE:1423.0003/input/input3",
+    "subsystem": "input",
+    "properties": {
+      "ID_BUS": "usb",
+      "ID_INPUT": "1",
+      "ID_INPUT_KEY": "1",
+      "ID_INPUT_KEYBOARD": "1"
+    },
+    "attributes": {
+      "name": "Rapoo Gaming Device Keyboard"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:08.1/0000:0b:00.4/usb3/3-2/3-2.1/3-2.1:1.1/0003:24AE:1423.0003/input/input3/event3",
+    "subsystem": "input",
+    "properties": {
+      "ID_BUS": "usb",
+      "ID_INPUT": "1",
+      "ID_INPUT_KEY": "1",
+      "ID_INPUT_KEYBOARD": "1"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-3",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "ffff",
+      "idProduct": "5678",
+      "bDeviceClass": "00",
+      "removable": "removable",
+      "serial": "PENDRIVE-TESTE-1",
+      "product": "USB Flash Disk"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-3/6-3:1.0",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "00",
+      "bInterfaceClass": "08",
+      "bInterfaceSubClass": "06",
+      "bInterfaceProtocol": "50"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-2",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "33fa",
+      "idProduct": "0010",
+      "bDeviceClass": "e0",
+      "removable": "removable",
+      "product": "USB2.0-BT"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-2/6-2:1.0",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "00",
+      "bInterfaceClass": "e0",
+      "bInterfaceSubClass": "01",
+      "bInterfaceProtocol": "01"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-2/6-2:1.1",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "01",
+      "bInterfaceClass": "e0",
+      "bInterfaceSubClass": "01",
+      "bInterfaceProtocol": "01"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-4",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "04f2",
+      "idProduct": "b6dd",
+      "bDeviceClass": "ef",
+      "removable": "fixed",
+      "product": "Integrated Camera"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-4/6-4:1.0",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "00",
+      "bInterfaceClass": "0e",
+      "bInterfaceSubClass": "01",
+      "bInterfaceProtocol": "00"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-4/6-4:1.1",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "01",
+      "bInterfaceClass": "0e",
+      "bInterfaceSubClass": "02",
+      "bInterfaceProtocol": "00"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-4/6-4:1.0/input/input20",
+    "subsystem": "input",
+    "properties": {
+      "ID_BUS": "usb",
+      "ID_INPUT_KEY": "1"
+    },
+    "attributes": {
+      "name": "Integrated Camera: Integrated C"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-5",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "0bda",
+      "idProduct": "5411",
+      "bDeviceClass": "09",
+      "removable": "removable",
+      "product": "USB2.1 Hub"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-5/6-5:1.0",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "00",
+      "bInterfaceClass": "09",
+      "bInterfaceSubClass": "00",
+      "bInterfaceProtocol": "02"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-5/6-5.4",
+    "subsystem": "usb",
+    "devtype": "usb_device",
+    "attributes": {
+      "idVendor": "043e",
+      "idProduct": "9a39",
+      "bDeviceClass": "ef",
+      "removable": "fixed",
+      "serial": "SERIAL-LG-1",
+      "product": "LG Monitor Controls",
+      "manufacturer": "LG Electronics Inc."
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-5/6-5.4/6-5.4:1.0",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "00",
+      "bInterfaceClass": "03",
+      "bInterfaceSubClass": "00",
+      "bInterfaceProtocol": "00"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-5/6-5.4/6-5.4:1.1",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "01",
+      "bInterfaceClass": "02",
+      "bInterfaceSubClass": "02",
+      "bInterfaceProtocol": "00"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-5/6-5.4/6-5.4:1.2",
+    "subsystem": "usb",
+    "devtype": "usb_interface",
+    "attributes": {
+      "bInterfaceNumber": "02",
+      "bInterfaceClass": "0a",
+      "bInterfaceSubClass": "00",
+      "bInterfaceProtocol": "00"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-5/6-5.4/6-5.4:1.0/0003:043E:9A39.0004",
+    "subsystem": "hid",
+    "properties": {
+      "HID_NAME": "LG Monitor Controls"
+    }
+  },
+  {
+    "syspath": "/sys/devices/pci0000:00/0000:00:02.1/0000:08:00.0/usb6/6-5/6-5.4/6-5.4:1.0/0003:043E:9A39.0004/hidraw/hidraw5",
+    "subsystem": "hidraw"
+  }
+]

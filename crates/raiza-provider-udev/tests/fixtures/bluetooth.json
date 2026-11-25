@@ -1,0 +1,59 @@
+[
+  {
+    "syspath": "/sys/devices/virtual/misc/uhid/0005:046D:B023.0008",
+    "subsystem": "hid",
+    "properties": {
+      "HID_NAME": "MX Master 3",
+      "HID_UNIQ": "d1:2a:33:44:55:66"
+    }
+  },
+  {
+    "syspath": "/sys/devices/virtual/misc/uhid/0005:046D:B023.0008/input/input30",
+    "subsystem": "input",
+    "properties": {
+      "ID_BUS": "bluetooth",
+      "ID_INPUT_MOUSE": "1"
+    },
+    "attributes": {
+      "name": "MX Master 3 Mouse",
+      "uniq": "d1:2a:33:44:55:66"
+    }
+  },
+  {
+    "syspath": "/sys/devices/virtual/misc/uhid/0005:046D:B023.0008/input/input31",
+    "subsystem": "input",
+    "properties": {
+      "ID_BUS": "bluetooth",
+      "ID_INPUT_KEY": "1",
+      "ID_INPUT_KEYBOARD": "1"
+    },
+    "attributes": {
+      "name": "MX Master 3 Keyboard",
+      "uniq": "d1:2a:33:44:55:66"
+    }
+  },
+  {
+    "syspath": "/sys/devices/virtual/input/input40",
+    "subsystem": "input",
+    "properties": {
+      "ID_BUS": "bluetooth",
+      "ID_INPUT_KEY": "1"
+    },
+    "attributes": {
+      "name": "WH-1000XM4 (AVRCP)",
+      "uniq": "AA:BB:CC:00:11:22"
+    }
+  },
+  {
+    "syspath": "/sys/devices/virtual/input/input41",
+    "subsystem": "input",
+    "properties": {
+      "ID_BUS": "bluetooth",
+      "ID_INPUT_KEY": "1"
+    },
+    "attributes": {
+      "name": "Sem MAC",
+      "uniq": ""
+    }
+  }
+]
