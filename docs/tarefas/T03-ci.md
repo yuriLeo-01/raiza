@@ -15,6 +15,6 @@ Todo push e todo PR rodam formatação, lint e testes.
 4. Job separado (pode falhar sem bloquear) que roda `cargo deny` ou `cargo audit`.
 
 ## Critérios de aceite
-- [ ] O YAML é válido (`actionlint`, se disponível, ou revisão manual)
-- [ ] Os comandos do workflow rodam localmente sem erro
-- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam
+- [x] O YAML é válido (`actionlint`, se disponível, ou revisão manual)
+- [x] Os comandos do workflow rodam localmente sem erro
+- [x] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam

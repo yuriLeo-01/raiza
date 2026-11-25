@@ -26,9 +26,15 @@ SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="e30b", TAG+="ua
 
 # --- Monitores DDC/CI (/dev/i2c-*) ---
 # Requer o módulo de kernel i2c-dev carregado (veja docs/INSTALACAO.md).
-SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", TAG+="uaccess"
+# Pilar 1: só barramentos de controladoras de vídeo (classe PCI 0x030000 VGA ou
+# 0x038000 display), onde ficam os canais DDC. Nunca libere o SMBus da placa-mãe
+# (ex.: PIIX4, classe 0x0c0500): uma escrita ali pode corromper a SPD da memória RAM.
+SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", ATTRS{class}=="0x030000", TAG+="uaccess"
+SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", ATTRS{class}=="0x038000", TAG+="uaccess"
 
-# Alternativa sem uaccess (para uso fora de sessão local ou com grupo dedicado):
-# SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660"
+# Alternativa sem uaccess (para uso fora de sessão local ou com grupo dedicado),
+# com o mesmo filtro de classe:
+# SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", ATTRS{class}=="0x030000", GROUP="i2c", MODE="0660"
+# SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", ATTRS{class}=="0x038000", GROUP="i2c", MODE="0660"
 
 LABEL="raiza_end"

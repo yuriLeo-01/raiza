@@ -22,7 +22,7 @@ sudo install -Dm755 target/release/raizad /usr/bin/raizad
 
 ## 2. Regra udev (acesso sem root)
 
-A regra [`70-raiza.rules`](../packaging/udev/70-raiza.rules) aplica `TAG+="uaccess"` apenas aos dispositivos HID explicitamente suportados e aos barramentos `/dev/i2c-*` usados por monitores DDC/CI. Isso concede permissão de leitura/escrita apenas ao usuário ativo da sessão local via `systemd-logind`, sem liberar todo `/dev/hidraw*`.
+A regra [`70-raiza.rules`](../packaging/udev/70-raiza.rules) aplica `TAG+="uaccess"` apenas aos dispositivos HID explicitamente suportados e aos barramentos `/dev/i2c-*` das controladoras de vídeo, usados por monitores DDC/CI. O SMBus da placa-mãe (memória RAM, sensores) **não** é liberado. Isso concede permissão de leitura/escrita apenas ao usuário ativo da sessão local via `systemd-logind`, sem liberar todo `/dev/hidraw*`.
 
 Instale e recarregue as regras:
 
@@ -54,10 +54,11 @@ Por padrão, a regra usa `TAG+="uaccess"` para liberar `/dev/i2c-*` ao usuário 
    sudo usermod -aG i2c "$USER"
    ```
 
-2. Em `/etc/udev/rules.d/70-raiza.rules`, substitua a regra de `i2c-dev` pela alternativa comentada no arquivo:
+2. Em `/etc/udev/rules.d/70-raiza.rules`, substitua as regras de `i2c-dev` pelas alternativas comentadas no arquivo (mantenha o filtro `ATTRS{class}`):
 
    ```udev
-   SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660"
+   SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", ATTRS{class}=="0x030000", GROUP="i2c", MODE="0660"
+   SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", ATTRS{class}=="0x038000", GROUP="i2c", MODE="0660"
    ```
 
 3. Recarregue o udev e faça logout/login para aplicar o novo grupo à sua sessão:
