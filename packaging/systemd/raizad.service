@@ -1,0 +1,15 @@
+[Unit]
+Description=Raiza - daemon de gerenciamento de periféricos
+Documentation=https://github.com/yuriLeo-01/raiza
+After=dbus.service graphical-session.target
+
+[Service]
+Type=dbus
+BusName=io.github.yurileo01.Raiza
+ExecStart=/usr/bin/raizad
+Restart=on-failure
+RestartSec=3
+Slice=session.slice
+
+[Install]
+WantedBy=default.target
