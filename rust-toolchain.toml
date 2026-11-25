@@ -1,0 +1,4 @@
+# Toolchain padrão do workspace Raiza.
+[toolchain]
+channel = "stable"
+components = ["rustfmt", "clippy"]

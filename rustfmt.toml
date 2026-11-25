@@ -1,0 +1,4 @@
+# Configuração de formatação do projeto Raiza (apenas opções estáveis).
+edition = "2024"
+max_width = 100
+newline_style = "Unix"
