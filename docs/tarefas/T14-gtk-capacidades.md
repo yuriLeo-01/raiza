@@ -16,4 +16,4 @@ Um widget interativo por `CapabilityKind`, escolhido automaticamente (pilar 3: a
 ## Critérios de aceite
 - [ ] Todas as capacidades do `MockProvider` têm widget e funcionam com `raizad --mock`
 - [ ] Debounce dos sliders testado (lógica separada da UI)
-- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam
+- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam
