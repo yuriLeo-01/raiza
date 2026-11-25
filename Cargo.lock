@@ -875,6 +875,7 @@ dependencies = [
  "futures-util",
  "raiza-core",
  "raiza-provider-bluez",
+ "raiza-provider-pipewire",
  "raiza-provider-udev",
  "serde",
  "serde_json",

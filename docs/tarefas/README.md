@@ -20,7 +20,7 @@ descartado em 2026-11-25); `sonnet` para tarefas simples.
 
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
-| T04 | [Esqueleto do `raizad`](T04-daemon-base.md) | claude | T01, T02 | 🟦 |
+| T04 | [Esqueleto do `raizad`](T04-daemon-base.md) | claude | T01, T02 | ✅ |
 | T05 | [Provedor udev: descoberta e hotplug](T05-provider-udev.md) | claude | T01 | ✅ |
 | T06 | [`raiza-ctl`: CLI cliente](T06-raiza-ctl.md) | sonnet | T02 | 🟦 |
 | T07 | [Regra udev e unidade systemd do usuário](T07-udev-systemd.md) | hydrogen | — | ✅ |

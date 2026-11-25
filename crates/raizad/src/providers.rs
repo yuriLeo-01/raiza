@@ -6,6 +6,7 @@ use raiza_core::{
     Capability, ConnectionKind, DeviceId, DeviceInfo, DeviceKind, Level, Provider, RgbZone,
 };
 use raiza_provider_bluez::{BluezProvider, UpowerProvider};
+use raiza_provider_pipewire::PipeWireProvider;
 use raiza_provider_udev::UdevProvider;
 
 /// Provedores reais, do mais específico ao mais genérico. Para integrar um provedor
@@ -18,7 +19,7 @@ pub fn system_providers() -> Vec<Box<dyn Provider>> {
         // 2. openrgb (adiado)
         Box::new(BluezProvider::system()),
         Box::new(UpowerProvider::system()),
-        // 5. pipewire (T09)
+        Box::new(PipeWireProvider::new()),
         // 6. evdev (T11)
         Box::new(UdevProvider::new()),
     ]
