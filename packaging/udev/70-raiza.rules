@@ -1,0 +1,34 @@
+# Regras udev do Raiza para acesso sem root aos periféricos suportados.
+# Instalação: /usr/lib/udev/rules.d/70-raiza.rules (pacote)
+#             ou /etc/udev/rules.d/70-raiza.rules (manual)
+#
+# O prefixo 70- garante que TAG+="uaccess" seja avaliado antes da regra
+# 73-seat-late.rules do systemd, concedendo acesso ao usuário ativo da sessão.
+
+ACTION=="remove", GOTO="raiza_end"
+
+# --- Dispositivos HID (/dev/hidraw*) ---
+# Pilar 1: liberar apenas os pares vendor:product explícitos, nunca todo hidraw.
+# Dispositivos atendidos por PipeWire (ex.: 3142:a010) ou DDC/CI (ex.: 043e:9a39)
+# não entram nesta regra.
+
+# Rapoo, mouse (24ae:1423)
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="24ae", ATTRS{idProduct}=="1423", TAG+="uaccess"
+
+# Akko, teclado com fio (3151:502f)
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3151", ATTRS{idProduct}=="502f", TAG+="uaccess"
+
+# Akko S9 Ultra, dongle 2.4 GHz (36eb:1087)
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="36eb", ATTRS{idProduct}=="1087", TAG+="uaccess"
+
+# JIGUANG, controlador ARGB (1a86:e30b)
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="e30b", TAG+="uaccess"
+
+# --- Monitores DDC/CI (/dev/i2c-*) ---
+# Requer o módulo de kernel i2c-dev carregado (veja docs/INSTALACAO.md).
+SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", TAG+="uaccess"
+
+# Alternativa sem uaccess (para uso fora de sessão local ou com grupo dedicado):
+# SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660"
+
+LABEL="raiza_end"
