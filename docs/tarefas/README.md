@@ -8,9 +8,9 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
-| T01 | [Contratos do `raiza-core`](T01-contratos-core.md) | claude (líder) | — | ⬜ |
+| T01 | [Contratos do `raiza-core`](T01-contratos-core.md) | claude (líder) | — | 🟦 |
 | T02 | [Especificação da API D-Bus](T02-api-dbus.md) | claude (líder) | T01 | ⬜ |
-| T03 | [CI no GitHub Actions](T03-ci.md) | hydrogen | — | ⬜ |
+| T03 | [CI no GitHub Actions](T03-ci.md) | hydrogen | — | 🟦 |
 
 ## F1: Daemon base
 
@@ -19,7 +19,7 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 | T04 | [Esqueleto do `raizad`](T04-daemon-base.md) | claude | T01, T02 | ⬜ |
 | T05 | [Provedor udev: descoberta e hotplug](T05-provider-udev.md) | hydrogen | T01 | ⬜ |
 | T06 | [`raiza-ctl`: CLI cliente](T06-raiza-ctl.md) | hydrogen | T02 | ⬜ |
-| T07 | [Regra udev e unidade systemd do usuário](T07-udev-systemd.md) | hydrogen | — | ⬜ |
+| T07 | [Regra udev e unidade systemd do usuário](T07-udev-systemd.md) | hydrogen | — | 🟦 |
 
 ## F2: Provedores genéricos (aproveitar o que já existe)
 
