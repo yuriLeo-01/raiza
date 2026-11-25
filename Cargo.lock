@@ -820,6 +820,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "raiza-provider-bluez"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "futures",
+ "futures-util",
+ "raiza-core",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "zbus",
+]
+
+[[package]]
 name = "raiza-provider-udev"
 version = "0.0.1"
 dependencies = [
