@@ -45,6 +45,14 @@ jobs:
       - name: Executar Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
+      - name: Features do raiza-core isoladas
+        # Os testes ligam features por meio das dev-dependencies; isto pega dependências
+        # que só compilam por acaso.
+        run: |
+          cargo check -p raiza-core
+          cargo check -p raiza-core --features mock
+          cargo check -p raiza-core --features dbus
+
       - name: Executar testes
         run: cargo test --all-features
 

@@ -16,7 +16,7 @@ dbus = ["dep:zbus", "dep:serde_json", "dep:futures-util"]
 [dependencies]
 async-trait = "0.1"
 futures-core = "0.3"
-futures-util = { version = "0.3", default-features = false, optional = true }
+futures-util = { version = "0.3", default-features = false, features = ["alloc"], optional = true }
 futures-channel = { version = "0.3", optional = true }
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
