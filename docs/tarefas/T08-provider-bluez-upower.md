@@ -33,10 +33,10 @@ Tudo via D-Bus de **sistema** com `zbus`: `org.bluez` (`Device1`: Address, Name,
 Parear dispositivos novos, perfis de áudio (A2DP/HFP), volume.
 
 ## Critérios de aceite
-- [ ] Testes com BlueZ e UPower simulados (conectado, desconectado, bateria mudando, bateria do notebook ignorada)
-- [ ] Teste: `write(Connection(false))` chama `Disconnect` no backend simulado
-- [ ] Exemplo `cargo run -p raiza-provider-bluez --example listar` mostra o headset real
-- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam
+- [x] Testes com BlueZ e UPower simulados (conectado, desconectado, bateria mudando, bateria do notebook ignorada)
+- [x] Teste: `write(Connection(false))` chama `Disconnect` no backend simulado
+- [x] Exemplo `cargo run -p raiza-provider-bluez --example listar` mostra o headset real
+- [x] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam
 
 ## Como testar com hardware real (para o mantenedor)
 Ligar o headset Thinkplus K3 Pro, rodar o exemplo e conferir bateria e conexão.

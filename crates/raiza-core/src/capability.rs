@@ -31,7 +31,7 @@ impl Level {
                 self.min, self.max
             ));
         }
-        if self.step > 1 && (value - self.min) % self.step != 0 {
+        if self.step > 1 && !(value - self.min).is_multiple_of(self.step) {
             return Err(format!(
                 "{value} não é múltiplo do passo {} a partir de {}",
                 self.step, self.min

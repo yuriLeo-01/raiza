@@ -17,7 +17,7 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
 | T04 | [Esqueleto do `raizad`](T04-daemon-base.md) | claude | T01, T02 | ⬜ |
-| T05 | [Provedor udev: descoberta e hotplug](T05-provider-udev.md) | claude | T01 | 🟦 |
+| T05 | [Provedor udev: descoberta e hotplug](T05-provider-udev.md) | claude | T01 | ✅ |
 | T06 | [`raiza-ctl`: CLI cliente](T06-raiza-ctl.md) | hydrogen | T02 | ⬜ |
 | T07 | [Regra udev e unidade systemd do usuário](T07-udev-systemd.md) | hydrogen | — | ✅ |
 
@@ -25,7 +25,7 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
-| T08 | [Provedor BlueZ + UPower](T08-provider-bluez-upower.md) | claude | T01 | 🟦 |
+| T08 | [Provedor BlueZ + UPower](T08-provider-bluez-upower.md) | claude | T01 | ✅ |
 | T09 | [Provedor PipeWire](T09-provider-pipewire.md) | hydrogen | T01 | ⏸ |
 | T10 | [Provedor DDC/CI (monitores)](T10-provider-ddc.md) | hydrogen | T01 | ⏸ |
 | T11 | [Provedor evdev (controles)](T11-provider-evdev.md) | hydrogen | T01 | ⏸ |

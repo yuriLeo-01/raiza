@@ -72,10 +72,10 @@ impl TryFrom<String> for Hex16 {
     type Error = String;
 
     fn try_from(s: String) -> Result<Self, Self::Error> {
-        if s.len() == 4 {
-            if let Ok(v) = u16::from_str_radix(&s, 16) {
-                return Ok(Hex16(v));
-            }
+        if s.len() == 4
+            && let Ok(v) = u16::from_str_radix(&s, 16)
+        {
+            return Ok(Hex16(v));
         }
         Err(format!("esperado 4 dígitos hex, como \"24ae\": {s:?}"))
     }
@@ -100,7 +100,7 @@ impl TryFrom<String> for HexBytes {
 
     fn try_from(s: String) -> Result<Self, Self::Error> {
         let digits: String = s.chars().filter(|c| !c.is_whitespace()).collect();
-        if digits.len() % 2 != 0 || !digits.is_ascii() {
+        if !digits.len().is_multiple_of(2) || !digits.is_ascii() {
             return Err(format!("hex inválido: {s:?}"));
         }
         (0..digits.len())
