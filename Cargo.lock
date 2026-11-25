@@ -835,6 +835,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "raiza-provider-pipewire"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "futures-util",
+ "raiza-core",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "raiza-provider-udev"
 version = "0.0.1"
 dependencies = [
