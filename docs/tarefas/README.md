@@ -48,10 +48,10 @@ descartado em 2026-11-25); `sonnet` para tarefas simples.
 |---|---|---|---|---|
 | T15 | [Formato e validação de perfis](T15-perfis-formato.md) | claude (líder) | T01 | ✅ |
 | T16 | [Executor de perfis via hidraw](T16-perfis-executor.md) | claude | T15, T04 | ⬜ |
-| T17 | [Protocolo do mouse Rapoo 24ae:1423](T17-protocolo-rapoo.md) | humano + claude | T15 | ⬜ |
-| T18 | [Protocolo do teclado Akko (3151:502f com fio + dongle próprio)](T18-protocolo-akko.md) | humano + claude | T15 | ⬜ |
-| T20 | [Headset Akko S9 Ultra 36eb:1087: protocolo, bateria, sidetone e EQ](T20-headset-akko-s9.md) | humano + claude | T15 | ⬜ |
-| T21 | [Capacidades `Sidetone` e `Equalizer` (contrato)](T21-sidetone-eq.md) | claude (líder) | T20 | ⬜ |
+| T17 | [Protocolo do mouse Rapoo 24ae:1423](T17-protocolo-rapoo.md) | humano + claude | T15 | ⏸ aguardando capturas (pesquisa nas notas) |
+| T18 | [Protocolo do teclado Akko (3151:502f com fio + dongle próprio)](T18-protocolo-akko.md) | humano + claude | T15 | ⏸ aguardando capturas (pesquisa nas notas) |
+| T20 | [Headset Akko S9 Ultra 36eb:1087: protocolo, bateria, sidetone e EQ](T20-headset-akko-s9.md) | humano + claude | T15 | ⏸ aguardando capturas (pesquisa nas notas) |
+| T21 | [Capacidades `Sidetone` e `Equalizer` (contrato)](T21-sidetone-eq.md) | claude (líder) | T20 | ⏸ aguardando T20 |
 
 ## F5: Distribuição
 
@@ -64,7 +64,7 @@ descartado em 2026-11-25); `sonnet` para tarefas simples.
 1. **Leva 1:** T01 (líder) em paralelo com T03 e T07.
 2. **Leva 2:** T02 e T15 (líder), T05, T08 e T09. No máximo 2 subagentes por vez (cota).
    T10 cancelada e T12 adiada (escopo). T11 passou para depois da leva 3 (prioridade menor).
-3. **Leva 3:** T04 e T06; depois T16. Em paralelo, com capturas do mantenedor: T17, T18 e T20 (e T21 depois da T20).
-   Depois: T11.
-4. **Leva 4:** T13, depois T14.
-5. **Leva 5:** T19.
+3. **Leva 3:** T04 e T06. Depois o app gráfico: T13, depois T14. Depois T16 e T11.
+   T17, T18 e T20 aguardam capturas (o mantenedor não vai capturar por enquanto). A pesquisa em
+   `notas/T17.md`, `notas/T18.md` e `notas/T20.md` mostra que parte delas pode sair sem capturas.
+4. **Leva 4:** T19.
