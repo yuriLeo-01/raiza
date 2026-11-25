@@ -34,9 +34,9 @@ Opções: crate `pipewire` (bindings da libpipewire) ou o comando `wpctl`/`pw-du
 4. Backend injetável (trait) para testar sem PipeWire.
 
 ## Critérios de aceite
-- [ ] Testes com backend simulado (USB, Bluetooth, onboard ignorado, curva cúbica ida e volta)
-- [ ] Exemplo `cargo run -p raiza-provider-pipewire --example listar-pipewire` lista os nós com o `DeviceId` calculado
-- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam
+- [x] Testes com backend simulado (USB, Bluetooth, onboard ignorado, curva cúbica ida e volta)
+- [x] Exemplo `cargo run -p raiza-provider-pipewire --example listar-pipewire` lista os nós com o `DeviceId` calculado
+- [x] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam
 
 ## Como testar com hardware real (para o mantenedor)
 Rodar o exemplo com o fifine plugado. O id deve ser igual ao do exemplo do `raiza-provider-udev` (T05).

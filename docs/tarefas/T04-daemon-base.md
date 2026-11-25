@@ -27,4 +27,5 @@ Um daemon que sobe no barramento de sessão, registra provedores, funde disposit
 - [ ] Teste de integração com um barramento D-Bus privado (`dbus-daemon --session` ou `zbus` p2p)
 - [ ] Teste: provedor que entra em pânico não derruba o daemon
 - [ ] Teste: `DeviceRemoved` + `DeviceAdded` do mesmo id preserva a configuração salva
+- [ ] Teste: `DeviceAdded` sozinho para um id já anunciado pelo mesmo provedor substitui o `DeviceInfo` (sem duplicar) (ajuste enviado em 2026-11-25)
 - [ ] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam

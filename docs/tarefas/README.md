@@ -20,9 +20,9 @@ descartado em 2026-11-25); `sonnet` para tarefas simples.
 
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
-| T04 | [Esqueleto do `raizad`](T04-daemon-base.md) | claude | T01, T02 | ⬜ |
+| T04 | [Esqueleto do `raizad`](T04-daemon-base.md) | claude | T01, T02 | 🟦 |
 | T05 | [Provedor udev: descoberta e hotplug](T05-provider-udev.md) | claude | T01 | ✅ |
-| T06 | [`raiza-ctl`: CLI cliente](T06-raiza-ctl.md) | claude | T02 | ⬜ |
+| T06 | [`raiza-ctl`: CLI cliente](T06-raiza-ctl.md) | sonnet | T02 | 🟦 |
 | T07 | [Regra udev e unidade systemd do usuário](T07-udev-systemd.md) | hydrogen | — | ✅ |
 
 ## F2: Provedores genéricos (aproveitar o que já existe)
@@ -30,7 +30,7 @@ descartado em 2026-11-25); `sonnet` para tarefas simples.
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
 | T08 | [Provedor BlueZ + UPower](T08-provider-bluez-upower.md) | claude | T01 | ✅ |
-| T09 | [Provedor PipeWire](T09-provider-pipewire.md) | claude | T01 | 🟦 |
+| T09 | [Provedor PipeWire](T09-provider-pipewire.md) | claude | T01 | ✅ |
 | T10 | [Provedor DDC/CI (monitores)](T10-provider-ddc.md) | — | T01 | ❌ cancelada: monitores fora do escopo |
 | T11 | [Provedor evdev (controles)](T11-provider-evdev.md) | claude | T01 | ⬜ prioridade menor |
 | T12 | [Provedor OpenRGB](T12-provider-openrgb.md) | claude | T01 | ⏸ adiada |
