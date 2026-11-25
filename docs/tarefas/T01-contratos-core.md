@@ -27,8 +27,8 @@ Leia `docs/ARQUITETURA.md` (modelo de dados). O core **não faz I/O** e deve com
 D-Bus, I/O real e daemon.
 
 ## Critérios de aceite
-- [ ] Tudo serializa e desserializa com serde (teste de ida e volta para cada tipo)
-- [ ] Validação de `CapabilityValue` testada (dentro e fora dos limites, escrita em capacidade somente leitura)
-- [ ] Fusão testada (headset Bluetooth = bluez + pipewire vira um dispositivo)
-- [ ] Toda API pública tem doc comment
-- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam
+- [x] Tudo serializa e desserializa com serde (teste de ida e volta para cada tipo)
+- [x] Validação de `CapabilityValue` testada (dentro e fora dos limites, escrita em capacidade somente leitura)
+- [x] Fusão testada (headset Bluetooth = bluez + pipewire vira um dispositivo)
+- [x] Toda API pública tem doc comment
+- [x] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam

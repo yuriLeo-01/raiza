@@ -30,16 +30,25 @@ raizad ◄──── D-Bus ───────┤
 | `raiza-provider-*` | Um crate por provedor (criados nas tarefas). |
 | `raiza-profiles` | Formato, validação e execução de perfis HID declarativos. |
 
-## Modelo de dados (resumo, detalhado em T01)
+## Modelo de dados (definido em `crates/raiza-core`, T01)
 
-- **Dispositivo**: id estável (barramento + vendor:product + serial/caminho), nome, tipo
-  (mouse, teclado, headset, controle, microfone, monitor, rgb, outro), provedor de origem e capacidades.
-- **Capacidade**: algo que o dispositivo sabe fazer, com tipo, valor atual e limites.
-  Exemplos: `Battery { percent, charging }`, `Dpi { stages, current, min, max, step }`,
-  `Rgb { zones, modes }`, `Volume`, `Mute`, `Brightness`, `Rumble`, `Connection`.
-- **Provedor**: trait assíncrona que descobre dispositivos, lê e escreve capacidades e emite eventos.
-- Um mesmo dispositivo físico pode ser atendido por mais de um provedor (ex.: headset
-  Bluetooth = bluez + pipewire). O daemon **funde** as capacidades pelo id do dispositivo.
+- **`DeviceId`**: id estável, serializado como string canônica:
+  `usb:VID:PID:instância` (serial, ou índice estável), `bt:AA:BB:CC:DD:EE:FF` (só o MAC,
+  para BlueZ e PipeWire chegarem ao mesmo id), `display:chave-do-EDID` e `other:provedor:chave`.
+- **`DeviceInfo`**: id, nome, fabricante, `DeviceKind` (mouse, keyboard, headset, gamepad,
+  microphone, monitor, rgb_controller, other), `providers` (em ordem de prioridade) e capacidades.
+- **`Capability`**: algo que o dispositivo sabe fazer, com valor atual, limites e a flag `writable`:
+  `Battery`, `Dpi`, `PollingRate`, `Rgb`, `Volume`, `Mute`, `Brightness`, `Contrast`, `Rumble`, `Connection`.
+  Bateria e conexão são sempre somente leitura.
+- **`CapabilityValue`**: o que se envia num `set`. É validado contra a capacidade
+  (`DeviceInfo::validate`) antes de chegar ao provedor. Erros: `Unsupported`, `ReadOnly`, `OutOfRange`.
+- **`Provider`** (`async-trait`, usado como `Box<dyn Provider>`): `id`, `discover`, `read`,
+  `write` e `events` (fluxo de `ProviderEvent`: `DeviceAdded`, `DeviceRemoved`, `CapabilityChanged`).
+- **Fusão** (`fuse`, `capability_owner`): um mesmo dispositivo físico pode ser atendido por mais
+  de um provedor (ex.: headset Bluetooth = bluez + pipewire). O daemon funde pelo id. Para cada
+  tipo de capacidade **vence o primeiro provedor na ordem de prioridade**, e é ele que recebe
+  o `read`/`write` daquela capacidade.
+- **Testes**: a feature `mock` do `raiza-core` expõe `mock::MockProvider`.
 
 ## API D-Bus (resumo, especificada em T02)
 

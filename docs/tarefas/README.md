@@ -8,7 +8,7 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
-| T01 | [Contratos do `raiza-core`](T01-contratos-core.md) | claude (líder) | — | 🟦 |
+| T01 | [Contratos do `raiza-core`](T01-contratos-core.md) | claude (líder) | — | ✅ |
 | T02 | [Especificação da API D-Bus](T02-api-dbus.md) | claude (líder) | T01 | ⬜ |
 | T03 | [CI no GitHub Actions](T03-ci.md) | hydrogen | — | 🟦 |
 
