@@ -9,7 +9,7 @@
 Volume e mudo de microfones e headsets: as capacidades `Volume` e `Mute`.
 
 ## Contexto
-Opções: crate `pipewire` (bindings da libpipewire) ou o comando `wpctl`/`pw-dump` do WirePlumber. Decida e justifique nas notas. Prefira a lib se ela permitir eventos sem polling (`pw-dump --monitor` também é aceitável). Dispositivos reais: microfone fifine 3142:a010 (USB) e o headset Bluetooth Thinkplus K3 Pro.
+Opções: crate `pipewire` (bindings da libpipewire) ou o comando `wpctl`/`pw-dump` do WirePlumber. Decida e justifique nas notas. Prefira a lib se ela permitir eventos sem polling (`pw-dump --monitor` também é aceitável). Dispositivos reais: microfone fifine 3142:a010 (USB), o dongle 36eb:1087 (tem interfaces de áudio USB de saída e entrada) e o headset Bluetooth Thinkplus K3 Pro (id `bt:DE:1E:59:99:7C:AE`).
 
 ## Contrato com o `raiza-core` (vale para todo provedor)
 - Crate novo em `crates/raiza-provider-<nome>/`, com `raiza-core = { workspace = true }`. Para testes, use `raiza-core = { workspace = true, features = ["mock"] }` em `[dev-dependencies]` se precisar do `MockProvider`.

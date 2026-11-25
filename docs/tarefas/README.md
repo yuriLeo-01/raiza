@@ -26,8 +26,8 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
 | T08 | [Provedor BlueZ + UPower](T08-provider-bluez-upower.md) | claude | T01 | ✅ |
-| T09 | [Provedor PipeWire](T09-provider-pipewire.md) | hydrogen | T01 | ⏸ |
-| T10 | [Provedor DDC/CI (monitores)](T10-provider-ddc.md) | hydrogen | T01 | ⏸ |
+| T09 | [Provedor PipeWire](T09-provider-pipewire.md) | claude | T01 | 🟦 |
+| T10 | [Provedor DDC/CI (monitores)](T10-provider-ddc.md) | claude | T01 | 🟦 |
 | T11 | [Provedor evdev (controles)](T11-provider-evdev.md) | hydrogen | T01 | ⏸ |
 | T12 | [Provedor OpenRGB](T12-provider-openrgb.md) | hydrogen | T01 | ⏸ |
 
