@@ -35,7 +35,7 @@ Opções: crate `pipewire` (bindings da libpipewire) ou o comando `wpctl`/`pw-du
 
 ## Critérios de aceite
 - [ ] Testes com backend simulado (USB, Bluetooth, onboard ignorado, curva cúbica ida e volta)
-- [ ] Exemplo `cargo run -p raiza-provider-pipewire --example listar` lista os nós com o `DeviceId` calculado
+- [ ] Exemplo `cargo run -p raiza-provider-pipewire --example listar-pipewire` lista os nós com o `DeviceId` calculado
 - [ ] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam
 
 ## Como testar com hardware real (para o mantenedor)

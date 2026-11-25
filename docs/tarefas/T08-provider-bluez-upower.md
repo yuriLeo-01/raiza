@@ -35,7 +35,7 @@ Parear dispositivos novos, perfis de áudio (A2DP/HFP), volume.
 ## Critérios de aceite
 - [x] Testes com BlueZ e UPower simulados (conectado, desconectado, bateria mudando, bateria do notebook ignorada)
 - [x] Teste: `write(Connection(false))` chama `Disconnect` no backend simulado
-- [x] Exemplo `cargo run -p raiza-provider-bluez --example listar` mostra o headset real
+- [x] Exemplo `cargo run -p raiza-provider-bluez --example listar-bluez` mostra o headset real
 - [x] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam
 
 ## Como testar com hardware real (para o mantenedor)

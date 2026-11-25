@@ -1,9 +1,9 @@
 //! Lista os periféricos reais e acompanha o hotplug.
 //!
 //! ```sh
-//! cargo run -p raiza-provider-udev --example listar            # lista e vigia (Ctrl+C sai)
-//! cargo run -p raiza-provider-udev --example listar -- --json   # árvore udev crua, p/ fixtures
-//! RUST_LOG=raiza_provider_udev=debug cargo run -p raiza-provider-udev --example listar
+//! cargo run -p raiza-provider-udev --example listar-udev            # lista e vigia (Ctrl+C sai)
+//! cargo run -p raiza-provider-udev --example listar-udev -- --json   # árvore udev crua, p/ fixtures
+//! RUST_LOG=raiza_provider_udev=debug cargo run -p raiza-provider-udev --example listar-udev
 //! ```
 
 use futures_util::StreamExt;

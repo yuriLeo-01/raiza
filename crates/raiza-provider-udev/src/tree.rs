@@ -79,7 +79,7 @@ impl Tree {
     }
 
     /// Lê uma árvore de um JSON com uma lista de [`Node`] (formato das fixtures de teste
-    /// e da saída de `--example listar -- --json`).
+    /// e da saída de `--example listar-udev -- --json`).
     pub fn from_json(json: &str) -> Result<Self, RaizaError> {
         let nodes: Vec<Node> = serde_json::from_str(json)
             .map_err(|e| RaizaError::Io(format!("árvore udev inválida: {e}")))?;

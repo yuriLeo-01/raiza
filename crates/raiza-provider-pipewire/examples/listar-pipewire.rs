@@ -1,9 +1,9 @@
 //! Lista os nós de áudio com o `DeviceId` calculado e os periféricos que o provedor anuncia.
 //!
 //! ```sh
-//! cargo run -p raiza-provider-pipewire --example listar               # lista
-//! cargo run -p raiza-provider-pipewire --example listar -- --eventos  # e vigia (Ctrl+C sai)
-//! RUST_LOG=raiza_provider_pipewire=debug cargo run -p raiza-provider-pipewire --example listar
+//! cargo run -p raiza-provider-pipewire --example listar-pipewire               # lista
+//! cargo run -p raiza-provider-pipewire --example listar-pipewire -- --eventos  # e vigia (Ctrl+C sai)
+//! RUST_LOG=raiza_provider_pipewire=debug cargo run -p raiza-provider-pipewire --example listar-pipewire
 //! ```
 
 use futures_util::StreamExt;

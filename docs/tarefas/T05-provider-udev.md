@@ -45,8 +45,8 @@ Bateria, DPI e qualquer outra capacidade. Escrever em dispositivos.
 - [x] Teste: 3 interfaces hidraw do mesmo teclado viram 1 dispositivo Keyboard
 - [x] Teste: hub e pendrive são ignorados
 - [x] Teste: dois aparelhos iguais sem serial ganham instâncias `0` e `1`, independente da ordem de enumeração
-- [x] Exemplo `cargo run -p raiza-provider-udev --example listar` imprime os dispositivos reais com o `DeviceId`
+- [x] Exemplo `cargo run -p raiza-provider-udev --example listar-udev` imprime os dispositivos reais com o `DeviceId`
 - [x] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam
 
 ## Como testar com hardware real (para o mantenedor)
-`cargo run -p raiza-provider-udev --example listar`, plugar e desplugar o mouse e conferir os eventos.
+`cargo run -p raiza-provider-udev --example listar-udev`, plugar e desplugar o mouse e conferir os eventos.

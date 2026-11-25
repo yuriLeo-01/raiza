@@ -1,8 +1,8 @@
 //! Lista o que os provedores `bluez` e `upower` enxergam nesta máquina.
 //!
 //! ```sh
-//! cargo run -p raiza-provider-bluez --example listar
-//! cargo run -p raiza-provider-bluez --example listar -- --eventos   # fica ouvindo
+//! cargo run -p raiza-provider-bluez --example listar-bluez
+//! cargo run -p raiza-provider-bluez --example listar-bluez -- --eventos   # fica ouvindo
 //! ```
 
 use futures::StreamExt;
