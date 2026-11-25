@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/yuriLeo-01/raiza/profiles/schema.json",
+  "title": "Perfil HID do Raiza (versão 1)",
+  "description": "Descreve como ler e escrever capacidades de um dispositivo HID. Veja docs/PERFIS.md. A validação completa (tamanhos, sobreposição, limites e padrões proibidos) é feita pelo crate raiza-profiles.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "name", "vendor", "kind", "verified", "authors", "match", "capabilities"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schema": { "const": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "vendor": { "type": "string", "minLength": 1 },
+    "kind": {
+      "enum": ["mouse", "keyboard", "headset", "gamepad", "microphone", "monitor", "rgb_controller", "other"]
+    },
+    "verified": {
+      "type": "boolean",
+      "description": "false = somente leitura. Só vira true depois de testado no hardware e revisado."
+    },
+    "authors": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "match": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["vendor_id", "product_id"],
+      "properties": {
+        "vendor_id": { "$ref": "#/$defs/hex16" },
+        "product_id": { "$ref": "#/$defs/hex16" },
+        "interface": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "usage_page": { "$ref": "#/$defs/hex16" },
+        "usage": { "$ref": "#/$defs/hex16" }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "dpi": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["min", "max", "step"],
+          "anyOf": [{ "required": ["read"] }, { "required": ["write"] }],
+          "properties": {
+            "min": { "type": "integer", "minimum": 1 },
+            "max": { "type": "integer", "minimum": 1 },
+            "step": { "type": "integer", "minimum": 1 },
+            "read": { "$ref": "#/$defs/read", "description": "Resposta com o campo value." },
+            "write": { "$ref": "#/$defs/report", "description": "Relatório com o campo value." }
+          }
+        },
+        "polling_rate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["rates"],
+          "anyOf": [{ "required": ["read"] }, { "required": ["write"] }],
+          "properties": {
+            "rates": {
+              "type": "object",
+              "minProperties": 1,
+              "description": "Taxa em Hz (chave) -> código enviado ao dispositivo.",
+              "propertyNames": { "pattern": "^[1-9][0-9]*$" },
+              "additionalProperties": { "type": "integer", "minimum": 0 }
+            },
+            "read": { "$ref": "#/$defs/read" },
+            "write": { "$ref": "#/$defs/report" }
+          }
+        },
+        "rgb": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["zones", "modes", "write"],
+          "properties": {
+            "zones": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+            "modes": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": { "type": "integer", "minimum": 0 }
+            },
+            "all_zones": { "type": "integer", "minimum": 0 },
+            "write": {
+              "$ref": "#/$defs/report",
+              "description": "Campos aceitos: red, green, blue, mode, zone."
+            }
+          }
+        },
+        "battery": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["read"],
+          "properties": {
+            "read": { "$ref": "#/$defs/read", "description": "Campos: percent e, opcional, charging." }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "hex16": { "type": "string", "pattern": "^[0-9a-fA-F]{4}$" },
+    "hexbytes": {
+      "type": "string",
+      "pattern": "^(\\s*[0-9a-fA-F]{2})+\\s*$",
+      "description": "Bytes em hex, sem o report ID. Máximo de 64 bytes."
+    },
+    "fieldName": { "enum": ["value", "red", "green", "blue", "mode", "zone", "percent", "charging"] },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["at"],
+      "properties": {
+        "at": { "type": "integer", "minimum": 0, "maximum": 63 },
+        "encoding": { "enum": ["u8", "u16le", "u16be"], "default": "u8" },
+        "scale": { "type": "integer", "minimum": 1, "default": 1 },
+        "offset": { "type": "integer", "minimum": 0, "default": 0 },
+        "mask": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "Só em respostas." }
+      }
+    },
+    "fields": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/fieldName" },
+      "additionalProperties": { "$ref": "#/$defs/field" }
+    },
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "report_id", "data"],
+      "properties": {
+        "type": { "enum": ["feature", "output"] },
+        "report_id": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "data": { "$ref": "#/$defs/hexbytes" },
+        "fields": { "$ref": "#/$defs/fields" },
+        "checksum": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "at", "from", "to"],
+          "properties": {
+            "kind": { "enum": ["sum8", "sum8_neg", "xor8"] },
+            "at": { "type": "integer", "minimum": 0, "maximum": 63 },
+            "from": { "type": "integer", "minimum": 0, "maximum": 63 },
+            "to": { "type": "integer", "minimum": 1, "maximum": 64 }
+          }
+        }
+      }
+    },
+    "read": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["response"],
+      "properties": {
+        "request": {
+          "$ref": "#/$defs/report",
+          "description": "Consulta fixa enviada antes de ler: sem campos variáveis."
+        },
+        "response": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "report_id", "length", "fields"],
+          "properties": {
+            "type": { "enum": ["feature", "input"] },
+            "report_id": { "type": "integer", "minimum": 0, "maximum": 255 },
+            "length": { "type": "integer", "minimum": 1, "maximum": 64 },
+            "expect": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["at", "value"],
+                "properties": {
+                  "at": { "type": "integer", "minimum": 0, "maximum": 63 },
+                  "value": { "type": "integer", "minimum": 0, "maximum": 255 }
+                }
+              }
+            },
+            "fields": { "$ref": "#/$defs/fields" }
+          }
+        }
+      }
+    }
+  }
+}

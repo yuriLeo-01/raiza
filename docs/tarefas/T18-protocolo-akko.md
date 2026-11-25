@@ -6,7 +6,7 @@
 - **Escopo:** `docs/protocolos/akko-3151-502f.md`, `profiles/akko-3151-502f.json`
 
 ## Objetivo
-Documentar o protocolo HID do teclado Akko 3151:502f (com fio) e dongle Akko S9 Ultra 36eb:1087 e escrever o perfil dele, inicialmente com `"verificado": false`.
+Documentar o protocolo HID do teclado Akko 3151:502f (com fio) e dongle Akko S9 Ultra 36eb:1087 e escrever o perfil dele, inicialmente com `"verified": false`.
 
 ## Contexto
 O fabricante não tem software para Linux. Capacidades desejadas: RGB (modo, cor, brilho) e, no dongle, bateria.
@@ -20,7 +20,7 @@ O fabricante não tem software para Linux. Capacidades desejadas: RGB (modo, cor
 5. Pesquisar se já existe suporte em outro projeto (OpenRGB, libratbag, projetos no GitHub). Se existir, documentar e reaproveitar.
 
 ## Fora de escopo
-Enviar qualquer comando ao dispositivo real. Quem valida no hardware é o mantenedor, que depois marca `"verificado": true`.
+Enviar qualquer comando ao dispositivo real. Quem valida no hardware é o mantenedor, que depois marca `"verified": true`.
 
 ## Critérios de aceite
 - [ ] Perfil passa na validação da T15 (há teste ou comando de validação)

@@ -6,7 +6,7 @@
 - **Escopo:** `docs/protocolos/rapoo-24ae-1423.md`, `profiles/rapoo-24ae-1423.json`
 
 ## Objetivo
-Documentar o protocolo HID do mouse Rapoo 24ae:1423 e escrever o perfil dele, inicialmente com `"verificado": false`.
+Documentar o protocolo HID do mouse Rapoo 24ae:1423 e escrever o perfil dele, inicialmente com `"verified": false`.
 
 ## Contexto
 O fabricante não tem software para Linux. Capacidades desejadas: DPI (estágios), polling rate, RGB e bateria (se for sem fio).
@@ -20,7 +20,7 @@ O fabricante não tem software para Linux. Capacidades desejadas: DPI (estágios
 5. Pesquisar se já existe suporte em outro projeto (OpenRGB, libratbag, projetos no GitHub). Se existir, documentar e reaproveitar.
 
 ## Fora de escopo
-Enviar qualquer comando ao dispositivo real. Quem valida no hardware é o mantenedor, que depois marca `"verificado": true`.
+Enviar qualquer comando ao dispositivo real. Quem valida no hardware é o mantenedor, que depois marca `"verified": true`.
 
 ## Critérios de aceite
 - [ ] Perfil passa na validação da T15 (há teste ou comando de validação)

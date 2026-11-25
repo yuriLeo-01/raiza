@@ -89,4 +89,4 @@ aparelho apareça, com `Connection` somente leitura.
 - O daemon só aceita chamadas D-Bus da sessão do próprio usuário.
 - O acesso a `/dev/hidraw*` vem de uma regra udev com `TAG+="uaccess"`, restrita aos
   vendor/product IDs dos perfis conhecidos.
-- Perfis HID novos começam como `"verificado": false` e ficam em somente leitura (pilar 1).
+- Perfis HID novos começam como `"verified": false` e ficam em somente leitura (pilar 1). Formato em `docs/PERFIS.md`.

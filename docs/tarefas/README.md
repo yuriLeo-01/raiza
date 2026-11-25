@@ -42,7 +42,7 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
-| T15 | [Formato e validação de perfis](T15-perfis-formato.md) | claude (líder) | T01 | 🟦 |
+| T15 | [Formato e validação de perfis](T15-perfis-formato.md) | claude (líder) | T01 | ✅ |
 | T16 | [Executor de perfis via hidraw](T16-perfis-executor.md) | claude | T15, T04 | ⬜ |
 | T17 | [Protocolo do mouse Rapoo 24ae:1423](T17-protocolo-rapoo.md) | humano + hydrogen | T15 | ⬜ |
 | T18 | [Protocolo do teclado Akko 3151:502f / 36eb:1087](T18-protocolo-akko.md) | humano + hydrogen | T15 | ⬜ |
