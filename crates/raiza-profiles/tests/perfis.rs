@@ -65,6 +65,36 @@ fn ficticio_carrega_e_faz_ida_e_volta() {
 }
 
 #[test]
+fn match_aceita_lista_com_conexao_preferida() {
+    let dongle = json!({"vendor_id": "1234", "product_id": "9999"});
+    let p = carregar_com(|v| {
+        let cabo = v["match"].clone();
+        v["match"] = json!([cabo, dongle]);
+    })
+    .unwrap();
+    assert_eq!(
+        p.match_index(0x1234, 0x5678, Some(1), Some(0xff00), None),
+        Some(0)
+    );
+    assert_eq!(p.match_index(0x1234, 0x9999, None, None, None), Some(1));
+    assert_eq!(p.match_index(0x1234, 0x0001, None, None, None), None);
+    // Lista volta como lista; um só volta como objeto.
+    let json = serde_json::to_value(&p).unwrap();
+    assert!(json["match"].is_array());
+    assert!(serde_json::to_value(perfil()).unwrap()["match"].is_object());
+    assert_eq!(load(&json.to_string()).unwrap(), p);
+
+    rejeitado(carregar_com(|v| v["match"] = json!([])), "lista vazia");
+    rejeitado(
+        carregar_com(|v| {
+            let cabo = v["match"].clone();
+            v["match"] = json!([cabo.clone(), cabo]);
+        }),
+        "repetido",
+    );
+}
+
+#[test]
 fn bytes_do_dpi() {
     let p = perfil();
     let atual = cap(&p, CapabilityKind::Dpi);

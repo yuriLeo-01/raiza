@@ -1,6 +1,9 @@
 # Roadmap e status das tarefas
 
-Legenda de status: ⬜ a fazer · 🟦 em andamento · 🟨 em revisão · ✅ na `main` · ⏸ bloqueada
+Legenda de status: ⬜ a fazer · 🟦 em andamento · 🟨 em revisão · ✅ na `main` · ⏸ bloqueada ou adiada · ❌ cancelada
+
+**Escopo (2026-11-25):** foco em mouse, teclado, headset e microfone. Controles com prioridade
+menor. Monitores fora do escopo. OpenRGB adiado. Veja `docs/PILARES.md`.
 
 O agente é o sugerido. O líder pode trocar ao despachar.
 
@@ -27,9 +30,9 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 |---|---|---|---|---|
 | T08 | [Provedor BlueZ + UPower](T08-provider-bluez-upower.md) | claude | T01 | ✅ |
 | T09 | [Provedor PipeWire](T09-provider-pipewire.md) | claude | T01 | 🟦 |
-| T10 | [Provedor DDC/CI (monitores)](T10-provider-ddc.md) | claude | T01 | 🟦 |
-| T11 | [Provedor evdev (controles)](T11-provider-evdev.md) | hydrogen | T01 | ⏸ |
-| T12 | [Provedor OpenRGB](T12-provider-openrgb.md) | hydrogen | T01 | ⏸ |
+| T10 | [Provedor DDC/CI (monitores)](T10-provider-ddc.md) | — | T01 | ❌ cancelada: monitores fora do escopo |
+| T11 | [Provedor evdev (controles)](T11-provider-evdev.md) | claude | T01 | ⬜ prioridade menor |
+| T12 | [Provedor OpenRGB](T12-provider-openrgb.md) | hydrogen | T01 | ⏸ adiada |
 
 ## F3: Interface GTK4/libadwaita
 
@@ -45,7 +48,9 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 | T15 | [Formato e validação de perfis](T15-perfis-formato.md) | claude (líder) | T01 | ✅ |
 | T16 | [Executor de perfis via hidraw](T16-perfis-executor.md) | claude | T15, T04 | ⬜ |
 | T17 | [Protocolo do mouse Rapoo 24ae:1423](T17-protocolo-rapoo.md) | humano + hydrogen | T15 | ⬜ |
-| T18 | [Protocolo do teclado Akko 3151:502f / 36eb:1087](T18-protocolo-akko.md) | humano + hydrogen | T15 | ⬜ |
+| T18 | [Protocolo do teclado Akko (3151:502f com fio + dongle próprio)](T18-protocolo-akko.md) | humano + claude | T15 | ⬜ |
+| T20 | [Headset Akko S9 Ultra 36eb:1087: protocolo, bateria, sidetone e EQ](T20-headset-akko-s9.md) | humano + claude | T15 | ⬜ |
+| T21 | [Capacidades `Sidetone` e `Equalizer` (contrato)](T21-sidetone-eq.md) | claude (líder) | T20 | ⬜ |
 
 ## F5: Distribuição
 
@@ -56,9 +61,9 @@ O agente é o sugerido. O líder pode trocar ao despachar.
 ## Ordem sugerida das levas
 
 1. **Leva 1:** T01 (líder) em paralelo com T03 e T07.
-2. **Leva 2:** T02 (líder) em paralelo com T05, T08, T09, T10, T11, T12 e T15 (líder).
-   No máximo 2 subagentes por vez (cota). A cota do hydrogen acabou em 2026-11-25: T05 e T08 foram
-   com Claude; T09–T12 ficam ⏸ na fila e saem com Claude, 2 por vez, nesta ordem: T09, T10, T12, T11.
-3. **Leva 3:** T04, T06, T16, T17, T18.
+2. **Leva 2:** T02 e T15 (líder), T05, T08 e T09. No máximo 2 subagentes por vez (cota).
+   T10 cancelada e T12 adiada (escopo). T11 passou para depois da leva 3 (prioridade menor).
+3. **Leva 3:** T04 e T06; depois T16. Em paralelo, com capturas do mantenedor: T17, T18 e T20 (e T21 depois da T20).
+   Depois: T11.
 4. **Leva 4:** T13, depois T14.
 5. **Leva 5:** T19.

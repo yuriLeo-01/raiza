@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{CapabilityValue, RaizaError};
 
-/// Valor numérico com limites: volume, brilho, contraste, DPI.
+/// Valor numérico com limites: volume, DPI.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Level {
     /// Valor atual.
@@ -111,7 +111,7 @@ pub enum ConnectionKind {
     Wireless,
     /// Bluetooth.
     Bluetooth,
-    /// Outro meio (ex.: HDMI/DisplayPort para monitores).
+    /// Outro meio.
     Other,
 }
 
@@ -175,20 +175,6 @@ pub enum Capability {
         /// Se aceita escrita.
         writable: bool,
     },
-    /// Brilho (ex.: monitor via DDC/CI).
-    Brightness {
-        /// Brilho atual e limites.
-        level: Level,
-        /// Se aceita escrita.
-        writable: bool,
-    },
-    /// Contraste (ex.: monitor via DDC/CI).
-    Contrast {
-        /// Contraste atual e limites.
-        level: Level,
-        /// Se aceita escrita.
-        writable: bool,
-    },
     /// Vibração (controles). Escrever dispara um teste de vibração.
     Rumble {
         /// Maior duração aceita para um pulso, em milissegundos.
@@ -218,8 +204,6 @@ impl Capability {
             Capability::Rgb { .. } => CapabilityKind::Rgb,
             Capability::Volume { .. } => CapabilityKind::Volume,
             Capability::Mute { .. } => CapabilityKind::Mute,
-            Capability::Brightness { .. } => CapabilityKind::Brightness,
-            Capability::Contrast { .. } => CapabilityKind::Contrast,
             Capability::Rumble { .. } => CapabilityKind::Rumble,
             Capability::Connection { .. } => CapabilityKind::Connection,
         }
@@ -234,8 +218,6 @@ impl Capability {
             | Capability::Rgb { writable, .. }
             | Capability::Volume { writable, .. }
             | Capability::Mute { writable, .. }
-            | Capability::Brightness { writable, .. }
-            | Capability::Contrast { writable, .. }
             | Capability::Rumble { writable, .. }
             | Capability::Connection { writable, .. } => *writable,
         }
@@ -250,8 +232,6 @@ impl Capability {
             | Capability::Rgb { writable, .. }
             | Capability::Volume { writable, .. }
             | Capability::Mute { writable, .. }
-            | Capability::Brightness { writable, .. }
-            | Capability::Contrast { writable, .. }
             | Capability::Rumble { writable, .. }
             | Capability::Connection { writable, .. } => *writable = false,
         }
@@ -266,9 +246,7 @@ impl Capability {
         value.validate(self)?;
         match (self, value) {
             (Capability::Dpi { level, .. }, CapabilityValue::Dpi(v))
-            | (Capability::Volume { level, .. }, CapabilityValue::Volume(v))
-            | (Capability::Brightness { level, .. }, CapabilityValue::Brightness(v))
-            | (Capability::Contrast { level, .. }, CapabilityValue::Contrast(v)) => {
+            | (Capability::Volume { level, .. }, CapabilityValue::Volume(v)) => {
                 level.current = *v;
             }
             (Capability::PollingRate { current, .. }, CapabilityValue::PollingRate(v)) => {
@@ -322,10 +300,6 @@ pub enum CapabilityKind {
     Volume,
     /// Veja [`Capability::Mute`].
     Mute,
-    /// Veja [`Capability::Brightness`].
-    Brightness,
-    /// Veja [`Capability::Contrast`].
-    Contrast,
     /// Veja [`Capability::Rumble`].
     Rumble,
     /// Veja [`Capability::Connection`].
@@ -334,15 +308,13 @@ pub enum CapabilityKind {
 
 impl CapabilityKind {
     /// Todos os tipos, na ordem de declaração.
-    pub const ALL: [CapabilityKind; 10] = [
+    pub const ALL: [CapabilityKind; 8] = [
         CapabilityKind::Battery,
         CapabilityKind::Dpi,
         CapabilityKind::PollingRate,
         CapabilityKind::Rgb,
         CapabilityKind::Volume,
         CapabilityKind::Mute,
-        CapabilityKind::Brightness,
-        CapabilityKind::Contrast,
         CapabilityKind::Rumble,
         CapabilityKind::Connection,
     ];
@@ -356,8 +328,6 @@ impl CapabilityKind {
             CapabilityKind::Rgb => "rgb",
             CapabilityKind::Volume => "volume",
             CapabilityKind::Mute => "mute",
-            CapabilityKind::Brightness => "brightness",
-            CapabilityKind::Contrast => "contrast",
             CapabilityKind::Rumble => "rumble",
             CapabilityKind::Connection => "connection",
         }
@@ -433,24 +403,6 @@ pub(crate) mod tests {
             },
             Capability::Mute {
                 muted: false,
-                writable: true,
-            },
-            Capability::Brightness {
-                level: Level {
-                    current: 70,
-                    min: 0,
-                    max: 100,
-                    step: 1,
-                },
-                writable: true,
-            },
-            Capability::Contrast {
-                level: Level {
-                    current: 70,
-                    min: 0,
-                    max: 100,
-                    step: 0,
-                },
                 writable: true,
             },
             Capability::Rumble {

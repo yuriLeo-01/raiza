@@ -9,6 +9,12 @@ use serde::{Deserialize, Serialize};
 use crate::{Capability, CapabilityKind, CapabilityValue, DeviceId, DeviceInfo, RaizaError};
 
 /// Evento emitido por um provedor.
+///
+/// Um provedor pode anunciar que um dispositivo já conhecido mudou (outro nome, tipo ou
+/// conjunto de capacidades) como `DeviceRemoved` seguido de `DeviceAdded` com o mesmo id.
+/// O daemon deve tratar esse par como **atualização**: substituir o `DeviceInfo` daquele
+/// provedor, sem perder as configurações salvas do dispositivo. Para só mudar o valor de
+/// uma capacidade, use `CapabilityChanged`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "event", rename_all = "snake_case")]
 pub enum ProviderEvent {

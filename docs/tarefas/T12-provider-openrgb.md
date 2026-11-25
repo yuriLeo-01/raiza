@@ -1,3 +1,5 @@
+> ⏸ **Adiada em 2026-11-25** por decisão de escopo do mantenedor.
+
 # T12: Provedor OpenRGB
 
 - **Fase:** F2

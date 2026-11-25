@@ -22,7 +22,7 @@ sudo install -Dm755 target/release/raizad /usr/bin/raizad
 
 ## 2. Regra udev (acesso sem root)
 
-A regra [`70-raiza.rules`](../packaging/udev/70-raiza.rules) aplica `TAG+="uaccess"` apenas aos dispositivos HID explicitamente suportados e aos barramentos `/dev/i2c-*` das controladoras de vídeo, usados por monitores DDC/CI. O SMBus da placa-mãe (memória RAM, sensores) **não** é liberado. Isso concede permissão de leitura/escrita apenas ao usuário ativo da sessão local via `systemd-logind`, sem liberar todo `/dev/hidraw*`.
+A regra [`70-raiza.rules`](../packaging/udev/70-raiza.rules) aplica `TAG+="uaccess"` apenas aos dispositivos HID explicitamente suportados. Isso concede permissão de leitura/escrita apenas ao usuário ativo da sessão local via `systemd-logind`, sem liberar todo `/dev/hidraw*`.
 
 Instale e recarregue as regras:
 
@@ -32,40 +32,6 @@ sudo udevadm control --reload && sudo udevadm trigger
 ```
 
 Se algum dispositivo USB já estiver conectado e a permissão não atualizar imediatamente, desconecte e reconecte o cabo/dongle.
-
-### DDC/CI: módulo `i2c-dev` e alternativa com grupo `i2c`
-
-Para controlar brilho e contraste de monitores via DDC/CI (`/dev/i2c-*`), o módulo de kernel `i2c-dev` precisa estar carregado:
-
-```sh
-# Carregar na sessão atual
-sudo modprobe i2c-dev
-
-# Carregar automaticamente em todo boot
-echo "i2c-dev" | sudo tee /etc/modules-load.d/i2c-dev.conf
-```
-
-Por padrão, a regra usa `TAG+="uaccess"` para liberar `/dev/i2c-*` ao usuário da sessão ativa. Caso você esteja em um ambiente sem `systemd-logind` ou acesse a máquina remotamente e prefira controle por grupo:
-
-1. Crie o grupo `i2c` (se ainda não existir) e adicione seu usuário:
-
-   ```sh
-   sudo groupadd -f i2c
-   sudo usermod -aG i2c "$USER"
-   ```
-
-2. Em `/etc/udev/rules.d/70-raiza.rules`, substitua as regras de `i2c-dev` pelas alternativas comentadas no arquivo (mantenha o filtro `ATTRS{class}`):
-
-   ```udev
-   SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", ATTRS{class}=="0x030000", GROUP="i2c", MODE="0660"
-   SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", ATTRS{class}=="0x038000", GROUP="i2c", MODE="0660"
-   ```
-
-3. Recarregue o udev e faça logout/login para aplicar o novo grupo à sua sessão:
-
-   ```sh
-   sudo udevadm control --reload && sudo udevadm trigger
-   ```
 
 ## 3. Unidade systemd do usuário e ativação D-Bus
 
@@ -85,4 +51,4 @@ Com isso, o `raizad` sobe automaticamente com a sessão do usuário e também po
 - **Daemon:** `systemctl --user status raizad`
 - **Regra udev (sintaxe):** `udevadm verify packaging/udev/70-raiza.rules`
 - **Unidade systemd (sintaxe):** `systemd-analyze --user verify packaging/systemd/raizad.service`
-- **Permissões efetivas nos dispositivos:** `getfacl /dev/hidraw* /dev/i2c-*` (verifique a presença de `user:<seu-usuario>:rw-` nos dispositivos esperados)
+- **Permissões efetivas nos dispositivos:** `getfacl /dev/hidraw*` (verifique a presença de `user:<seu-usuario>:rw-` nos dispositivos esperados)

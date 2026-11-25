@@ -51,13 +51,29 @@ impl Profile {
         usage_page: Option<u16>,
         usage: Option<u16>,
     ) -> bool {
-        let m = &self.matcher;
+        self.match_index(vendor_id, product_id, interface, usage_page, usage)
+            .is_some()
+    }
+
+    /// Qual entrada de `match` serve para este dispositivo/interface (`0` = conexão
+    /// preferida). Com duas conexões do mesmo aparelho presentes ao mesmo tempo, o
+    /// executor anuncia as capacidades só na de menor índice.
+    pub fn match_index(
+        &self,
+        vendor_id: u16,
+        product_id: u16,
+        interface: Option<u8>,
+        usage_page: Option<u16>,
+        usage: Option<u16>,
+    ) -> Option<usize> {
         let opt = |want: Option<u16>, got: Option<u16>| want.is_none() || want == got;
-        m.vendor_id.0 == vendor_id
-            && m.product_id.0 == product_id
-            && (m.interface.is_none() || m.interface == interface)
-            && opt(m.usage_page.map(|h| h.0), usage_page)
-            && opt(m.usage.map(|h| h.0), usage)
+        self.matcher.0.iter().position(|m| {
+            m.vendor_id.0 == vendor_id
+                && m.product_id.0 == product_id
+                && (m.interface.is_none() || m.interface == interface)
+                && opt(m.usage_page.map(|h| h.0), usage_page)
+                && opt(m.usage.map(|h| h.0), usage)
+        })
     }
 
     /// Capacidades descritas, com estado inicial (antes de qualquer leitura): DPI no

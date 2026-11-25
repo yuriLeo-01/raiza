@@ -25,11 +25,40 @@ pub struct Profile {
     pub verified: bool,
     /// Quem escreveu ou capturou o protocolo. Não pode ser vazio.
     pub authors: Vec<String>,
-    /// Como reconhecer o dispositivo.
+    /// Como reconhecer o dispositivo. Um objeto, ou uma lista quando o mesmo aparelho
+    /// se conecta de mais de um jeito com o mesmo protocolo (ex.: teclado com cabo e com
+    /// dongle). A primeira entrada é a conexão preferida.
     #[serde(rename = "match")]
-    pub matcher: DeviceMatch,
+    pub matcher: Matchers,
     /// O que o perfil sabe ler e escrever.
     pub capabilities: ProfileCapabilities,
+}
+
+/// Uma ou mais identificações; no JSON, um objeto ou uma lista de objetos.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Matchers(pub Vec<DeviceMatch>);
+
+impl Serialize for Matchers {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        match self.0.as_slice() {
+            [one] => one.serialize(s),
+            many => many.serialize(s),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for Matchers {
+    // Manual (e não `untagged`) para preservar a mensagem de erro de cada campo.
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+        let value = serde_json::Value::deserialize(d)?;
+        let list = if value.is_array() {
+            serde_json::from_value(value).map_err(D::Error::custom)?
+        } else {
+            vec![serde_json::from_value(value).map_err(D::Error::custom)?]
+        };
+        Ok(Matchers(list))
+    }
 }
 
 /// Identificação do dispositivo e da interface HID que recebe os comandos.

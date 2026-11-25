@@ -61,12 +61,22 @@ pub fn validate(p: &Profile) -> Result<(), ProfileError> {
         "authors",
         || "informe pelo menos um autor".into(),
     )?;
-    ensure(p.matcher.vendor_id.0 != 0, "match.vendor_id", || {
-        "não pode ser 0000".into()
-    })?;
-    ensure(p.matcher.product_id.0 != 0, "match.product_id", || {
-        "não pode ser 0000".into()
-    })?;
+    ensure(!p.matcher.0.is_empty(), "match", || "lista vazia".into())?;
+    for (i, m) in p.matcher.0.iter().enumerate() {
+        ensure(m.vendor_id.0 != 0, &format!("match[{i}].vendor_id"), || {
+            "não pode ser 0000".into()
+        })?;
+        ensure(
+            m.product_id.0 != 0,
+            &format!("match[{i}].product_id"),
+            || "não pode ser 0000".into(),
+        )?;
+        ensure(
+            !p.matcher.0[..i].contains(m),
+            &format!("match[{i}]"),
+            || "repetido".into(),
+        )?;
+    }
 
     let c = &p.capabilities;
     ensure(

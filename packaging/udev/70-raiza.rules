@@ -9,8 +9,8 @@ ACTION=="remove", GOTO="raiza_end"
 
 # --- Dispositivos HID (/dev/hidraw*) ---
 # Pilar 1: liberar apenas os pares vendor:product explícitos, nunca todo hidraw.
-# Dispositivos atendidos por PipeWire (ex.: 3142:a010) ou DDC/CI (ex.: 043e:9a39)
-# não entram nesta regra.
+# O microfone fifine (3142:a010) é atendido pelo PipeWire e não entra nesta regra.
+# Monitores estão fora do escopo do Raiza: nenhuma regra para /dev/i2c-*.
 
 # Rapoo, mouse (24ae:1423)
 SUBSYSTEM=="hidraw", ATTRS{idVendor}=="24ae", ATTRS{idProduct}=="1423", TAG+="uaccess"
@@ -18,23 +18,7 @@ SUBSYSTEM=="hidraw", ATTRS{idVendor}=="24ae", ATTRS{idProduct}=="1423", TAG+="ua
 # Akko, teclado com fio (3151:502f)
 SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3151", ATTRS{idProduct}=="502f", TAG+="uaccess"
 
-# Akko S9 Ultra, dongle 2.4 GHz (36eb:1087)
+# Akko S9 Ultra, headset sem fio (dongle 2.4 GHz) (36eb:1087)
 SUBSYSTEM=="hidraw", ATTRS{idVendor}=="36eb", ATTRS{idProduct}=="1087", TAG+="uaccess"
-
-# JIGUANG, controlador ARGB (1a86:e30b)
-SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="e30b", TAG+="uaccess"
-
-# --- Monitores DDC/CI (/dev/i2c-*) ---
-# Requer o módulo de kernel i2c-dev carregado (veja docs/INSTALACAO.md).
-# Pilar 1: só barramentos de controladoras de vídeo (classe PCI 0x030000 VGA ou
-# 0x038000 display), onde ficam os canais DDC. Nunca libere o SMBus da placa-mãe
-# (ex.: PIIX4, classe 0x0c0500): uma escrita ali pode corromper a SPD da memória RAM.
-SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", ATTRS{class}=="0x030000", TAG+="uaccess"
-SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", ATTRS{class}=="0x038000", TAG+="uaccess"
-
-# Alternativa sem uaccess (para uso fora de sessão local ou com grupo dedicado),
-# com o mesmo filtro de classe:
-# SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", ATTRS{class}=="0x030000", GROUP="i2c", MODE="0660"
-# SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", ATTRS{class}=="0x038000", GROUP="i2c", MODE="0660"
 
 LABEL="raiza_end"

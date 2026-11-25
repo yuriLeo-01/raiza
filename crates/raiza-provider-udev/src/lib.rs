@@ -8,7 +8,7 @@
 //! Camadas:
 //! - [`source`]: I/O com o udev ([`SystemUdev`]) atrás da trait [`UdevSource`];
 //! - [`tree`]: o retrato da árvore udev, serializável em JSON (fixtures de teste);
-//! - [`scan`]: lógica pura que transforma a árvore em dispositivos;
+//! - [`scan()`]: lógica pura que transforma a árvore em dispositivos;
 //! - [`UdevProvider`]: a implementação de [`raiza_core::Provider`].
 
 #![warn(missing_docs)]
@@ -19,7 +19,7 @@ pub mod source;
 pub mod tree;
 
 pub use provider::{UdevProvider, diff};
-pub use scan::scan;
+pub use scan::{IGNORED_USB, scan};
 pub use source::{ChangeStream, SystemUdev, UdevSource};
 pub use tree::{Node, Tree};
 

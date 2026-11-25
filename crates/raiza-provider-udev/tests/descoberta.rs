@@ -42,16 +42,11 @@ fn tres_hidraw_do_mesmo_teclado_viram_um_keyboard() {
 #[test]
 fn hub_pendrive_bluetooth_e_webcam_interna_sao_ignorados() {
     let devices = scan(&arvore("hub_e_pendrive.json"));
-    // Ficam o mouse atrás do hub e o controle do monitor (porta fixa, mas dentro de um
-    // hub externo e com HID).
-    assert_eq!(
-        ids(&devices),
-        ["usb:043e:9a39:SERIAL-LG-1", "usb:24ae:1423:RAPOO-TESTE-1"]
-    );
-    assert_eq!(devices[0].kind, DeviceKind::Other);
-    assert_eq!(devices[0].vendor.as_deref(), Some("LG Electronics Inc."));
+    // Fica só o mouse atrás do hub. O controle do monitor LG (043e:9a39) é ignorado:
+    // monitores estão fora do escopo (lista IGNORED_USB).
+    assert_eq!(ids(&devices), ["usb:24ae:1423:RAPOO-TESTE-1"]);
     // Mouse com interface de teclado: vale o protocolo de boot da primeira interface.
-    assert_eq!(devices[1].kind, DeviceKind::Mouse);
+    assert_eq!(devices[0].kind, DeviceKind::Mouse);
 }
 
 #[test]

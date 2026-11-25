@@ -13,7 +13,7 @@ Crate `udev` (sem root). Subsistemas relevantes: `hidraw`, `input`, `usb`. Para 
 
 Este é o provedor **genérico e de menor prioridade**: garante que todo periférico apareça na lista. As outras capacidades vêm de provedores específicos, que se fundem com este pelo `DeviceId`.
 
-Dispositivos reais do mantenedor, bons para testar: Rapoo 24ae:1423 (mouse), Akko 3151:502f (teclado com fio), Akko S9 Ultra dongle 36eb:1087, fifine 3142:a010 (microfone), LG 27UP850 043e:9a39 (porta USB de controle do monitor; pode aparecer como `Other`) e JIGUANG ARGB 1a86:e30b.
+Dispositivos reais do mantenedor, bons para testar: Rapoo 24ae:1423 (mouse), Akko 3151:502f (teclado com fio), dongle do headset Akko S9 Ultra 36eb:1087, fifine 3142:a010 (microfone), LG 27UP850 043e:9a39 (porta USB de controle do monitor: **ignorada**, monitores fora do escopo; lista `IGNORED_USB`) e JIGUANG ARGB 1a86:e30b.
 
 ## Contrato com o `raiza-core` (vale para todo provedor)
 - Crate novo em `crates/raiza-provider-<nome>/`, com `raiza-core = { workspace = true }`. Para testes, use `raiza-core = { workspace = true, features = ["mock"] }` em `[dev-dependencies]` se precisar do `MockProvider`.

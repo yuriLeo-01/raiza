@@ -8,13 +8,15 @@ raizad ◄──── D-Bus ───────┤
   │
   ├── registro de provedores
   │     ├── udev        → descoberta e hotplug de dispositivos
-  │     ├── bluez       → conexão Bluetooth, bateria de headsets/controles
+  │     ├── bluez       → conexão Bluetooth, bateria de headsets
   │     ├── upower      → bateria de mouses/teclados sem fio
   │     ├── pipewire    → volume e mudo de microfones/headsets
-  │     ├── ddc         → brilho/contraste de monitores (DDC/CI)
-  │     ├── evdev       → controles: bateria, teste de vibração
-  │     ├── openrgb     → RGB via servidor SDK do OpenRGB, se instalado
+  │     ├── evdev       → controles: bateria, teste de vibração (prioridade menor)
+  │     ├── openrgb     → RGB via OpenRGB (adiado)
   │     └── hid-perfis  → motor de perfis JSON via /dev/hidraw*
+
+  Monitores estão fora do escopo (docs/PILARES.md): não há provedor DDC/CI, e o udev
+  ignora portas USB de controle de monitor.
   │
   └── armazenamento de configurações (~/.config/raiza/) e reaplicação ao plugar
 ```
@@ -34,11 +36,12 @@ raizad ◄──── D-Bus ───────┤
 
 - **`DeviceId`**: id estável, serializado como string canônica:
   `usb:VID:PID:instância` (serial, ou índice estável), `bt:AA:BB:CC:DD:EE:FF` (só o MAC,
-  para BlueZ e PipeWire chegarem ao mesmo id), `display:chave-do-EDID` e `other:provedor:chave`.
+  para BlueZ e PipeWire chegarem ao mesmo id) e `other:provedor:chave`.
 - **`DeviceInfo`**: id, nome, fabricante, `DeviceKind` (mouse, keyboard, headset, gamepad,
-  microphone, monitor, rgb_controller, other), `providers` (em ordem de prioridade) e capacidades.
+  microphone, rgb_controller, other), `providers` (em ordem de prioridade) e capacidades.
 - **`Capability`**: algo que o dispositivo sabe fazer, com valor atual, limites e a flag `writable`:
-  `Battery`, `Dpi`, `PollingRate`, `Rgb`, `Volume`, `Mute`, `Brightness`, `Contrast`, `Rumble`, `Connection`.
+  `Battery`, `Dpi`, `PollingRate`, `Rgb`, `Volume`, `Mute`, `Rumble`, `Connection`. `Sidetone` e
+  `Equalizer` entram com o headset Akko S9 Ultra (T20/T21).
   Bateria e conexão são sempre somente leitura.
 - **`CapabilityValue`**: o que se envia num `set`. É validado contra a capacidade
   (`DeviceInfo::validate`) antes de chegar ao provedor. Erros: `Unsupported`, `ReadOnly`, `OutOfRange`.
@@ -58,16 +61,28 @@ A fusão só funciona se todo provedor chegar ao **mesmo** id para o mesmo apare
 |---|---|---|
 | USB (com fio ou dongle) | `DeviceId::usb(vid, pid, DeviceId::usb_instance(serial, porta, portas_do_mesmo_modelo_sem_serial))` | Suba no sysfs até o dispositivo USB pai (`/sys/bus/usb/devices/<porta>`, com `idVendor`, `idProduct`, `serial`) |
 | Bluetooth | `DeviceId::bluetooth(mac)` | BlueZ: `Address`; PipeWire: `api.bluez5.address`; evdev/HID: atributo `uniq` |
-| Monitor (DDC/CI) | `DeviceId::display(fabricante_pnp, código_produto, serial)` | EDID |
 | Sem nada disso | `DeviceId::Other { provider, key }` | Chave estável do próprio provedor (não funde) |
 
 Nunca invente outro formato de instância USB: use `DeviceId::usb_instance`.
+
+**Um aparelho, duas conexões** (ex.: teclado com cabo e com dongle próprio): cada conexão tem
+o próprio `DeviceId`, o que mantém a fusão com o `udev` em cada uma. Se o protocolo é o mesmo,
+um único perfil HID lista as duas em `match`, e a primeira é a preferida. Com as duas presentes
+ao mesmo tempo, o `hid-perfis` anuncia as capacidades só na preferida, para a interface não
+mostrar dois controles do mesmo aparelho. Limitação conhecida: as configurações salvas são por
+`DeviceId`, então não acompanham o aparelho de uma conexão para a outra.
+
+### Atualização de um dispositivo
+
+Um provedor pode anunciar que um dispositivo mudou (nome, tipo ou capacidades) como
+`DeviceRemoved` seguido de `DeviceAdded` com o mesmo id. O daemon trata o par como
+atualização do `DeviceInfo` daquele provedor, sem apagar as configurações salvas.
 
 ### Prioridade dos provedores
 
 O daemon registra os provedores nesta ordem. Na fusão, para cada capacidade, vence o primeiro:
 
-1. `hid-perfis` 2. `openrgb` 3. `bluez` 4. `upower` 5. `pipewire` 6. `ddc` 7. `evdev` 8. `udev`
+1. `hid-perfis` 2. `openrgb` (adiado) 3. `bluez` 4. `upower` 5. `pipewire` 6. `evdev` 7. `udev`
 
 Os específicos vêm antes dos genéricos. O `udev` vem por último: ele só garante que todo
 aparelho apareça, com `Connection` somente leitura.

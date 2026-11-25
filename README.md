@@ -2,7 +2,7 @@
 
 **Um hub único para gerenciar seus periféricos no Linux, de qualquer marca, mesmo sem suporte do fabricante.**
 
-Mouse, teclado, headset, controle, microfone, monitor e RGB, tudo num lugar só, com
+Mouse, teclado, headset e microfone (e, depois, controles), tudo num lugar só, com
 interface nativa do GNOME (e, no futuro, do KDE).
 
 > 🚧 **Em planejamento.** Nada funciona ainda. Acompanhe o roadmap em [`docs/tarefas/README.md`](docs/tarefas/README.md).
@@ -20,9 +20,7 @@ protocolo em **perfis JSON** que qualquer pessoa pode contribuir.
 raizad (daemon Rust) ── D-Bus ──► raiza-gtk (GTK4/libadwaita) · raiza-ctl (CLI)
    ├── BlueZ / UPower   → Bluetooth e bateria
    ├── PipeWire         → volume e mudo
-   ├── DDC/CI           → brilho do monitor
-   ├── evdev            → controles
-   ├── OpenRGB          → RGB
+   ├── evdev            → controles (prioridade menor)
    └── perfis HID       → dispositivos sem suporte, via /dev/hidraw
 ```
 

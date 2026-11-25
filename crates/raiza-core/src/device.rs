@@ -21,8 +21,6 @@ pub enum DeviceKind {
     Gamepad,
     /// Microfone.
     Microphone,
-    /// Monitor.
-    Monitor,
     /// Controlador de iluminação RGB.
     RgbController,
     /// Qualquer outro.
@@ -96,7 +94,6 @@ mod tests {
             DeviceKind::Headset,
             DeviceKind::Gamepad,
             DeviceKind::Microphone,
-            DeviceKind::Monitor,
             DeviceKind::RgbController,
             DeviceKind::Other,
         ] {

@@ -1,3 +1,5 @@
+> ❌ **Cancelada em 2026-11-25:** monitores estão fora do escopo (docs/PILARES.md).
+
 # T10: Provedor DDC/CI (monitores)
 
 - **Fase:** F2

@@ -1,6 +1,6 @@
 //! Retrato da árvore udev: o que a camada de I/O entrega para a lógica de descoberta.
 //!
-//! A lógica de [`crate::scan`] só enxerga um [`Tree`]. Em produção ele vem do udev
+//! A lógica de [`crate::scan()`] só enxerga um [`Tree`]. Em produção ele vem do udev
 //! ([`crate::SystemUdev`]); nos testes, de um arquivo JSON ([`Tree::from_json`]).
 
 use std::collections::BTreeMap;

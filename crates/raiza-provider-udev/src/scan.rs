@@ -22,6 +22,17 @@ const CLASS_MASS_STORAGE: &str = "08";
 const CLASS_HUB: &str = "09";
 const CLASS_WIRELESS: &str = "e0";
 
+/// Aparelhos USB fora do escopo do Raiza, ignorados pelo vendor:product.
+///
+/// Monitores estão fora do escopo (veja `docs/PILARES.md`). Muitos expõem uma porta USB de
+/// controle com HID de fabricante (usage page `ff00`), sem nada que a distinga de um
+/// periférico. Por isso a lista é explícita: acrescente aqui outras portas de controle de
+/// monitor, com um comentário.
+pub const IGNORED_USB: &[(u16, u16)] = &[
+    // LG Monitor Controls (LG 27UP850 e outros monitores LG).
+    (0x043e, 0x9a39),
+];
+
 /// Lista os periféricos da árvore, em ordem de id.
 pub fn scan(tree: &Tree) -> Vec<DeviceInfo> {
     let usb_devices: Vec<&Node> = tree.nodes().filter(|n| n.is_usb_device()).collect();
@@ -114,6 +125,9 @@ fn is_peripheral(tree: &Tree, dev: &Node) -> bool {
     // Root hub: `usbN`, sem hífen no nome.
     if !dev.sysname().contains('-') {
         return skip("root hub");
+    }
+    if usb_ids(dev).is_some_and(|ids| IGNORED_USB.contains(&ids)) {
+        return skip("fora do escopo (lista IGNORED_USB)");
     }
     let class = dev.attribute("bDeviceClass").unwrap_or_default();
     if [CLASS_HUB, CLASS_MASS_STORAGE, CLASS_WIRELESS].contains(&class) {

@@ -20,7 +20,7 @@ Ids e tipos simples vão como tipos D-Bus nativos. **Dispositivos, capacidades e
 como JSON dentro de uma string (`s`)**, no mesmo formato serde dos tipos do `raiza-core`.
 
 Por que JSON e não `a{sv}`:
-- `Capability` é um enum com 10 variantes e dados aninhados (zonas RGB, estágios de DPI). Mapear
+- `Capability` é um enum com 8 variantes e dados aninhados (zonas RGB, estágios de DPI). Mapear
   isso para `a{sv}` exige uma conversão manual nos dois sentidos, ou seja, um segundo contrato
   para manter em sincronia com o serde. O formato JSON já é testado com ida e volta no `raiza-core`.
 - Clientes em outras linguagens (QML/KDE, scripts) leem JSON com uma linha.
@@ -29,7 +29,7 @@ Por que JSON e não `a{sv}`:
 
 ### Formatos JSON
 
-`DeviceId` (string): `usb:24ae:1423:0`, `bt:AA:BB:CC:DD:EE:FF`, `display:GSM-5B09-123456`, `other:openrgb:0`.
+`DeviceId` (string): `usb:24ae:1423:0`, `bt:AA:BB:CC:DD:EE:FF`, `other:openrgb:0`.
 
 `DeviceInfo`:
 ```json
@@ -48,7 +48,7 @@ Por que JSON e não `a{sv}`:
 }
 ```
 
-`kind` do dispositivo: `mouse`, `keyboard`, `headset`, `gamepad`, `microphone`, `monitor`,
+`kind` do dispositivo: `mouse`, `keyboard`, `headset`, `gamepad`, `microphone`,
 `rgb_controller`, `other`.
 
 `Capability` (campo `kind` + dados):
@@ -59,7 +59,7 @@ Por que JSON e não `a{sv}`:
 | `dpi` | `level`, `stages`, `writable` |
 | `polling_rate` | `current` (Hz), `supported`, `writable` |
 | `rgb` | `zones` (`[{"name", "color": "#rrggbb"}]`), `modes`, `current_mode`, `writable` |
-| `volume`, `brightness`, `contrast` | `level`, `writable` |
+| `volume` | `level`, `writable` |
 | `mute` | `muted`, `writable` |
 | `rumble` | `max_duration_ms`, `writable` |
 | `connection` | `medium` (`wired`, `wireless`, `bluetooth`, `other`), `connected`, `writable` |
@@ -75,7 +75,6 @@ Por que JSON e não `a{sv}`:
 | `{"kind": "rgb", "value": {"zone": 0, "mode": "static", "color": "#00ff00"}}` | `zone` `null` = todas; `mode` ou `color` podem ser `null`, mas não os dois |
 | `{"kind": "volume", "value": 50}` | volume (%) |
 | `{"kind": "mute", "value": true}` | mudo |
-| `{"kind": "brightness", "value": 70}` / `{"kind": "contrast", "value": 70}` | monitor |
 | `{"kind": "rumble", "value": {"strength": 80, "duration_ms": 500}}` | pulso de vibração |
 | `{"kind": "connection", "value": false}` | conectar (`true`) ou desconectar (`false`) |
 
@@ -101,6 +100,10 @@ O daemon **sempre valida** o valor antes de chegar ao provedor (pilar 1). Uma ca
 
 Se um segundo provedor passa a atender um dispositivo que já existe, o daemon emite
 `CapabilityChanged` para cada capacidade nova, e não um novo `DeviceAdded`.
+
+O daemon pode emitir `DeviceRemoved` seguido de `DeviceAdded` com o mesmo id quando um
+dispositivo muda de nome, tipo ou conjunto de capacidades. Clientes devem tratar o par como
+atualização, por exemplo mantendo a página do dispositivo aberta.
 
 ## Erros
 

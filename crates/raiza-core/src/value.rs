@@ -34,10 +34,6 @@ pub enum CapabilityValue {
     Volume(u32),
     /// Liga ou desliga o mudo.
     Mute(bool),
-    /// Novo brilho.
-    Brightness(u32),
-    /// Novo contraste.
-    Contrast(u32),
     /// Conecta (`true`) ou desconecta (`false`).
     Connection(bool),
     /// Dispara um pulso de vibração.
@@ -58,8 +54,6 @@ impl CapabilityValue {
             CapabilityValue::Rgb(_) => CapabilityKind::Rgb,
             CapabilityValue::Volume(_) => CapabilityKind::Volume,
             CapabilityValue::Mute(_) => CapabilityKind::Mute,
-            CapabilityValue::Brightness(_) => CapabilityKind::Brightness,
-            CapabilityValue::Contrast(_) => CapabilityKind::Contrast,
             CapabilityValue::Rumble { .. } => CapabilityKind::Rumble,
             CapabilityValue::Connection(_) => CapabilityKind::Connection,
         }
@@ -81,9 +75,7 @@ impl CapabilityValue {
         let out_of_range = |detail: String| RaizaError::OutOfRange { kind, detail };
         match (self, capability) {
             (CapabilityValue::Dpi(v), Capability::Dpi { level, .. })
-            | (CapabilityValue::Volume(v), Capability::Volume { level, .. })
-            | (CapabilityValue::Brightness(v), Capability::Brightness { level, .. })
-            | (CapabilityValue::Contrast(v), Capability::Contrast { level, .. }) => {
+            | (CapabilityValue::Volume(v), Capability::Volume { level, .. }) => {
                 level.check(*v).map_err(out_of_range)
             }
             (CapabilityValue::PollingRate(v), Capability::PollingRate { supported, .. }) => {
@@ -167,8 +159,6 @@ mod tests {
             rgb(None, None, Some(VERDE)),
             CapabilityValue::Volume(150),
             CapabilityValue::Mute(true),
-            CapabilityValue::Brightness(0),
-            CapabilityValue::Contrast(37),
             CapabilityValue::Rumble {
                 strength: 100,
                 duration_ms: 2000,
@@ -209,7 +199,6 @@ mod tests {
             rgb(None, Some("arco-íris"), None),
             rgb(None, None, None),
             CapabilityValue::Volume(151),
-            CapabilityValue::Brightness(101),
             CapabilityValue::Rumble {
                 strength: 101,
                 duration_ms: 10,

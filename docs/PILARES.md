@@ -29,9 +29,10 @@ entrarem em conflito, vale a ordem da lista.
 - O daemon fica leve: pouca RAM, sem polling agressivo e orientado a eventos (udev, D-Bus).
 
 ### 3. Um hub para tudo
-- Uma interface só para mouse, teclado, headset, controle, microfone, monitor e RGB.
+- Uma interface só para os periféricos do dia a dia. **Foco: mouse, teclado, headset e
+  microfone.** Controles vêm depois, com prioridade menor. **Monitores estão fora do escopo.**
 - Cada dispositivo expõe **capacidades padronizadas** (bateria, DPI, RGB, volume,
-  mudo, brilho, vibração, conexão…). A interface desenha as telas a partir das
+  mudo, sidetone, equalização, vibração, conexão…). A interface desenha as telas a partir das
   capacidades, não da marca.
 - As interfaces são **nativas**: primeiro GTK4/libadwaita (GNOME), depois Kirigami (KDE).
   Todas são clientes do mesmo daemon via D-Bus.
@@ -43,7 +44,8 @@ entrarem em conflito, vale a ordem da lista.
 - Integrações mais complexas viram **provedores** em Rust que implementam um contrato do `raiza-core`.
 
 ### 5. Aproveitar o que já existe
-- Integrar com BlueZ, UPower, PipeWire, DDC/CI, evdev e OpenRGB em vez de reinventar.
+- Integrar com BlueZ, UPower, PipeWire e evdev em vez de reinventar. A integração com o
+  OpenRGB está adiada.
 - Engenharia reversa só para dispositivos que nenhum projeto suporta.
 
 ### 6. Aberto e documentado

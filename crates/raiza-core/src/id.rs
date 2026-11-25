@@ -17,7 +17,6 @@ use serde::{Deserialize, Serialize};
 /// |---|---|---|
 /// | [`DeviceId::Usb`] | `usb:VID:PID:instância` | `usb:24ae:1423:0` |
 /// | [`DeviceId::Bluetooth`] | `bt:MAC` | `bt:AA:BB:CC:DD:EE:FF` |
-/// | [`DeviceId::Display`] | `display:chave` | `display:GSM-5B09-123456` |
 /// | [`DeviceId::Other`] | `other:provedor:chave` | `other:openrgb:0` |
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(into = "String", try_from = "String")]
@@ -37,11 +36,6 @@ pub enum DeviceId {
     Bluetooth {
         /// Endereço no formato `AA:BB:CC:DD:EE:FF` (maiúsculas).
         address: String,
-    },
-    /// Monitor (DDC/CI), identificado pelos dados do EDID.
-    Display {
-        /// Fabricante, código de produto e serial do EDID, ex.: `GSM-5B09-123456`.
-        key: String,
     },
     /// Qualquer outro dispositivo, com chave definida pelo provedor.
     Other {
@@ -110,32 +104,6 @@ impl DeviceId {
         let index = ports.iter().position(|p| *p == port).unwrap_or(0);
         index.to_string()
     }
-
-    /// Cria um id de monitor a partir do EDID, no formato `display:FAB-PROD-SERIAL`.
-    ///
-    /// - `manufacturer`: id PNP de 3 letras do EDID (ex.: `GSM` para LG);
-    /// - `product_code`: código de produto do EDID (vira 4 dígitos hex maiúsculos);
-    /// - `serial`: o descritor de texto de serial do EDID, se houver; senão o número de
-    ///   série numérico em decimal; se nenhum existir, `0`.
-    pub fn display(
-        manufacturer: &str,
-        product_code: u16,
-        serial: &str,
-    ) -> Result<Self, ParseDeviceIdError> {
-        let valid = manufacturer.len() == 3 && manufacturer.chars().all(|c| c.is_ascii_uppercase());
-        if !valid {
-            return Err(ParseDeviceIdError(format!(
-                "fabricante EDID inválido: {manufacturer}"
-            )));
-        }
-        let serial = match serial.trim() {
-            "" => "0",
-            s => s,
-        };
-        Ok(DeviceId::Display {
-            key: format!("{manufacturer}-{product_code:04X}-{serial}"),
-        })
-    }
 }
 
 impl fmt::Display for DeviceId {
@@ -147,7 +115,6 @@ impl fmt::Display for DeviceId {
                 instance,
             } => write!(f, "usb:{vendor_id:04x}:{product_id:04x}:{instance}"),
             DeviceId::Bluetooth { address } => write!(f, "bt:{address}"),
-            DeviceId::Display { key } => write!(f, "display:{key}"),
             DeviceId::Other { provider, key } => write!(f, "other:{provider}:{key}"),
         }
     }
@@ -181,9 +148,6 @@ impl FromStr for DeviceId {
                 Ok(DeviceId::usb(vendor_id, product_id, instance))
             }
             "bt" => DeviceId::bluetooth(rest).map_err(|_| invalid()),
-            "display" => Ok(DeviceId::Display {
-                key: non_empty(rest)?,
-            }),
             "other" => {
                 let (provider, key) = rest.split_once(':').ok_or_else(invalid)?;
                 Ok(DeviceId::Other {
@@ -219,9 +183,6 @@ mod tests {
             DeviceId::usb(0x24ae, 0x1423, "0"),
             DeviceId::usb(0x3151, 0x502f, "SN:com:dois-pontos"),
             DeviceId::bluetooth("aa_bb_cc_dd_ee_ff").unwrap(),
-            DeviceId::Display {
-                key: "GSM-5B09-123456".into(),
-            },
             DeviceId::Other {
                 provider: "openrgb".into(),
                 key: "0".into(),
@@ -282,18 +243,6 @@ mod tests {
     }
 
     #[test]
-    fn id_de_monitor() {
-        let id = DeviceId::display("GSM", 0x5b09, "123456").unwrap();
-        assert_eq!(id.to_string(), "display:GSM-5B09-123456");
-        assert_eq!(
-            DeviceId::display("GSM", 0x5b09, " ").unwrap().to_string(),
-            "display:GSM-5B09-0"
-        );
-        assert!(DeviceId::display("gsm", 1, "1").is_err());
-        assert!(DeviceId::display("GSMX", 1, "1").is_err());
-    }
-
-    #[test]
     fn rejeita_invalidos() {
         for s in [
             "",
@@ -304,7 +253,7 @@ mod tests {
             "usb:24ae1:423:0",
             "bt:AA:BB",
             "bt:GG:BB:CC:DD:EE:FF",
-            "display:",
+            "display:GSM-5B09-1",
             "other:openrgb",
             "other::0",
             "pci:0",

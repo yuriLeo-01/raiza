@@ -47,7 +47,8 @@ Os perfis ficam em `profiles/<fabricante>/<modelo>.json` e são validados pelo c
 | Campo | Significado |
 |---|---|
 | `schema` | Versão do formato: `1` |
-| `kind` | `mouse`, `keyboard`, `headset`, `gamepad`, `microphone`, `monitor`, `rgb_controller`, `other` |
+| `kind` | `mouse`, `keyboard`, `headset`, `gamepad`, `microphone`, `rgb_controller`, `other` |
+| `match` | Um objeto, ou uma **lista** quando o mesmo aparelho se conecta de mais de um jeito com o mesmo protocolo (cabo e dongle). A primeira entrada é a conexão preferida |
 | `match.vendor_id`, `match.product_id` | IDs USB em hex (veja `lsusb`) |
 | `match.interface` | `bInterfaceNumber` da interface que recebe os comandos (veja `lsusb -v`) |
 | `match.usage_page`, `match.usage` | Opcionais, para desempatar interfaces. `ff00` costuma ser a de comandos do fabricante |
