@@ -19,9 +19,12 @@ pub struct Cli {
 pub enum Command {
     /// Lista os dispositivos conhecidos pelo daemon
     List {
-        /// Imprime o JSON do daemon, para scripts
+        /// Imprime o JSON do daemon, para scripts (sempre com todos os aparelhos)
         #[arg(long)]
         json: bool,
+        /// Mostra também os aparelhos sem controles (que só dizem "conectado")
+        #[arg(long)]
+        all: bool,
     },
     /// Mostra todas as capacidades de um dispositivo
     Get {
@@ -315,9 +318,9 @@ mod tests {
             let mut v = vec!["raiza-ctl"];
             v.extend_from_slice(args);
             match Cli::try_parse_from(v).unwrap().command {
-                Command::List { json } | Command::Watch { json } | Command::Get { json, .. } => {
-                    json
-                }
+                Command::List { json, .. }
+                | Command::Watch { json }
+                | Command::Get { json, .. } => json,
                 _ => panic!("subcomando inesperado"),
             }
         };

@@ -55,6 +55,8 @@ pub enum AppMsg {
     Select(DeviceId),
     /// Botão "Tentar de novo".
     Retry,
+    /// Mostrar (ou esconder) os aparelhos sem nada útil.
+    ShowAll(bool),
 }
 
 /// Resultados dos *commands*.
@@ -72,6 +74,7 @@ pub struct AppWidgets {
     content: adw::NavigationPage,
     sidebar: Sidebar,
     detail: Detail,
+    show_all: gtk::ToggleButton,
 }
 
 /// Quanto tempo um toast fica na tela.
@@ -126,6 +129,16 @@ impl App {
 
     /// Mostra o estado atual do modelo.
     fn render(&mut self, widgets: &mut AppWidgets) {
+        let hidden = self.devices.hidden_count();
+        widgets
+            .show_all
+            .set_tooltip_text(Some(&if widgets.show_all.is_active() {
+                "Esconder aparelhos sem controles".to_string()
+            } else if hidden > 0 {
+                format!("Mostrar todos os aparelhos ({hidden} sem controles escondidos)")
+            } else {
+                "Mostrar todos os aparelhos".to_string()
+            }));
         match &self.state {
             State::Loading => widgets.stack.set_visible_child_name(PAGE_LOADING),
             State::Problem(problem) => {
@@ -251,8 +264,21 @@ impl Component for App {
                 let _ = input.send(AppMsg::Select(id));
             }
         });
+        // Aparelhos que só dizem "conectado" ficam escondidos; este botão mostra todos.
+        let show_all = gtk::ToggleButton::builder()
+            .icon_name("view-reveal-symbolic")
+            .tooltip_text("Mostrar todos os aparelhos")
+            .build();
+        show_all.connect_toggled({
+            let input = sender.input_sender().clone();
+            move |b| {
+                let _ = input.send(AppMsg::ShowAll(b.is_active()));
+            }
+        });
+        let sidebar_header = adw::HeaderBar::new();
+        sidebar_header.pack_end(&show_all);
         let sidebar_view = adw::ToolbarView::new();
-        sidebar_view.add_top_bar(&adw::HeaderBar::new());
+        sidebar_view.add_top_bar(&sidebar_header);
         sidebar_view.set_content(Some(
             &gtk::ScrolledWindow::builder()
                 .hscrollbar_policy(gtk::PolicyType::Never)
@@ -327,6 +353,7 @@ impl Component for App {
             content,
             sidebar,
             detail,
+            show_all,
         };
         model.render(&mut widgets);
         model.start_session(&sender);
@@ -350,6 +377,10 @@ impl Component for App {
                 self.devices.select(Some(id));
                 self.render(widgets);
                 widgets.split.set_show_content(true);
+            }
+            AppMsg::ShowAll(show) => {
+                self.devices.set_show_all(show);
+                self.render(widgets);
             }
             AppMsg::Retry => {
                 self.client = None;

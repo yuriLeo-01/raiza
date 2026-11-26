@@ -56,6 +56,17 @@ impl DeviceInfo {
         self.capabilities.iter_mut().find(|c| c.kind() == kind)
     }
 
+    /// Se o dispositivo tem algo útil para mostrar ou controlar: alguma capacidade além da
+    /// conexão, ou uma conexão que aceita escrita (ex.: Bluetooth). Os que só dizem
+    /// "conectado" (hubs, controladoras sem nada ligado, a conexão que não está em uso de um
+    /// aparelho com cabo e dongle) ficam escondidos por padrão nas interfaces.
+    pub fn is_actionable(&self) -> bool {
+        self.capabilities.iter().any(|c| match c {
+            Capability::Connection { writable, .. } => *writable,
+            _ => true,
+        })
+    }
+
     /// Valida `value` contra a capacidade correspondente deste dispositivo.
     /// Sem a capacidade: [`RaizaError::Unsupported`]. Veja [`CapabilityValue::validate`].
     pub fn validate(&self, value: &CapabilityValue) -> Result<(), RaizaError> {
@@ -80,6 +91,24 @@ mod tests {
             providers: vec!["hid-perfis".into()],
             capabilities: exemplos(),
         }
+    }
+
+    #[test]
+    fn util_so_com_algo_alem_da_conexao() {
+        use crate::ConnectionKind;
+        let conexao = |writable| Capability::Connection {
+            medium: ConnectionKind::Wired,
+            connected: true,
+            writable,
+        };
+        let mut d = mouse();
+        assert!(d.is_actionable());
+        d.capabilities = vec![conexao(false)];
+        assert!(!d.is_actionable(), "só \"conectado\": escondido");
+        d.capabilities = vec![conexao(true)];
+        assert!(d.is_actionable(), "conectar/desconectar é útil");
+        d.capabilities = vec![];
+        assert!(!d.is_actionable());
     }
 
     #[test]

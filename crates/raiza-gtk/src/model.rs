@@ -60,6 +60,8 @@ pub struct Devices {
     entries: BTreeMap<DeviceId, Entry>,
     selected: Option<DeviceId>,
     next_token: u64,
+    /// Mostra também os aparelhos sem nada útil ([`DeviceInfo::is_actionable`]).
+    show_all: bool,
 }
 
 impl Devices {
@@ -156,9 +158,35 @@ impl Devices {
         self.entries.len()
     }
 
-    /// Se não há nenhum dispositivo.
+    /// Se não há nenhum dispositivo visível.
     pub fn is_empty(&self) -> bool {
-        self.entries.is_empty()
+        !self.entries.values().any(|e| self.visible(&e.device))
+    }
+
+    /// Quantos aparelhos estão escondidos por não ter nada útil.
+    pub fn hidden_count(&self) -> usize {
+        self.entries
+            .values()
+            .filter(|e| !self.visible(&e.device))
+            .count()
+    }
+
+    /// Mostra (ou volta a esconder) os aparelhos sem nada útil. Um selecionado que
+    /// some da lista perde a seleção.
+    pub fn set_show_all(&mut self, show_all: bool) {
+        self.show_all = show_all;
+        if let Some(id) = &self.selected
+            && !self
+                .entries
+                .get(id)
+                .is_some_and(|e| self.visible(&e.device))
+        {
+            self.selected = None;
+        }
+    }
+
+    fn visible(&self, device: &DeviceInfo) -> bool {
+        self.show_all || device.is_actionable()
     }
 
     /// Dispositivos agrupados por tipo, na ordem de [`KIND_ORDER`], e dentro de cada
@@ -172,7 +200,7 @@ impl Devices {
                     .entries
                     .values()
                     .map(|e| &e.device)
-                    .filter(|d| d.kind == kind)
+                    .filter(|d| d.kind == kind && self.visible(d))
                     .collect();
                 devices.sort_by_cached_key(|d| (d.name.to_lowercase(), d.id.clone()));
                 (!devices.is_empty()).then_some((kind, devices))
@@ -201,7 +229,12 @@ impl Devices {
     /// Se nada estiver selecionado, seleciona o primeiro da barra lateral.
     /// Devolve o selecionado.
     pub fn select_first_if_none(&mut self) -> Option<&DeviceId> {
-        if self.selected.is_none() {
+        let hidden = self
+            .selected
+            .as_ref()
+            .and_then(|id| self.entries.get(id))
+            .is_some_and(|e| !self.visible(&e.device));
+        if self.selected.is_none() || hidden {
             self.selected = self.ordered_ids().into_iter().next();
         }
         self.selected.as_ref()
@@ -266,6 +299,39 @@ pub(crate) mod tests {
         let mut m = Devices::default();
         m.reset(devices);
         m
+    }
+
+    /// Aparelho que só diz "conectado" (ex.: hub USB visto pelo udev).
+    fn so_conexao(key: &str) -> DeviceInfo {
+        let mut d = device(key, key, DeviceKind::Other);
+        d.capabilities
+            .retain(|c| c.kind() == CapabilityKind::Connection);
+        d
+    }
+
+    #[test]
+    fn esconde_aparelhos_sem_nada_util() {
+        let mut m = com(vec![
+            device("mouse", "Mouse", DeviceKind::Mouse),
+            so_conexao("hub"),
+        ]);
+        assert_eq!(m.ordered_ids(), [id("mouse")]);
+        assert_eq!(m.hidden_count(), 1);
+        assert!(!m.is_empty());
+
+        m.set_show_all(true);
+        assert_eq!(m.ordered_ids(), [id("mouse"), id("hub")]);
+        assert_eq!(m.hidden_count(), 0);
+
+        // O selecionado some ao voltar a esconder: a seleção passa para um visível.
+        m.select(Some(id("hub")));
+        m.set_show_all(false);
+        assert_eq!(m.selected(), None);
+        assert_eq!(m.select_first_if_none(), Some(&id("mouse")));
+
+        // Só aparelhos escondidos: a lista conta como vazia.
+        let so_hub = com(vec![so_conexao("hub")]);
+        assert!(so_hub.is_empty());
     }
 
     #[test]

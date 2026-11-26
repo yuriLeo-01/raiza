@@ -23,12 +23,21 @@ pub fn client_err(err: ClientError) -> anyhow::Error {
 /// Executa `command` com `client`, escrevendo o resultado em `out`.
 pub async fn run(client: &RaizaClient, command: Command, out: &mut dyn Write) -> Result<()> {
     match command {
-        Command::List { json } => {
+        Command::List { json, all } => {
             let devices = client.list_devices().await.map_err(client_err)?;
             if json {
                 writeln!(out, "{}", serde_json::to_string_pretty(&devices)?)?;
             } else {
-                write!(out, "{}", format::format_list(&devices))?;
+                let (shown, hidden): (Vec<_>, Vec<_>) =
+                    devices.into_iter().partition(|d| all || d.is_actionable());
+                write!(out, "{}", format::format_list(&shown))?;
+                if !hidden.is_empty() {
+                    writeln!(
+                        out,
+                        "({} sem controles escondido(s); use --all para ver)",
+                        hidden.len()
+                    )?;
+                }
             }
         }
         Command::Get { id, json } => {
