@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 Yuri França -->
+<component type="desktop-application">
+  <id>io.github.yurileo01.Raiza</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>Raiza</name>
+  <summary>Manage peripherals of any brand</summary>
+  <summary xml:lang="pt-BR">Gerencie periféricos de qualquer marca</summary>
+
+  <developer id="io.github.yurileo01">
+    <name>Yuri França</name>
+  </developer>
+
+  <description>
+    <p>
+      Raiza is a single hub for managing mice, keyboards, headsets, gamepads and RGB
+      lighting on Linux, regardless of the brand.
+    </p>
+    <p xml:lang="pt-BR">
+      O Raiza é um hub único para gerenciar mouses, teclados, headsets, controles e
+      iluminação RGB no Linux, de qualquer marca.
+    </p>
+    <ul>
+      <li>See every connected device grouped by type, with its battery level</li>
+      <li xml:lang="pt-BR">Veja cada dispositivo conectado, agrupado por tipo, com o nível da bateria</li>
+      <li>Check DPI, polling rate, lighting, volume and connection at a glance</li>
+      <li xml:lang="pt-BR">Confira DPI, taxa de atualização, iluminação, volume e conexão de relance</li>
+      <li>Updates live as devices are plugged in or changed</li>
+      <li xml:lang="pt-BR">Atualiza ao vivo quando dispositivos são conectados ou alterados</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">io.github.yurileo01.Raiza.desktop</launchable>
+  <provides>
+    <binary>raiza-gtk</binary>
+  </provides>
+
+  <url type="homepage">https://github.com/yuriLeo-01/raiza</url>
+  <url type="bugtracker">https://github.com/yuriLeo-01/raiza/issues</url>
+  <url type="vcs-browser">https://github.com/yuriLeo-01/raiza</url>
+
+  <categories>
+    <category>Settings</category>
+    <category>HardwareSettings</category>
+  </categories>
+
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="0.0.1" date="2026-11-26">
+      <description>
+        <p>First preview: device list and read-only details.</p>
+      </description>
+    </release>
+  </releases>
+</component>

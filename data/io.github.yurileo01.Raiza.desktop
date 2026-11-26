@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Raiza
+GenericName=Peripheral Manager
+GenericName[pt_BR]=Gerenciador de periféricos
+Comment=Manage mice, keyboards, headsets and other peripherals of any brand
+Comment[pt_BR]=Gerencie mouses, teclados, headsets e outros periféricos de qualquer marca
+Exec=raiza-gtk
+Icon=io.github.yurileo01.Raiza
+Terminal=false
+Categories=Settings;HardwareSettings;GTK;GNOME;
+Keywords=mouse;keyboard;headset;gamepad;dpi;rgb;battery;peripheral;
+Keywords[pt_BR]=mouse;teclado;headset;controle;dpi;rgb;bateria;periférico;
+StartupNotify=true
