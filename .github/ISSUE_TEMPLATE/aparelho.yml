@@ -1,5 +1,5 @@
-name: Suporte a aparelho
-description: Peça suporte a um periférico (ou a um recurso dele) que o Raiza ainda não conhece
+name: Suporte a aparelho / Device support
+description: Peça suporte a um periférico que o Raiza ainda não conhece / Request support for a peripheral Raiza does not know yet
 title: "[aparelho] "
 labels: ["aparelho"]
 body:

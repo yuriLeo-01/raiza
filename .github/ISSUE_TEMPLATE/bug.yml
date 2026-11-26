@@ -1,5 +1,5 @@
 name: Bug
-description: Algo não funciona como deveria
+description: Algo não funciona como deveria / Something does not work as expected
 title: "[bug] "
 labels: ["bug"]
 body:

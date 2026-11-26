@@ -2,7 +2,7 @@
 
 Cada arquivo descreve como o Raiza lê e escreve as capacidades de um modelo pelo `/dev/hidraw`.
 O formato está em [`docs/PERFIS.md`](../docs/PERFIS.md) e o schema em [`schema.json`](schema.json).
-Como contribuir um perfil: [`CONTRIBUTING.md`](../CONTRIBUTING.md#2-contribuir-um-perfil).
+Como contribuir um perfil: [`CONTRIBUTING.pt-BR.md`](../CONTRIBUTING.pt-BR.md#2-contribuir-um-perfil) ([English](../CONTRIBUTING.md#2-contributing-a-profile)).
 
 O pacote instala esta pasta em `/usr/share/raiza/profiles/`. Perfis próprios vão em
 `~/.local/share/raiza/profiles/`, e o daemon os recarrega sozinho quando o arquivo muda.

@@ -1,76 +1,81 @@
-# Como contribuir com o Raiza
+# Contributing to Raiza
 
-Obrigado pelo interesse! Há três jeitos principais de ajudar, do mais simples ao mais técnico.
+**English** · [Português](CONTRIBUTING.pt-BR.md)
 
-## 1. Pedir suporte a um aparelho
+Thanks for your interest! There are three main ways to help, from the simplest to the most
+technical. Issues and pull requests are welcome in English or Portuguese.
 
-Abra uma issue com o modelo **"Suporte a aparelho"**. As informações que mais ajudam:
+## 1. Requesting support for a device
 
-- o modelo exato (como aparece na caixa ou no site do fabricante);
-- a saída de `lsusb` com o aparelho plugado (a linha dele basta);
-- como ele se conecta: cabo, dongle 2.4 GHz, Bluetooth (alguns usam os três);
-- o que você gostaria de controlar (bateria, DPI, RGB…);
-- se existe software oficial (Windows, web) e se você sabe de algum projeto aberto que já
-  entenda o protocolo (OpenRGB, configuradores no GitHub etc.).
+Open an issue with the **"Suporte a aparelho"** (device support) template. The most useful
+information:
 
-## 2. Contribuir um perfil
+- the exact model (as printed on the box or the maker's website);
+- the output of `lsusb` with the device plugged in (its line is enough);
+- how it connects: cable, 2.4 GHz dongle, Bluetooth (some use all three);
+- what you'd like to control (battery, DPI, RGB…);
+- whether there's official software (Windows, web) and whether you know of an open project that
+  already understands the protocol (OpenRGB, configurators on GitHub, etc.).
 
-Um perfil é um JSON em `profiles/<marca>/` que descreve como ler e escrever as capacidades de um
-modelo pelo `/dev/hidraw`. Não precisa escrever código Rust. O formato completo está em
-[`docs/PERFIS.md`](docs/PERFIS.md), e o editor valida o arquivo pelo [`profiles/schema.json`](profiles/schema.json).
+## 2. Contributing a profile
 
-### De onde vêm os bytes
+A profile is a JSON file in `profiles/<brand>/` that describes how to read and write a model's
+capabilities through `/dev/hidraw`. No Rust code needed. The full format is in
+[`docs/PERFIS.md`](docs/PERFIS.md) (in Portuguese), and editors validate the file against
+[`profiles/schema.json`](profiles/schema.json).
 
-1. **Documentação aberta:** muitos protocolos já foram decifrados por outros projetos. Os perfis
-   atuais vieram de projetos assim (veja [`docs/protocolos/`](docs/protocolos/)). Cite sempre a
-   fonte e confira se a licença é compatível com a GPL-3.0.
-2. **Relatórios que o aparelho manda sozinho:** muitos mouses mandam um status periódico com
-   bateria e DPI. Dá para descobri-lo só escutando, sem enviar nada.
-3. **Capturas do software oficial:** usando `usbmon`/Wireshark com o software numa máquina virtual
-   Windows, com o USB repassado. É o caminho mais trabalhoso.
+### Where the bytes come from
 
-### O caminho de um perfil até gravar
+1. **Open documentation:** many protocols have already been decoded by other projects. The current
+   profiles came from projects like these (see [`docs/protocolos/`](docs/protocolos/)). Always cite
+   the source and check that its license is compatible with GPL-3.0.
+2. **Reports the device sends on its own:** many mice send a periodic status with battery and DPI.
+   You can find it just by listening, without sending anything.
+3. **Captures of the official software:** with `usbmon`/Wireshark and the software running in a
+   Windows virtual machine with USB passthrough. This is the most laborious path.
 
-1. Escreva o perfil com **`"verified": false`**. Assim ele é **somente leitura**: o Raiza só envia
-   consultas fixas descritas no perfil, e nunca escritas.
-2. Instale o perfil em `~/.local/share/raiza/profiles/` (o daemon recarrega sozinho) e confira os
-   valores com `raiza-ctl list`, **comparando com o software oficial**.
-3. Para liberar uma escrita, teste o comando no aparelho **uma vez, à mão**: grave um valor,
-   releia, confira no software oficial e volte ao valor original. Anote os bytes e o resultado em
-   `docs/protocolos/<aparelho>.md`.
-4. Só então o perfil passa a `"verified": true`. Na revisão, os mantenedores conferem o registro do
-   teste.
+### From a profile to writes
 
-### Regras de segurança (pilar 1)
+1. Write the profile with **`"verified": false`**. This makes it **read-only**: Raiza only sends
+   the fixed queries described in the profile, never writes.
+2. Install the profile in `~/.local/share/raiza/profiles/` (the daemon reloads it on its own) and
+   check the values with `raiza-ctl list`, **comparing them with the official software**.
+3. To enable a write, test the command on the device **once, by hand**: write a value, read it
+   back, check it in the official software and restore the original value. Record the bytes and the
+   result in `docs/protocolos/<device>.md`.
+4. Only then does the profile become `"verified": true`. During review, the maintainers check the
+   test record.
 
-- **Nunca** inclua comandos de atualização de firmware, bootloader ou apagamento de memória. A
-  validação bloqueia os padrões conhecidos, mas a responsabilidade é de quem escreve o perfil.
-- Grave o **mínimo** de bytes necessário. Se o software oficial grava um bloco inteiro, descubra o
-  que cada byte faz antes de copiar. No Rapoo, o bloco do polling também guardava a taxa de
-  varredura do sensor.
-- Quando o mesmo VID:PID é usado por aparelhos diferentes (comum em teclados), o perfil **precisa**
-  de `identify`.
-- Na dúvida, deixe somente leitura.
+### Safety rules (pillar 1)
 
-## 3. Contribuir código
+- **Never** include firmware update, bootloader or memory erase commands. Validation blocks the
+  known patterns, but the profile author is responsible.
+- Write the **minimum** number of bytes. If the official software writes a whole block, find out
+  what each byte does before copying it. On the Rapoo, the polling-rate block also held the sensor
+  scan rate.
+- When the same VID:PID is used by different devices (common with keyboards), the profile **must**
+  have `identify`.
+- When in doubt, keep it read-only.
 
-O Raiza é escrito em Rust (edição 2024). Leia antes:
+## 3. Contributing code
 
-- [`docs/PILARES.md`](docs/PILARES.md): as decisões que guiam o projeto;
-- [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md): crates, provedores e fusão;
-- [`AGENTS.md`](AGENTS.md), seção "Regras de código": sem `unwrap()` em caminho de hardware, I/O de
-  hardware atrás de uma trait injetável (para testar sem o aparelho), logs com `tracing`,
-  comentários e documentação em português e nomes de código em inglês.
+Raiza is written in Rust (2024 edition). Read first (in Portuguese):
 
-Para testar sem hardware, use o daemon falso:
+- [`docs/PILARES.md`](docs/PILARES.md): the principles that guide the project;
+- [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md): crates, providers and merging;
+- [`AGENTS.md`](AGENTS.md), "Regras de código" section: no `unwrap()` on hardware paths, hardware
+  I/O behind an injectable trait (so it can be tested without the device), logging with `tracing`,
+  comments and documentation in Portuguese, code identifiers in English.
+
+To test without hardware, use the fake daemon:
 
 ```sh
-systemctl --user stop raizad      # se o Raiza estiver instalado
+systemctl --user stop raizad      # if Raiza is installed
 cargo run -p raizad -- --mock
-cargo run -p raiza-gtk            # ou: cargo run -p raiza-ctl -- list
+cargo run -p raiza-gtk            # or: cargo run -p raiza-ctl -- list
 ```
 
-Antes de abrir o pull request, tudo isto precisa passar:
+Before opening a pull request, all of this must pass:
 
 ```sh
 cargo fmt --all --check
@@ -78,17 +83,16 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-features
 ```
 
-Os contratos públicos (`crates/raiza-core` e [`docs/DBUS.md`](docs/DBUS.md)) mudam com cuidado:
-abra uma issue para discutir antes.
+The public contracts (`crates/raiza-core` and [`docs/DBUS.md`](docs/DBUS.md)) change carefully:
+open an issue to discuss first.
 
-## Relatar um bug
+## Reporting a bug
 
-Use o modelo **"Bug"** e inclua:
+Use the **"Bug"** template and include:
 
-- `raiza-ctl list --json` (mostra o que o daemon vê);
-- `journalctl --user -u raizad --since "-10min"` (os logs do daemon);
-- a versão: `pacman -Q raiza-git` ou o commit, se compilou à mão;
-- o que você fez, o que esperava e o que aconteceu.
+- `raiza-ctl list --json` (shows what the daemon sees);
+- `journalctl --user -u raizad --since "-10min"` (the daemon logs);
+- the version: `pacman -Q raiza-git`, or the commit if you built it yourself;
+- what you did, what you expected and what happened.
 
-O `raiza-ctl list --json` traz os números de série dos aparelhos. Se preferir, apague-os antes de
-colar.
+`raiza-ctl list --json` includes device serial numbers. Feel free to remove them before pasting.
