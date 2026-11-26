@@ -6,6 +6,7 @@ use raiza_core::{
     Capability, ConnectionKind, DeviceId, DeviceInfo, DeviceKind, Level, Provider, RgbZone,
 };
 use raiza_provider_bluez::{BluezProvider, UpowerProvider};
+use raiza_provider_hid::{DirProfiles, HidProfilesProvider, SystemHid, Timeouts};
 use raiza_provider_pipewire::PipeWireProvider;
 use raiza_provider_udev::UdevProvider;
 
@@ -15,7 +16,7 @@ use raiza_provider_udev::UdevProvider;
 /// 1. `hid-perfis` 2. `openrgb` (adiado) 3. `bluez` 4. `upower` 5. `pipewire` 6. `evdev` 7. `udev`
 pub fn system_providers() -> Vec<Box<dyn Provider>> {
     vec![
-        // 1. hid-perfis (T16)
+        Box::new(hid_profiles()),
         // 2. openrgb (adiado)
         Box::new(BluezProvider::system()),
         Box::new(UpowerProvider::system()),
@@ -23,6 +24,21 @@ pub fn system_providers() -> Vec<Box<dyn Provider>> {
         // 6. evdev (T11)
         Box::new(UdevProvider::new()),
     ]
+}
+
+/// Executor de perfis HID. `RAIZA_PROFILES` (diretórios separados por `:`) vem antes dos
+/// diretórios padrão; útil para desenvolver com o `profiles/` do repositório:
+/// `RAIZA_PROFILES=$PWD/profiles cargo run -p raizad`.
+fn hid_profiles() -> HidProfilesProvider {
+    let mut dirs: Vec<std::path::PathBuf> = std::env::var_os("RAIZA_PROFILES")
+        .map(|v| std::env::split_paths(&v).collect())
+        .unwrap_or_default();
+    dirs.extend(DirProfiles::default_dirs());
+    HidProfilesProvider::with_parts(
+        SystemHid::new(),
+        DirProfiles::new(dirs),
+        Timeouts::default(),
+    )
 }
 
 /// Só o provedor falso, com dispositivos de demonstração (`raizad --mock`).

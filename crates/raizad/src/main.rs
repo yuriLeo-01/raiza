@@ -24,7 +24,8 @@ Opções:
   -h, --help         mostra esta ajuda
   -V, --version      mostra a versão
 
-Variáveis: RAIZA_LOG define o nível de log (ex.: info, debug, raizad=trace).";
+Variáveis: RAIZA_LOG define o nível de log (ex.: info, debug, raizad=trace).
+           RAIZA_PROFILES: diretórios de perfis HID (separados por :) antes dos padrão.";
 
 struct Args {
     mock: bool,

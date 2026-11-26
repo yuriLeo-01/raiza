@@ -1528,6 +1528,7 @@ dependencies = [
  "futures-util",
  "raiza-core",
  "raiza-provider-bluez",
+ "raiza-provider-hid",
  "raiza-provider-pipewire",
  "raiza-provider-udev",
  "serde",

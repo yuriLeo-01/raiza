@@ -32,10 +32,10 @@ Um provedor que carrega os perfis de `profiles/` e de `~/.local/share/raiza/prof
 Escrever perfis reais (T17, T18, T20). Registrar o provedor no `raizad` (o líder faz na integração).
 
 ## Critérios de aceite
-- [ ] Testes ponta a ponta com o HID falso: ler DPI, escrever DPI, recusar escrita com perfil não verificado
-- [ ] Teste: perfil com `identify` e resposta errada → nenhum relatório de escrita chega ao HID falso; resposta certa → escrita sai
-- [ ] Teste: resposta "ocupado" seguida de "pronto" é lida com sucesso; só "ocupado" dá erro depois do timeout
-- [ ] Teste: relatório espontâneo de bateria gera `CapabilityChanged`
-- [ ] Teste: cabo e dongle do mesmo perfil presentes juntos → capacidades só no cabo; desplugar o cabo → passam para o dongle
-- [ ] Sem `unsafe`
-- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam
+- [x] Testes ponta a ponta com o HID falso: ler DPI, escrever DPI, recusar escrita com perfil não verificado
+- [x] Teste: perfil com `identify` e resposta errada → nenhum relatório de escrita chega ao HID falso; resposta certa → escrita sai
+- [x] Teste: resposta "ocupado" seguida de "pronto" é lida com sucesso; só "ocupado" dá erro depois do timeout
+- [x] Teste: relatório espontâneo de bateria gera `CapabilityChanged`
+- [x] Teste: cabo e dongle do mesmo perfil presentes juntos → capacidades só no cabo; desplugar o cabo → passam para o dongle
+- [x] Sem `unsafe`
+- [x] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam
