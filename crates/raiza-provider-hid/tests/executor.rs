@@ -20,6 +20,7 @@ fn provedor(backend: &FakeBackend, perfis: Vec<Profile>) -> (Prov, FakeProfiles)
         response: RESPOSTA,
         spontaneous: Duration::from_millis(500),
         debounce: Duration::from_millis(20),
+        reread: Duration::from_millis(200),
     };
     (
         HidProfilesProvider::with_parts(backend.clone(), fonte.clone(), timeouts),
@@ -457,4 +458,23 @@ async fn meio_da_conexao_vem_do_match() {
     let (sem_meio, _, _) = mouse_no_cabo(perfil(|_| {})).await;
     let lista = sem_meio.discover().await.unwrap();
     assert!(lista[0].capability(CapabilityKind::Connection).is_none());
+}
+
+/// Leituras com consulta são repetidas sozinhas: um valor que muda no aparelho chega como
+/// `CapabilityChanged` sem ninguém pedir (ex.: bateria do headset caindo).
+#[tokio::test]
+async fn releitura_periodica_traz_valor_novo() {
+    let (p, _backend, mouse) = mouse_no_cabo(perfil(|_| {})).await;
+    let mut eventos = p.events();
+    mouse.with_state(|st| st.dpi_raw = 64);
+    let e = next_event(&mut eventos, 2000)
+        .await
+        .expect("evento da releitura");
+    match e {
+        raiza_core::ProviderEvent::CapabilityChanged { id, capability } => {
+            assert_eq!(id, id_cabo());
+            assert_eq!(dpi(&capability), (3200, true));
+        }
+        outro => panic!("esperava CapabilityChanged: {outro:?}"),
+    }
 }

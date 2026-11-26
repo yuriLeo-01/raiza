@@ -1,0 +1,52 @@
+{
+  "$schema": "../schema.json",
+  "schema": 1,
+  "name": "Akko 5087 V3 HE",
+  "vendor": "Akko",
+  "kind": "keyboard",
+  "verified": false,
+  "authors": [
+    "Raiza (a partir do protocolo documentado pelo projeto Sharkfin, GPL-3.0)"
+  ],
+  "match": {
+    "vendor_id": "3151",
+    "product_id": "5038",
+    "interface": 2,
+    "usage_page": "ffff",
+    "usage": "0002",
+    "connection": "wireless"
+  },
+  "capabilities": {
+    "battery": {
+      "read": {
+        "request": {
+          "type": "feature",
+          "report_id": 0,
+          "data": "f7 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00",
+          "checksum": {
+            "kind": "sum8_inv",
+            "at": 7,
+            "from": 0,
+            "to": 7
+          }
+        },
+        "response": {
+          "type": "feature",
+          "report_id": 0,
+          "length": 64,
+          "expect": [
+            {
+              "at": 3,
+              "value": 0
+            }
+          ],
+          "fields": {
+            "percent": {
+              "at": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

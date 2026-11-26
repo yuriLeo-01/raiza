@@ -32,6 +32,9 @@ pub struct Timeouts {
     /// Silêncio esperado depois de um evento de hotplug ou de perfil antes de reler tudo:
     /// plugar um aparelho gera uma rajada de eventos.
     pub debounce: Duration,
+    /// Intervalo para repetir as leituras que dependem de consulta (ex.: bateria do headset
+    /// ou do teclado pelo receptor). Relatórios espontâneos não precisam disso.
+    pub reread: Duration,
 }
 
 impl Default for Timeouts {
@@ -40,6 +43,7 @@ impl Default for Timeouts {
             response: Duration::from_millis(500),
             spontaneous: Duration::from_secs(4),
             debounce: Duration::from_millis(300),
+            reread: Duration::from_secs(60),
         }
     }
 }
@@ -170,6 +174,23 @@ impl<B: HidBackend, P: ProfileSource> Inner<B, P> {
     fn reload_profiles(&self) {
         let profiles: Vec<Arc<Profile>> = self.source.load().into_iter().map(Arc::new).collect();
         lock(&self.state).profiles = profiles;
+    }
+
+    /// Repete as leituras com consulta de todos os aparelhos abertos. Os valores novos saem
+    /// pelo canal de eventos (`CapabilityChanged`, ou `DeviceAdded` na primeira leitura
+    /// válida). Falha (ex.: headset desligado) só fica no log: o valor anterior continua.
+    fn reread_blocking(&self) {
+        let devices: Vec<Arc<Device>> = lock(&self.state).devices.values().cloned().collect();
+        for device in devices {
+            for kind in CapabilityKind::ALL {
+                if device.profile.read_request(kind).is_none() {
+                    continue;
+                }
+                if let Err(e) = device.read_now(kind, self.timeouts.response) {
+                    debug!(id = %device.id, ?kind, error = %e, "releitura sem resposta válida");
+                }
+            }
+        }
     }
 
     fn refresh_blocking(&self) -> Vec<ProviderEvent> {
@@ -364,6 +385,12 @@ impl<B: HidBackend, P: ProfileSource> Provider for HidProfilesProvider<B, P> {
             changes: None,
             started: false,
             pending: VecDeque::new(),
+            reread: {
+                let every = self.inner.timeouts.reread;
+                let mut i = tokio::time::interval_at(tokio::time::Instant::now() + every, every);
+                i.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
+                i
+            },
         };
         Box::pin(stream::unfold(watch, Watch::next))
     }
@@ -383,11 +410,13 @@ struct Watch<B, P> {
     changes: Option<BoxStream<'static, Change>>,
     started: bool,
     pending: VecDeque<ProviderEvent>,
+    reread: tokio::time::Interval,
 }
 
 enum Step {
     Event(Option<ProviderEvent>),
     Change(Option<Change>),
+    Reread,
 }
 
 async fn next_change(changes: &mut Option<BoxStream<'static, Change>>) -> Option<Change> {
@@ -415,9 +444,14 @@ impl<B: HidBackend, P: ProfileSource> Watch<B, P> {
             let step = tokio::select! {
                 event = self.rx.recv() => Step::Event(event),
                 change = next_change(&mut self.changes) => Step::Change(change),
+                _ = self.reread.tick() => Step::Reread,
             };
             match step {
                 Step::Event(event) => return event.map(|e| (e, self)),
+                Step::Reread => {
+                    let inner = Arc::clone(&self.inner);
+                    let _ = tokio::task::spawn_blocking(move || inner.reread_blocking()).await;
+                }
                 Step::Change(None) => {
                     info!("vigias de hotplug e de perfis encerradas");
                     self.changes = None;

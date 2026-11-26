@@ -674,3 +674,34 @@ fn akko_s9_le_a_bateria_documentada() {
             .is_err()
     );
 }
+
+/// Status `0xF7` do receptor 2.4 GHz do teclado, lido do dongle do mantenedor em 2026-11-26:
+/// bateria `64` = 100 %, byte 3 `00` = teclado online.
+#[test]
+fn akko_5087_dongle_le_a_bateria_pelo_receptor() {
+    let p = perfil_do_repositorio("akko/akko-5087-v3-he-dongle-3151-5038.json");
+    assert!(!p.verified);
+    assert_eq!(
+        p.match_index(0x3151, 0x5038, Some(2), Some(0xffff), Some(2)),
+        Some(0)
+    );
+    assert_eq!(p.connection(0), Some(raiza_core::ConnectionKind::Wireless));
+    // Pedido: `F7`, checksum `0xFF - 0xF7` = `08` no byte 7, 64 bytes, report ID 0.
+    let pedido = p.read_request(CapabilityKind::Battery).unwrap();
+    assert_eq!(pedido.bytes.len(), 65);
+    assert_eq!(&pedido.bytes[..9], &[0x00, 0xF7, 0, 0, 0, 0, 0, 0, 0x08]);
+    let mut resposta = [0u8; 65];
+    resposta[1..10].copy_from_slice(&[0x00, 0x64, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00]);
+    assert_eq!(
+        p.parse_response(CapabilityKind::Battery, &resposta)
+            .unwrap(),
+        Capability::Battery {
+            percent: 100,
+            charging: false
+        }
+    );
+    // Teclado desligado (byte 3 ≠ 0): a resposta é descartada.
+    let mut offline = resposta;
+    offline[4] = 0x01;
+    assert!(p.parse_response(CapabilityKind::Battery, &offline).is_err());
+}
