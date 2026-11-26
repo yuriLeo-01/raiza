@@ -9,7 +9,7 @@ Este guia descreve onde instalar cada arquivo de sistema do Raiza, como habilita
 | Binário `raizad` | `/usr/bin/raizad` | `/usr/bin/raizad` |
 | [`packaging/udev/70-raiza.rules`](../packaging/udev/70-raiza.rules) | `/usr/lib/udev/rules.d/70-raiza.rules` | `/etc/udev/rules.d/70-raiza.rules` |
 | [`packaging/systemd/raizad.service`](../packaging/systemd/raizad.service) | `/usr/lib/systemd/user/raizad.service` | `~/.config/systemd/user/raizad.service` |
-| [`packaging/systemd/io.github.yurileo01.Raiza.service`](../packaging/systemd/io.github.yurileo01.Raiza.service) | `/usr/share/dbus-1/services/io.github.yurileo01.Raiza.service` | `~/.local/share/dbus-1/services/io.github.yurileo01.Raiza.service` |
+| [`packaging/systemd/io.github.yurileo01.Raiza.Daemon.service`](../packaging/systemd/io.github.yurileo01.Raiza.Daemon.service) | `/usr/share/dbus-1/services/io.github.yurileo01.Raiza.Daemon.service` | `~/.local/share/dbus-1/services/io.github.yurileo01.Raiza.Daemon.service` |
 
 > **Nota:** tanto a unidade systemd quanto o arquivo de ativação D-Bus apontam para `/usr/bin/raizad`. Se você instalar o binário em outro caminho (como `/usr/local/bin/raizad`), ajuste `ExecStart=` e `Exec=` nesses dois arquivos.
 
@@ -35,11 +35,11 @@ Se algum dispositivo USB já estiver conectado e a permissão não atualizar ime
 
 ## 3. Unidade systemd do usuário e ativação D-Bus
 
-Instale a unidade de usuário e o arquivo de ativação D-Bus do serviço `io.github.yurileo01.Raiza`:
+Instale a unidade de usuário e o arquivo de ativação D-Bus do serviço `io.github.yurileo01.Raiza.Daemon`:
 
 ```sh
 install -Dm644 packaging/systemd/raizad.service ~/.config/systemd/user/raizad.service
-install -Dm644 packaging/systemd/io.github.yurileo01.Raiza.service ~/.local/share/dbus-1/services/io.github.yurileo01.Raiza.service
+install -Dm644 packaging/systemd/io.github.yurileo01.Raiza.Daemon.service ~/.local/share/dbus-1/services/io.github.yurileo01.Raiza.Daemon.service
 systemctl --user daemon-reload
 systemctl --user enable --now raizad
 ```

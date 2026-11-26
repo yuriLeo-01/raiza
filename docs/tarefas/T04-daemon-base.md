@@ -23,7 +23,7 @@ Um daemon que sobe no barramento de sessão, registra provedores, funde disposit
 8. **Atualização de dispositivo:** um provedor pode mandar `DeviceRemoved` seguido de `DeviceAdded` com o mesmo id (o `udev` faz isso quando o tipo de um aparelho muda). Trate o par como atualização do `DeviceInfo` daquele provedor: não apague a configuração salva e não reaplique valores por causa disso. Veja `docs/ARQUITETURA.md`, "Atualização de um dispositivo".
 
 ## Critérios de aceite
-- [x] `cargo run -p raizad -- --mock` e `busctl --user call io.github.yurileo01.Raiza /io/github/yurileo01/Raiza io.github.yurileo01.Raiza1 ListDevices` devolvem os dispositivos mock
+- [x] `cargo run -p raizad -- --mock` e `busctl --user call io.github.yurileo01.Raiza.Daemon /io/github/yurileo01/Raiza io.github.yurileo01.Raiza1 ListDevices` devolvem os dispositivos mock
 - [x] Teste de integração com um barramento D-Bus privado (`dbus-daemon --session` ou `zbus` p2p)
 - [x] Teste: provedor que entra em pânico não derruba o daemon
 - [x] Teste: `DeviceRemoved` + `DeviceAdded` do mesmo id preserva a configuração salva

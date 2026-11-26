@@ -119,7 +119,7 @@ mod proxy {
     /// converte o JSON e os erros.
     #[zbus::proxy(
         interface = "io.github.yurileo01.Raiza1",
-        default_service = "io.github.yurileo01.Raiza",
+        default_service = "io.github.yurileo01.Raiza.Daemon",
         default_path = "/io/github/yurileo01/Raiza",
         gen_blocking = false
     )]

@@ -6,10 +6,14 @@ Mudanças neste documento são do líder técnico.
 | | |
 |---|---|
 | Barramento | sessão do usuário |
-| Serviço | `io.github.yurileo01.Raiza` |
+| Serviço | `io.github.yurileo01.Raiza.Daemon` |
 | Objeto | `/io/github/yurileo01/Raiza` |
 | Interface | `io.github.yurileo01.Raiza1` (versão 1 da API) |
 | Erros | `io.github.yurileo01.Raiza1.Error.*` |
+
+O serviço do daemon termina em `.Daemon` de propósito: `io.github.yurileo01.Raiza` é o **app id**
+da interface GTK, e o GTK registra o app id como nome no barramento de sessão. Se os dois fossem
+iguais, a janela e o daemon brigariam pelo nome (encontrado na T13).
 
 Em Rust, use `raiza_core::dbus::RaizaClient` (feature `dbus` do `raiza-core`), que já
 converte JSON e erros. Constantes: `DBUS_SERVICE`, `dbus::DBUS_PATH`, `dbus::DBUS_INTERFACE`, `dbus::API_VERSION`.
@@ -123,7 +127,7 @@ atualização, por exemplo mantendo a página do dispositivo aberta.
 ## Exemplos com `busctl`
 
 ```sh
-S="io.github.yurileo01.Raiza"; O="/io/github/yurileo01/Raiza"; I="io.github.yurileo01.Raiza1"
+S="io.github.yurileo01.Raiza.Daemon"; O="/io/github/yurileo01/Raiza"; I="io.github.yurileo01.Raiza1"
 
 busctl --user introspect $S $O
 busctl --user call $S $O $I Version

@@ -89,7 +89,7 @@ aparelho apareça, com `Connection` somente leitura.
 
 ## API D-Bus (resumo, especificada em T02)
 
-- Serviço `io.github.yurileo01.Raiza` no barramento de sessão, objeto `/io/github/yurileo01/Raiza`.
+- Serviço `io.github.yurileo01.Raiza.Daemon` no barramento de sessão, objeto `/io/github/yurileo01/Raiza`.
 - Métodos: `ListDevices`, `GetDevice`, `SetCapability`.
 - Sinais: `DeviceAdded`, `DeviceRemoved`, `CapabilityChanged`.
 

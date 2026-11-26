@@ -41,4 +41,4 @@ pub use provider::{EventStream, Provider, ProviderEvent};
 pub use value::{CapabilityValue, RgbSetting};
 
 /// Nome do serviço D-Bus do daemon (sessão do usuário).
-pub const DBUS_SERVICE: &str = "io.github.yurileo01.Raiza";
+pub const DBUS_SERVICE: &str = "io.github.yurileo01.Raiza.Daemon";
