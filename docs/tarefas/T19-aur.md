@@ -37,9 +37,9 @@
 4. Atualizar `docs/INSTALACAO.md` (seção "Arch e derivados" antes da instalação manual) e a seção de instalação do `README.md`.
 
 ## Critérios de aceite
-- [ ] `makepkg` (sem `-i`) constrói o pacote numa cópia limpa com a fonte local; o conteúdo (`tar -tf` do `.pkg.tar.zst`) tem todos os arquivos da tabela (lista nas notas)
-- [ ] `namcap` sem erros, se estiver disponível (`pacman -Q namcap`); se não estiver, diga nas notas
-- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam
+- [x] `makepkg` (sem `-i`) constrói o pacote numa cópia limpa com a fonte local; o conteúdo (`tar -tf` do `.pkg.tar.zst`) tem todos os arquivos da tabela (lista nas notas)
+- [x] `namcap` sem erros, se estiver disponível (`pacman -Q namcap`); se não estiver, diga nas notas
+- [x] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam
 
 ## Como testar com hardware real (para o mantenedor)
 `cd packaging/aur && makepkg -si`, depois `systemctl --user enable --now raizad`, desplugar e plugar o mouse e o headset, e `raiza-ctl list`: a bateria do Rapoo e do S9 Ultra deve aparecer.
