@@ -1,0 +1,31 @@
+name: Bug
+description: Algo não funciona como deveria
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: o-que
+    attributes:
+      label: O que aconteceu
+      description: O que você fez, o que esperava e o que aconteceu.
+    validations:
+      required: true
+  - type: input
+    id: versao
+    attributes:
+      label: Versão
+      description: "`pacman -Q raiza-git` ou o commit, se compilou à mão."
+    validations:
+      required: true
+  - type: textarea
+    id: list
+    attributes:
+      label: raiza-ctl list --json
+      description: Mostra o que o daemon vê. Ele inclui números de série; apague-os se preferir.
+      render: json
+  - type: textarea
+    id: log
+    attributes:
+      label: Log do daemon
+      description: '`journalctl --user -u raizad --since "-10min"`'
+      render: text

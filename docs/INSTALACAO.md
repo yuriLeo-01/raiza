@@ -38,11 +38,16 @@ Para testar o PKGBUILD com o código local, copie `PKGBUILD` e `raiza-git.instal
 
 Os passos abaixo servem para outras distribuições.
 
-## 1. Compilar e instalar o binário
+## 1. Compilar e instalar os binários e os perfis
 
 ```sh
-cargo build --release --locked -p raizad
-sudo install -Dm755 target/release/raizad /usr/bin/raizad
+cargo build --release --locked
+sudo install -Dm755 target/release/raizad target/release/raiza-ctl target/release/raiza-gtk -t /usr/bin/
+sudo mkdir -p /usr/share/raiza
+sudo cp -r profiles /usr/share/raiza/
+sudo install -Dm644 data/io.github.yurileo01.Raiza.desktop -t /usr/share/applications/
+sudo install -Dm644 data/io.github.yurileo01.Raiza.metainfo.xml -t /usr/share/metainfo/
+sudo cp -r data/icons/hicolor /usr/share/icons/
 ```
 
 ## 2. Regra udev (acesso sem root)

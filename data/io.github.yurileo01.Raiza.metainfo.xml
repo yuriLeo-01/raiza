@@ -25,8 +25,10 @@
     <ul>
       <li>See every connected device grouped by type, with its battery level</li>
       <li xml:lang="pt-BR">Veja cada dispositivo conectado, agrupado por tipo, com o nível da bateria</li>
-      <li>Check DPI, polling rate, lighting, volume and connection at a glance</li>
-      <li xml:lang="pt-BR">Confira DPI, taxa de atualização, iluminação, volume e conexão de relance</li>
+      <li>Change DPI, polling rate, volume and mute, and check the connection</li>
+      <li xml:lang="pt-BR">Mude DPI, taxa de atualização, volume e mudo, e confira a conexão</li>
+      <li>Support for new models through community JSON profiles, read-only until tested</li>
+      <li xml:lang="pt-BR">Suporte a novos modelos por perfis JSON da comunidade, somente leitura até serem testados</li>
       <li>Updates live as devices are plugged in or changed</li>
       <li xml:lang="pt-BR">Atualiza ao vivo quando dispositivos são conectados ou alterados</li>
     </ul>
@@ -60,7 +62,7 @@
   <releases>
     <release version="0.0.1" date="2026-11-26">
       <description>
-        <p>First preview: device list and read-only details.</p>
+        <p>First test version: battery, DPI, polling rate, volume and mute, with profiles for Rapoo VT2 and Akko devices.</p>
       </description>
     </release>
   </releases>

@@ -1,0 +1,41 @@
+name: Suporte a aparelho
+description: Peça suporte a um periférico (ou a um recurso dele) que o Raiza ainda não conhece
+title: "[aparelho] "
+labels: ["aparelho"]
+body:
+  - type: input
+    id: modelo
+    attributes:
+      label: Modelo
+      description: Como aparece na caixa ou no site do fabricante.
+      placeholder: "Ex.: Rapoo VT2 Pro Max"
+    validations:
+      required: true
+  - type: textarea
+    id: lsusb
+    attributes:
+      label: Saída do lsusb
+      description: A linha do aparelho, com ele plugado (de cada conexão, se tiver cabo e dongle).
+      render: text
+    validations:
+      required: true
+  - type: checkboxes
+    id: conexoes
+    attributes:
+      label: Como ele se conecta
+      options:
+        - label: Cabo USB
+        - label: Dongle 2.4 GHz
+        - label: Bluetooth
+  - type: textarea
+    id: recursos
+    attributes:
+      label: O que você gostaria de controlar
+      placeholder: "Ex.: bateria, DPI, polling, RGB, sidetone"
+    validations:
+      required: true
+  - type: textarea
+    id: fontes
+    attributes:
+      label: Software oficial e projetos abertos
+      description: Existe software oficial (Windows, web)? Sabe de algum projeto que já entenda o protocolo (OpenRGB, configuradores no GitHub)?
