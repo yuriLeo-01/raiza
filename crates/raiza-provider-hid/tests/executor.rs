@@ -264,18 +264,24 @@ async fn bateria_espontanea_gera_capability_changed() {
     let (p, _backend, mouse) = mouse_no_cabo(perfil(|_| {})).await;
     let mut eventos = p.events();
 
+    // Antes da primeira leitura, a bateria não é anunciada (nada de "0%" inventado).
+    let antes = p.discover().await.unwrap();
+    let mouse_antes = antes.iter().find(|d| d.id == id_cabo()).expect("mouse");
+    assert!(mouse_antes.capability(CapabilityKind::Battery).is_none());
+
+    // A primeira leitura faz a bateria passar a existir: o aparelho é reanunciado.
     mouse.push_input(&[7, 0x20, 85, 0x80, 0, 0, 0, 0, 0]);
     let e = next_event(&mut eventos, 2000).await.expect("evento");
-    let raiza_core::ProviderEvent::CapabilityChanged { id, capability } = e else {
-        panic!("esperava CapabilityChanged: {e:?}");
+    let raiza_core::ProviderEvent::DeviceAdded { device } = e else {
+        panic!("esperava DeviceAdded (reanúncio): {e:?}");
     };
-    assert_eq!(id, id_cabo());
+    assert_eq!(device.id, id_cabo());
     assert_eq!(
-        capability,
-        Capability::Battery {
+        device.capability(CapabilityKind::Battery),
+        Some(&Capability::Battery {
             percent: 85,
             charging: true
-        }
+        })
     );
 
     // O mesmo valor de novo não gera evento; outro relatório (DPI) também não.

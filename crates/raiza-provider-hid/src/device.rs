@@ -72,7 +72,9 @@ pub(crate) struct Device {
     io: Mutex<()>,
     /// Estado mais recente de cada capacidade.
     caps: Mutex<Vec<Capability>>,
-    /// Capacidades espontâneas que já chegaram ao menos uma vez.
+    /// Capacidades com leitura descrita no perfil que já tiveram uma leitura válida
+    /// (pedida ou espontânea). Só elas são anunciadas: um valor inicial do perfil não é
+    /// uma leitura, e mostrá-lo como tal engana (ex.: "bateria 0%").
     seen: Mutex<BTreeSet<CapabilityKind>>,
     events: UnboundedSender<ProviderEvent>,
 }
@@ -212,6 +214,7 @@ impl Device {
             providers: vec![PROVIDER_ID.into()],
             capabilities: lock(&self.caps)
                 .iter()
+                .filter(|c| self.valid(c.kind()))
                 .map(|c| self.visible(c.clone()))
                 .collect(),
         }
@@ -222,9 +225,29 @@ impl Device {
         self.raw(kind).map(|c| self.visible(c))
     }
 
-    /// Se a espontânea `kind` já chegou ao menos uma vez.
+    /// Se `kind` já teve uma leitura válida.
     pub fn seen(&self, kind: CapabilityKind) -> bool {
         lock(&self.seen).contains(&kind)
+    }
+
+    /// Se `kind` pode ser anunciada: sem leitura no perfil (ex.: escrita de RGB), ou já lida.
+    fn valid(&self, kind: CapabilityKind) -> bool {
+        self.profile.response_spec(kind).is_none() || self.seen(kind)
+    }
+
+    /// Registra uma leitura válida de `kind`. Devolve `true` se é a primeira.
+    fn mark_seen(&self, kind: CapabilityKind) -> bool {
+        lock(&self.seen).insert(kind)
+    }
+
+    /// A capacidade `kind` acabou de passar a valer: o conjunto anunciado mudou, então o
+    /// aparelho é reanunciado (`DeviceAdded` de id conhecido = atualização, docs/DBUS.md).
+    fn reannounce(&self) {
+        if self.announced.load(Ordering::Relaxed) {
+            let _ = self.events.send(ProviderEvent::DeviceAdded {
+                device: self.info(),
+            });
+        }
     }
 
     /// `cap` como o daemon deve vê-la: somente leitura sem identificação (pilar 1).
@@ -278,8 +301,12 @@ impl Device {
             let Ok(cap) = self.profile.parse_response(kind, &bytes) else {
                 continue;
             };
-            lock(&self.seen).insert(kind);
-            if let Some(changed) = self.store(cap) {
+            let first = self.mark_seen(kind);
+            let changed = self.store(cap);
+            if first {
+                debug!(id = %self.id, %kind, "primeira leitura espontânea");
+                self.reannounce();
+            } else if let Some(changed) = changed {
                 debug!(id = %self.id, %kind, "relatório espontâneo");
                 self.notify(changed);
             }
@@ -313,10 +340,13 @@ impl Device {
                 |bytes| self.profile.parse_response(kind, bytes),
             )?
         };
-        if is_spontaneous(&self.profile, kind) {
-            lock(&self.seen).insert(kind);
+        let first = self.mark_seen(kind);
+        let changed = self.store(cap);
+        if first {
+            self.reannounce();
+        } else if let Some(changed) = changed {
+            self.notify(changed);
         }
-        self.store(cap);
         self.cached(kind).ok_or(RaizaError::Unsupported(kind))
     }
 

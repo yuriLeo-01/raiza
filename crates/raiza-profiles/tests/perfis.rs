@@ -614,11 +614,21 @@ fn rapoo_vt2_le_o_status_documentado() {
             .unwrap(),
         Capability::Battery { charging: true, .. }
     ));
-    assert!(matches!(
-        p.parse_response(CapabilityKind::PollingRate, &status)
-            .unwrap(),
-        Capability::PollingRate { current: 2000, .. }
-    ));
+    // Polling saiu do perfil: no aparelho do mantenedor o byte 10 veio `05`, que não está
+    // na tabela documentada (notas da T17).
+    assert!(p.response_spec(CapabilityKind::PollingRate).is_none());
+    // Status real lido do mouse do mantenedor em 2026-11-26: bateria 0x5a = 90 %.
+    let real = [
+        0x07, 0x20, 0x03, 0x40, 0x06, 0x40, 0x06, 0x01, 0x5a, 0x00, 0x05, 0x02, 0x00, 0x23, 0x46,
+        0x00, 0x02, 0x01, 0xb3,
+    ];
+    assert_eq!(
+        p.parse_response(CapabilityKind::Battery, &real).unwrap(),
+        Capability::Battery {
+            percent: 90,
+            charging: false
+        }
+    );
     // Só escuta: nada é enviado para ler.
     assert!(p.read_request(CapabilityKind::Battery).is_none());
 }

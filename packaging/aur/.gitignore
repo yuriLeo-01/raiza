@@ -1,0 +1,6 @@
+# Artefatos do makepkg: nunca versionar.
+/src/
+/pkg/
+/raiza-git/
+*.pkg.tar.*
+*.log
