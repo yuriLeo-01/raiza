@@ -39,7 +39,7 @@ descartado em 2026-11-25); `sonnet` para tarefas simples.
 
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
-| T13 | [App base: lista de dispositivos](T13-gtk-base.md) | claude | T02, T04 | 🟦 |
+| T13 | [App base: lista de dispositivos](T13-gtk-base.md) | claude | T02, T04 | ⏸ WIP na branch yuriLeo-01/t13-gtk-base (parou no limite de uso) |
 | T14 | [Páginas por capacidade](T14-gtk-capacidades.md) | claude | T13 | ⬜ |
 
 ## F4: Perfis HID declarativos (dispositivos sem suporte)
