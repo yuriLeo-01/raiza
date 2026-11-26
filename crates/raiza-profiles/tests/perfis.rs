@@ -592,8 +592,35 @@ fn perfil_do_repositorio(caminho: &str) -> Profile {
 #[test]
 fn rapoo_vt2_le_o_status_documentado() {
     let p = perfil_do_repositorio("rapoo/rapoo-vt2-max-24ae-1423.json");
-    assert!(!p.verified);
-    assert!(p.capabilities().iter().all(|c| !c.is_writable()));
+    // Verificado em 2026-11-26: só o polling é gravável (1 byte em 0x0880, testado no
+    // aparelho do mantenedor e conferido no app oficial); o resto continua só leitura.
+    assert!(p.verified);
+    let writable: Vec<CapabilityKind> = p
+        .capabilities()
+        .iter()
+        .filter(|c| c.is_writable())
+        .map(|c| c.kind())
+        .collect();
+    assert_eq!(writable, [CapabilityKind::PollingRate]);
+    let atual = p
+        .capabilities()
+        .into_iter()
+        .find(|c| c.kind() == CapabilityKind::PollingRate)
+        .unwrap();
+    let reports = p
+        .build_write(&atual, &CapabilityValue::PollingRate(2000))
+        .unwrap();
+    assert_eq!(reports.len(), 1);
+    assert_eq!(reports[0].bytes.len(), 33);
+    assert_eq!(
+        &reports[0].bytes[..9],
+        &[0x06, 0xA5, 0xA5, 0x01, 0x80, 0x08, 0x00, 0x00, 0x84]
+    );
+    assert!(reports[0].bytes[9..].iter().all(|&b| b == 0));
+    assert!(
+        p.build_write(&atual, &CapabilityValue::PollingRate(300))
+            .is_err()
+    );
     assert_eq!(p.match_index(0x24ae, 0x1423, Some(1), None, None), Some(0));
     assert_eq!(p.match_index(0x24ae, 0x4623, Some(1), None, None), Some(1));
     assert_eq!(p.connection(0), Some(raiza_core::ConnectionKind::Wireless));

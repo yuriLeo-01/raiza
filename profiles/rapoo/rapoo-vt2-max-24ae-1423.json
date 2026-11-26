@@ -4,7 +4,7 @@
   "name": "Rapoo VT2 Max / VT2 Pro Max",
   "vendor": "Rapoo",
   "kind": "mouse",
-  "verified": false,
+  "verified": true,
   "authors": [
     "Raiza (a partir do protocolo documentado pelo projeto periph, MIT)"
   ],
@@ -60,6 +60,16 @@
             "value": {
               "at": 10
             }
+          }
+        }
+      },
+      "write": {
+        "type": "output",
+        "report_id": 6,
+        "data": "a5 a5 01 80 08 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00",
+        "fields": {
+          "value": {
+            "at": 7
           }
         }
       }

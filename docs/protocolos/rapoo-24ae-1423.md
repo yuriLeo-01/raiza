@@ -13,4 +13,5 @@ e lacunas em [`docs/tarefas/notas/T17.md`](../tarefas/notas/T17.md).
 - **Nunca** usar a interface 2 (relatórios de 512 bytes, provavelmente firmware/macros).
 
 Perfil: [`profiles/rapoo/rapoo-vt2-max-24ae-1423.json`](../../profiles/rapoo/rapoo-vt2-max-24ae-1423.json)
-(só leitura: bateria, carga, DPI e report rate a partir do status `0x07`).
+(verificado: leitura de bateria, carga, DPI e report rate pelo status `0x07`; escrita do report rate
+com 1 byte em `0x0880`, testada no aparelho. **Não** grave o bloco de 4 bytes do periph: `0x0881` é o key scan rate).
