@@ -1,0 +1,22 @@
+[package]
+name = "raiza-provider-evdev"
+description = "Provedor evdev do Raiza: bateria e teste de vibração de controles de jogo"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+raiza-core = { workspace = true }
+async-trait = "0.1"
+evdev = "0.13"
+futures-util = "0.3"
+tokio = { version = "1", features = ["rt", "net", "time"] }
+tracing = "0.1"
+# `send` torna o monitor `Send`, para viver dentro do fluxo de eventos.
+udev = { version = "0.9", features = ["send"] }
+
+[dev-dependencies]
+tempfile = "3"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "test-util"] }
