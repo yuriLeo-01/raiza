@@ -21,6 +21,29 @@
     }
   ],
   "capabilities": {
+    "polling_rate": {
+      "rates": {
+        "125": 0,
+        "250": 1,
+        "500": 2,
+        "1000": 3,
+        "2000": 4,
+        "4000": 5,
+        "8000": 6
+      },
+      "read": {
+        "response": {
+          "type": "input",
+          "report_id": 7,
+          "length": 18,
+          "fields": {
+            "value": {
+              "at": 9
+            }
+          }
+        }
+      }
+    },
     "battery": {
       "read": {
         "response": {

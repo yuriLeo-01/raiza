@@ -588,7 +588,8 @@ fn perfil_do_repositorio(caminho: &str) -> Profile {
 }
 
 /// Bytes do status espontâneo 0x07 registrados pelo periph (`docs/descriptors.md`):
-/// bateria 0x53 = 83 %, `01` = na bateria, polling `84` = 2000 Hz.
+/// bateria 0x53 = 83 %, `01` = na bateria. O polling do status usa expoente (125 × 2ⁿ), e não
+/// os códigos de memória do periph: no mouse do mantenedor, `05` com 4000 Hz e `03` com 1000 Hz.
 #[test]
 fn rapoo_vt2_le_o_status_documentado() {
     let p = perfil_do_repositorio("rapoo/rapoo-vt2-max-24ae-1423.json");
@@ -614,9 +615,6 @@ fn rapoo_vt2_le_o_status_documentado() {
             .unwrap(),
         Capability::Battery { charging: true, .. }
     ));
-    // Polling saiu do perfil: no aparelho do mantenedor o byte 10 veio `05`, que não está
-    // na tabela documentada (notas da T17).
-    assert!(p.response_spec(CapabilityKind::PollingRate).is_none());
     // Status real lido do mouse do mantenedor em 2026-11-26: bateria 0x5a = 90 %.
     let real = [
         0x07, 0x20, 0x03, 0x40, 0x06, 0x40, 0x06, 0x01, 0x5a, 0x00, 0x05, 0x02, 0x00, 0x23, 0x46,
@@ -629,6 +627,15 @@ fn rapoo_vt2_le_o_status_documentado() {
             charging: false
         }
     );
+    // Polling real: `05` = 4000 Hz; depois de mudar no app oficial, `03` = 1000 Hz.
+    let polling = |status: &[u8]| match p.parse_response(CapabilityKind::PollingRate, status) {
+        Ok(Capability::PollingRate { current, .. }) => current,
+        outro => panic!("{outro:?}"),
+    };
+    assert_eq!(polling(&real), 4000);
+    let mut mil = real;
+    mil[10] = 0x03;
+    assert_eq!(polling(&mil), 1000);
     // Só escuta: nada é enviado para ler.
     assert!(p.read_request(CapabilityKind::Battery).is_none());
 }
