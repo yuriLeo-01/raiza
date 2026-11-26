@@ -20,7 +20,8 @@ Uso: raizad [opções]
 
 Opções:
   --mock             registra só o provedor falso, com dispositivos de demonstração
-  --config ARQUIVO   arquivo de configurações (padrão: ~/.config/raiza/config.json)
+  --config ARQUIVO   arquivo de configurações (padrão: ~/.config/raiza/config.json;
+                     com --mock, só em memória)
   -h, --help         mostra esta ajuda
   -V, --version      mostra a versão
 
@@ -74,8 +75,15 @@ async fn main() -> Result<()> {
         )
         .init();
 
-    let config = match args.config.or_else(ConfigStore::default_path) {
+    // O modo --mock não toca na configuração real do usuário, a menos que --config seja dado.
+    let path = match (&args.config, args.mock) {
+        (Some(path), _) => Some(path.clone()),
+        (None, true) => None,
+        (None, false) => ConfigStore::default_path(),
+    };
+    let config = match path {
         Some(path) => ConfigStore::load(path),
+        None if args.mock => ConfigStore::in_memory(),
         None => {
             tracing::warn!("sem HOME nem XDG_CONFIG_HOME: configurações só em memória");
             ConfigStore::in_memory()

@@ -22,7 +22,7 @@ Um widget interativo por `CapabilityKind`, escolhido automaticamente (pilar 3: a
 4. Debounce: no máximo uma escrita a cada ~150 ms enquanto o usuário arrasta, e sempre o último valor no fim. Lógica separada da interface, testável sem GTK.
 
 ## Critérios de aceite
-- [ ] Todas as capacidades do `MockProvider` têm widget e funcionam com `raizad --mock` (descreva nas notas como testou)
-- [ ] Debounce testado sem GTK (rajada → um envio por janela, último valor sempre enviado)
-- [ ] Teste: aplicar um valor vindo do daemon não gera escrita (sem laço)
-- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam
+- [x] Todas as capacidades do `MockProvider` têm widget e funcionam com `raizad --mock` (descreva nas notas como testou)
+- [x] Debounce testado sem GTK (rajada → um envio por janela, último valor sempre enviado)
+- [x] Teste: aplicar um valor vindo do daemon não gera escrita (sem laço)
+- [x] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam
