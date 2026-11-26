@@ -111,7 +111,8 @@ async fn backend_nunca_recebe_valor_fora_do_limite() {
 }
 
 #[tokio::test]
-async fn escrita_sem_rumble_ou_sem_controle() {
+async fn joystick_sem_capacidades_e_ignorado() {
+    // Sem FF_RUMBLE e sem bateria (ex.: modo gamepad de um teclado magnético).
     let f = Fake::new();
     let usb = f.usb("1-2", "054c", "0ce6", Some("S1"));
     let (node, _) = f.pad(&usb, "0003:054C:0CE6.0005", 23, "0003", "", None);
@@ -120,14 +121,10 @@ async fn escrita_sem_rumble_ou_sem_controle() {
     let p = EvdevProvider::with_parts(fonte, f.sysfs(), gravador.clone());
     let id = DeviceId::usb(0x054c, 0x0ce6, "S1");
 
+    assert!(p.discover().await.unwrap().is_empty());
     assert_eq!(
         p.write(&id, rumble(50, 100)).await,
-        Err(RaizaError::Unsupported(CapabilityKind::Rumble))
-    );
-    let outro = DeviceId::usb(1, 2, "0");
-    assert_eq!(
-        p.write(&outro, rumble(50, 100)).await,
-        Err(RaizaError::NotFound(outro.clone()))
+        Err(RaizaError::NotFound(id.clone()))
     );
     assert!(gravador.pulsos.lock().unwrap().is_empty());
 }

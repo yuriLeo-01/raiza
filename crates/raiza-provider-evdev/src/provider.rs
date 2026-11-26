@@ -79,7 +79,14 @@ async fn scan<S: PadSource>(source: &Arc<S>, sysfs: &Arc<Sysfs>) -> Result<Vec<P
                 }
             }
         }
-        Ok(pads.into_values().collect())
+        // Joystick sem bateria nem vibração não tem nada a oferecer e só "roubaria" o tipo
+        // do aparelho na fusão: um teclado magnético com modo gamepad (ex.: Akko 5087 V3
+        // HE) viraria "controle". O tipo fica com o `udev`. Se a bateria aparecer depois,
+        // o próximo rescan inclui o aparelho.
+        Ok(pads
+            .into_values()
+            .filter(|p| !p.info.capabilities.is_empty())
+            .collect())
     })
     .await
     .map_err(|e| RaizaError::Io(format!("leitura dos controles interrompida: {e}")))?
