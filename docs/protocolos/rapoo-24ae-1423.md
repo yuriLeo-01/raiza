@@ -8,9 +8,9 @@ e lacunas em [`docs/tarefas/notas/T17.md`](../tarefas/notas/T17.md).
   `op` `A4` lê, `A5` escreve. Resposta: input `0x06`, `<status> 00 00 00 [dados]`, com `01` pronto,
   `02` ocupado e `00` mouse dormindo.
 - Status espontâneo: input `0x07` (19 bytes), ~a cada 3 s: byte 2 estágio de DPI, 3–6 DPI X/Y (u16 LE),
-  7 `01` bateria / `02` carregando, 8 bateria %, 10 código de polling.
+  7 `01` bateria / `02` carregando, 8 bateria %, 10 key scan rate (125 × 2ⁿ), 11 report rate (polling, tabela abaixo).
 - Polling: 125=`08`, 250=`04`, 500=`02`, 1000=`01`, 2000=`84`, 4000=`82`, 8000=`81`.
 - **Nunca** usar a interface 2 (relatórios de 512 bytes, provavelmente firmware/macros).
 
 Perfil: [`profiles/rapoo/rapoo-vt2-max-24ae-1423.json`](../../profiles/rapoo/rapoo-vt2-max-24ae-1423.json)
-(só leitura: bateria, carga e polling a partir do status `0x07`).
+(só leitura: bateria, carga, DPI e report rate a partir do status `0x07`).

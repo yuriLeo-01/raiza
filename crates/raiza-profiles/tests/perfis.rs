@@ -588,8 +588,7 @@ fn perfil_do_repositorio(caminho: &str) -> Profile {
 }
 
 /// Bytes do status espontâneo 0x07 registrados pelo periph (`docs/descriptors.md`):
-/// bateria 0x53 = 83 %, `01` = na bateria. O polling do status usa expoente (125 × 2ⁿ), e não
-/// os códigos de memória do periph: no mouse do mantenedor, `05` com 4000 Hz e `03` com 1000 Hz.
+/// bateria 0x53 = 83 %, `01` = na bateria, report rate `84` = 2000 Hz.
 #[test]
 fn rapoo_vt2_le_o_status_documentado() {
     let p = perfil_do_repositorio("rapoo/rapoo-vt2-max-24ae-1423.json");
@@ -629,15 +628,18 @@ fn rapoo_vt2_le_o_status_documentado() {
             charging: false
         }
     );
-    // Polling real: `05` = 4000 Hz; depois de mudar no app oficial, `03` = 1000 Hz.
+    // Byte 10 = key scan rate (expoente, fora do perfil); byte 11 = report rate (polling),
+    // na codificação da memória. No mouse do mantenedor: `02` = 500 Hz e depois `84` = 2000 Hz,
+    // conferido com o app oficial.
     let polling = |status: &[u8]| match p.parse_response(CapabilityKind::PollingRate, status) {
         Ok(Capability::PollingRate { current, .. }) => current,
         outro => panic!("{outro:?}"),
     };
-    assert_eq!(polling(&real), 4000);
-    let mut mil = real;
-    mil[10] = 0x03;
-    assert_eq!(polling(&mil), 1000);
+    assert_eq!(polling(&real), 500);
+    let mut agora = real;
+    agora[11] = 0x84;
+    assert_eq!(polling(&agora), 2000);
+    assert_eq!(polling(&status), 2000);
     // DPI X do estágio ativo: `40 06` = 1600, igual ao app oficial.
     assert!(matches!(
         p.parse_response(CapabilityKind::Dpi, &real).unwrap(),
