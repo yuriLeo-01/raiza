@@ -21,6 +21,24 @@
     }
   ],
   "capabilities": {
+    "dpi": {
+      "min": 50,
+      "max": 26000,
+      "step": 10,
+      "read": {
+        "response": {
+          "type": "input",
+          "report_id": 7,
+          "length": 18,
+          "fields": {
+            "value": {
+              "at": 2,
+              "encoding": "u16le"
+            }
+          }
+        }
+      }
+    },
     "polling_rate": {
       "rates": {
         "125": 0,

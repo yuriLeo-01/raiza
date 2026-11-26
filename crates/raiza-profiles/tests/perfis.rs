@@ -636,6 +636,11 @@ fn rapoo_vt2_le_o_status_documentado() {
     let mut mil = real;
     mil[10] = 0x03;
     assert_eq!(polling(&mil), 1000);
+    // DPI X do estágio ativo: `40 06` = 1600, igual ao app oficial.
+    assert!(matches!(
+        p.parse_response(CapabilityKind::Dpi, &real).unwrap(),
+        Capability::Dpi { level, .. } if level.current == 1600
+    ));
     // Só escuta: nada é enviado para ler.
     assert!(p.read_request(CapabilityKind::Battery).is_none());
 }
