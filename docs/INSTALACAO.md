@@ -13,6 +13,31 @@ Este guia descreve onde instalar cada arquivo de sistema do Raiza, como habilita
 
 > **Nota:** tanto a unidade systemd quanto o arquivo de ativação D-Bus apontam para `/usr/bin/raizad`. Se você instalar o binário em outro caminho (como `/usr/local/bin/raizad`), ajuste `ExecStart=` e `Exec=` nesses dois arquivos.
 
+## Arch e derivados (AUR)
+
+O pacote `raiza-git` instala tudo da tabela acima (daemon, CLI, app, regra udev, unidade systemd, ativação D-Bus, ícones, perfis e completions de shell). Ele baixa o código do GitHub e compila na hora.
+
+```sh
+git clone https://github.com/yuriLeo-01/raiza.git
+cd raiza/packaging/aur
+makepkg -si
+```
+
+Depois, habilite o daemon e **desplugue e plugue de novo os aparelhos** para a regra udev valer (o pacman já recarrega as regras):
+
+```sh
+systemctl --user enable --now raizad
+raiza-ctl list
+```
+
+Opcionais: `pipewire` + `wireplumber` (volume e mudo), `bluez` (Bluetooth) e `upower` (bateria). Perfis próprios vão em `~/.local/share/raiza/profiles`; os do pacote ficam em `/usr/share/raiza/profiles`.
+
+Para testar o PKGBUILD com o código local, copie `PKGBUILD` e `raiza-git.install` para um diretório temporário e troque a `source` por `git+file:///caminho/do/repositorio` (só entra o que está commitado).
+
+## Instalação manual
+
+Os passos abaixo servem para outras distribuições.
+
 ## 1. Compilar e instalar o binário
 
 ```sh

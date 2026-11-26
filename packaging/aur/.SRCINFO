@@ -1,0 +1,25 @@
+pkgbase = raiza-git
+	pkgdesc = Hub único para gerenciar periféricos no Linux, de qualquer marca (daemon, CLI e app GTK4)
+	pkgver = 0.0.1.r0.g0000000
+	pkgrel = 1
+	url = https://github.com/yuriLeo-01/raiza
+	install = raiza-git.install
+	arch = x86_64
+	arch = aarch64
+	license = GPL-3.0-or-later
+	makedepends = cargo
+	makedepends = git
+	depends = gtk4
+	depends = libadwaita
+	depends = systemd-libs
+	depends = dbus
+	optdepends = pipewire: volume e mudo (usa pw-dump)
+	optdepends = wireplumber: volume e mudo (usa wpctl)
+	optdepends = bluez: dispositivos Bluetooth
+	optdepends = upower: nível de bateria
+	provides = raiza
+	conflicts = raiza
+	source = raiza-git::git+https://github.com/yuriLeo-01/raiza.git
+	sha256sums = SKIP
+
+pkgname = raiza-git

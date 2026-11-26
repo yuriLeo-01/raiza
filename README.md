@@ -36,6 +36,17 @@ cargo build
 
 Dependências de sistema (Arch): `rust gtk4 libadwaita hidapi systemd-libs dbus`.
 
+## Instalar
+
+No Arch e derivados (CachyOS etc.), pelo PKGBUILD do repositório:
+
+```sh
+cd packaging/aur && makepkg -si
+systemctl --user enable --now raizad
+```
+
+Desplugue e plugue de novo os aparelhos para a regra udev valer. Detalhes e instalação manual em [`docs/INSTALACAO.md`](docs/INSTALACAO.md).
+
 ## Licença
 
 GPL-3.0-or-later.
