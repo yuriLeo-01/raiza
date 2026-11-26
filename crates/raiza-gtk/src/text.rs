@@ -3,7 +3,9 @@
 //! Os ícones são nomes do tema simbólico do GNOME (Adwaita).
 
 use raiza_core::dbus::{ClientError, DbusError};
-use raiza_core::{Capability, CapabilityKind, ConnectionKind, DeviceInfo, DeviceKind, Level};
+use raiza_core::{
+    Capability, CapabilityKind, ConnectionKind, DeviceInfo, DeviceKind, Level, RaizaError,
+};
 
 /// Título do grupo na barra lateral.
 pub fn kind_group_title(kind: DeviceKind) -> &'static str {
@@ -295,6 +297,40 @@ pub fn version_mismatch(daemon_api: u32, daemon_version: &str) -> Problem {
     }
 }
 
+/// Dica das capacidades que não aceitam escrita (pilar 1).
+pub const READ_ONLY_TOOLTIP: &str =
+    "somente leitura: perfil não verificado ou o aparelho não aceita mudança";
+
+/// Toast de uma escrita que não saiu porque não há conexão com o daemon.
+pub fn write_without_connection(kind: CapabilityKind) -> String {
+    format!(
+        "Não deu para mudar {}: sem conexão com o serviço do Raiza",
+        capability_title(kind)
+    )
+}
+
+/// Toast de uma escrita recusada ou que falhou. Texto puro (escape antes de usar como markup).
+pub fn write_error(kind: CapabilityKind, err: &ClientError) -> String {
+    let title = capability_title(kind);
+    let reason = match err {
+        ClientError::Raiza(RaizaError::OutOfRange { detail, .. }) => {
+            format!("valor fora dos limites ({detail})")
+        }
+        ClientError::Raiza(RaizaError::ReadOnly(_)) => "a capacidade é somente leitura".into(),
+        ClientError::Raiza(RaizaError::Unsupported(_)) => {
+            "o aparelho não tem essa capacidade".into()
+        }
+        ClientError::Raiza(RaizaError::NotFound(_)) => "o aparelho não está mais conectado".into(),
+        ClientError::Raiza(RaizaError::Io(msg)) => format!("falha ao falar com o aparelho ({msg})"),
+        ClientError::Raiza(RaizaError::Permission(msg)) => {
+            format!("sem permissão para acessar o aparelho ({msg})")
+        }
+        ClientError::Bus(_) => "o serviço do Raiza não respondeu".into(),
+        ClientError::Decode(msg) => format!("resposta inválida do daemon ({msg})"),
+    };
+    format!("Não deu para mudar {title}: {reason}")
+}
+
 /// Escapa texto livre para entrar em markup do Pango.
 pub fn escape_markup(text: &str) -> String {
     let mut out = String::with_capacity(text.len());
@@ -313,7 +349,7 @@ pub fn escape_markup(text: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use raiza_core::{Color, DeviceId, RaizaError, RgbZone};
+    use raiza_core::{Color, DeviceId, RgbZone};
 
     use super::*;
 
@@ -518,6 +554,26 @@ mod tests {
 
         let p = version_mismatch(2, "0.9");
         assert!(p.description.contains("API 2") && p.description.contains("API 1"));
+    }
+
+    #[test]
+    fn erros_de_escrita() {
+        let err = ClientError::Raiza(RaizaError::OutOfRange {
+            kind: CapabilityKind::Dpi,
+            detail: "1625 não é múltiplo do passo 50 a partir de 400".into(),
+        });
+        assert_eq!(
+            write_error(CapabilityKind::Dpi, &err),
+            "Não deu para mudar DPI: valor fora dos limites \
+             (1625 não é múltiplo do passo 50 a partir de 400)"
+        );
+        let err = ClientError::Raiza(RaizaError::Permission("hidraw".into()));
+        assert!(write_error(CapabilityKind::Rgb, &err).contains("Iluminação: sem permissão"));
+        let err = ClientError::Raiza(RaizaError::ReadOnly(CapabilityKind::Mute));
+        assert!(write_error(CapabilityKind::Mute, &err).ends_with("somente leitura"));
+        let err = ClientError::Raiza(RaizaError::Io("cano quebrado".into()));
+        assert!(write_error(CapabilityKind::Volume, &err).contains("cano quebrado"));
+        assert!(write_without_connection(CapabilityKind::Volume).contains("Volume"));
     }
 
     #[test]
