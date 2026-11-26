@@ -47,7 +47,7 @@ descartado em 2026-11-25); `sonnet` para tarefas simples.
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
 | T15 | [Formato e validação de perfis](T15-perfis-formato.md) | claude (líder) | T01 | ✅ |
-| T16 | [Executor de perfis via hidraw](T16-perfis-executor.md) | claude | T15, T04 | ⬜ |
+| T16 | [Executor de perfis via hidraw](T16-perfis-executor.md) | claude | T15, T04 | 🟦 |
 | T17 | [Protocolo do mouse Rapoo 24ae:1423](T17-protocolo-rapoo.md) | humano + claude | T15 | ⏸ aguardando capturas (pesquisa nas notas) |
 | T18 | [Protocolo do teclado Akko (3151:502f com fio + dongle próprio)](T18-protocolo-akko.md) | humano + claude | T15 | ⏸ aguardando capturas (pesquisa nas notas) |
 | T20 | [Headset Akko S9 Ultra 36eb:1087: protocolo, bateria, sidetone e EQ](T20-headset-akko-s9.md) | humano + claude | T15 | ⏸ aguardando capturas (pesquisa nas notas) |
