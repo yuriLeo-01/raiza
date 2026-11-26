@@ -48,7 +48,7 @@ descartado em 2026-11-25); `sonnet` para tarefas simples.
 |---|---|---|---|---|
 | T15 | [Formato e validação de perfis](T15-perfis-formato.md) | claude (líder) | T01 | ✅ |
 | T16 | [Executor de perfis via hidraw](T16-perfis-executor.md) | claude | T15, T04 | ✅ |
-| T17 | [Protocolo do mouse Rapoo 24ae:1423](T17-protocolo-rapoo.md) | humano + claude | T15 | ⏸ perfil de leitura na `main` (pesquisa); escrita e DPI aguardam teste no aparelho |
+| T17 | [Protocolo do mouse Rapoo 24ae:1423](T17-protocolo-rapoo.md) | humano + claude | T15 | 🟡 leitura (bateria, DPI, polling) e escrita de polling verificadas no aparelho; escrita de DPI pendente |
 | T18 | [Protocolo do teclado Akko (3151:502f com fio + dongle próprio)](T18-protocolo-akko.md) | humano + claude | T15 | 🟡 bateria pelo dongle (3151:5038) pronta; RGB e identify aguardam capturas |
 | T20 | [Headset Akko S9 Ultra 36eb:1087: protocolo, bateria, sidetone e EQ](T20-headset-akko-s9.md) | humano + claude | T15 | ⏸ perfil de bateria na `main` (pesquisa); sidetone e EQ aguardam capturas |
 | T21 | [Capacidades `Sidetone` e `Equalizer` (contrato)](T21-sidetone-eq.md) | claude (líder) | T20 | ⏸ aguardando T20 |
