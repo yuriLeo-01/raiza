@@ -478,3 +478,77 @@ async fn releitura_periodica_traz_valor_novo() {
         outro => panic!("esperava CapabilityChanged: {outro:?}"),
     }
 }
+
+/// Confirmação de escrita: input `08 04 01 …` (report 8, 16 bytes).
+fn com_write_ack(v: &mut serde_json::Value) {
+    v["write_ack"] = serde_json::json!({
+        "type": "input", "report_id": 8, "length": 16,
+        "expect": [{ "at": 0, "value": 4 }, { "at": 1, "value": 1 }]
+    });
+}
+
+#[tokio::test]
+async fn escrita_confirmada_pelo_aparelho() {
+    let (p, _backend, mouse) = mouse_no_cabo(perfil(com_write_ack)).await;
+    mouse.with_state(|st| st.write_ack = Some(1));
+    p.write(&id_cabo(), CapabilityValue::Dpi(3200))
+        .await
+        .unwrap();
+    assert_eq!(mouse.with_state(|st| st.dpi_raw), 64);
+    let cap = p.read(&id_cabo(), CapabilityKind::Dpi).await.unwrap();
+    assert_eq!(dpi(&cap), (3200, true));
+}
+
+/// Aparelho que não confirma (ex.: mouse dormindo, status `00`): a escrita falha e o
+/// valor em cache não muda, em vez de mostrar um DPI que não foi gravado.
+#[tokio::test]
+async fn escrita_sem_confirmacao_falha() {
+    let (p, _backend, mouse) = mouse_no_cabo(perfil(com_write_ack)).await;
+    mouse.with_state(|st| st.write_ack = Some(0));
+    let erro = p
+        .write(&id_cabo(), CapabilityValue::Dpi(3200))
+        .await
+        .unwrap_err();
+    assert!(
+        matches!(&erro, RaizaError::Io(m) if m.contains("não confirmada")),
+        "{erro:?}"
+    );
+    assert_eq!(mouse.with_state(|st| st.dpi_raw), 32);
+    let lista = p.discover().await.unwrap();
+    assert_eq!(
+        dpi(lista[0].capability(CapabilityKind::Dpi).unwrap()),
+        (1600, true)
+    );
+}
+
+/// Sem leitura válida ainda (o aparelho estava ocupado ao abrir), a escrita lê antes de
+/// gravar; se a leitura falha, nada é gravado.
+#[tokio::test]
+async fn escrita_le_antes_quando_nao_ha_leitura() {
+    let backend = FakeBackend::default();
+    let mouse = FakeMouse::new(PID_CABO, "1-1");
+    mouse.with_state(|st| st.busy = SEMPRE_OCUPADO);
+    backend.plug(&mouse);
+    let (p, _) = provedor(&backend, vec![perfil(|_| {})]);
+    let lista = p.discover().await.unwrap();
+    assert!(lista[0].capability(CapabilityKind::Dpi).is_none());
+
+    // Continua ocupado: a leitura prévia falha e nenhuma escrita sai.
+    let erro = p
+        .write(&id_cabo(), CapabilityValue::Dpi(3200))
+        .await
+        .unwrap_err();
+    assert!(
+        matches!(&erro, RaizaError::Io(m) if m.contains("antes de gravar")),
+        "{erro:?}"
+    );
+    assert!(mouse.dpi_writes().is_empty());
+
+    // Pronto: lê (DPI 1600) e grava.
+    mouse.with_state(|st| st.busy = 0);
+    p.write(&id_cabo(), CapabilityValue::Dpi(3200))
+        .await
+        .unwrap();
+    assert_eq!(mouse.dpi_writes().len(), 1);
+    assert_eq!(mouse.with_state(|st| st.dpi_raw), 64);
+}

@@ -35,6 +35,12 @@ pub struct Profile {
     /// aparelhos com protocolos diferentes.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub identify: Option<IdentifySpec>,
+    /// Confirmação de escrita: a resposta que o aparelho manda depois de aceitar cada
+    /// relatório de escrita. Com ela, o executor espera a confirmação de cada relatório
+    /// (descartando respostas como "ocupado") e devolve erro se ela não vier, em vez de
+    /// dar a escrita como feita. Mesmo formato da resposta de `identify`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub write_ack: Option<IdentifyResponse>,
     /// O que o perfil sabe ler e escrever.
     pub capabilities: ProfileCapabilities,
 }
@@ -49,7 +55,7 @@ pub struct IdentifySpec {
     pub response: IdentifyResponse,
 }
 
-/// Resposta esperada da identificação.
+/// Resposta fixa esperada: a da identificação ou a confirmação de escrita.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct IdentifyResponse {

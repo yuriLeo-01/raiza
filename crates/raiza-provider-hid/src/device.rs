@@ -44,7 +44,11 @@ fn uses_input(profile: &Profile) -> bool {
         .identify
         .as_ref()
         .is_some_and(|i| i.response.report_type == ReportType::Input);
+    let ack = profile
+        .write_ack()
+        .is_some_and(|a| a.report_type == ReportType::Input);
     identify
+        || ack
         || READABLE.iter().any(|k| {
             profile
                 .response_spec(*k)
@@ -364,8 +368,13 @@ impl Device {
     /// Valida contra o estado mais recente, gera os relatórios e envia. Bloqueia.
     ///
     /// Quem chama já conferiu identificação e `verified`; aqui confere de novo, porque
-    /// nada sai sem isso (pilar 1).
-    pub fn write_now(&self, value: &CapabilityValue) -> Result<(), RaizaError> {
+    /// nada sai sem isso (pilar 1). Com `write_ack` no perfil, espera a confirmação de
+    /// cada relatório por até `ack_timeout` e só então dá a escrita como feita.
+    pub fn write_now(
+        &self,
+        value: &CapabilityValue,
+        ack_timeout: Duration,
+    ) -> Result<(), RaizaError> {
         let kind = value.kind();
         if !self.identified() || !self.profile.verified {
             return Err(RaizaError::ReadOnly(kind));
@@ -374,8 +383,33 @@ impl Device {
         let current = self.raw(kind).ok_or(RaizaError::Unsupported(kind))?;
         // Validação da T15 imediatamente antes de enviar.
         let reports = self.profile.build_write(&current, value)?;
-        for report in &reports {
-            exchange::send(self.handle.as_ref(), report)?;
+        for (i, report) in reports.iter().enumerate() {
+            let Some(ack) = self.profile.write_ack() else {
+                exchange::send(self.handle.as_ref(), report)?;
+                continue;
+            };
+            let expected = Expected {
+                report_type: ack.report_type,
+                report_id: ack.report_id,
+                length: ack.length,
+            };
+            exchange::exchange(
+                self.handle.as_ref(),
+                self.hub.as_deref(),
+                Some(report),
+                expected,
+                ack_timeout,
+                |bytes| self.profile.check_write_ack(bytes),
+            )
+            .map_err(|e| {
+                // Parte dos relatórios pode ter sido aceita: o próximo status ou a próxima
+                // leitura mostra o estado real.
+                RaizaError::Io(format!(
+                    "escrita não confirmada pelo aparelho (relatório {} de {}): {e}",
+                    i + 1,
+                    reports.len()
+                ))
+            })?;
         }
         let mut updated = current;
         updated.apply(value)?;

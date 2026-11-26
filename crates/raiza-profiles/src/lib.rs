@@ -151,6 +151,36 @@ impl Profile {
         }
     }
 
+    /// Confirmação de escrita descrita no perfil, se houver.
+    pub fn write_ack(&self) -> Option<&format::IdentifyResponse> {
+        self.write_ack.as_ref()
+    }
+
+    /// Confere a resposta a um relatório de escrita (`bytes[0]` é o report ID). Sem
+    /// `write_ack` no perfil, sempre aceita. Resposta diferente (ex.: "ocupado") vira
+    /// [`RaizaError::Io`], para o executor descartá-la e esperar a próxima.
+    pub fn check_write_ack(&self, bytes: &[u8]) -> Result<(), RaizaError> {
+        let Some(r) = &self.write_ack else {
+            return Ok(());
+        };
+        let (&rid, data) = bytes
+            .split_first()
+            .ok_or_else(|| RaizaError::Io("confirmação vazia".into()))?;
+        if rid != r.report_id || data.len() < r.length {
+            return Err(RaizaError::Io(format!(
+                "confirmação inesperada: report ID {rid}, {} bytes",
+                data.len()
+            )));
+        }
+        match r.expect.iter().find(|e| data[e.at] != e.value) {
+            Some(e) => Err(RaizaError::Io(format!(
+                "aparelho não confirmou a escrita: byte {} = {:#04x}, esperado {:#04x}",
+                e.at, data[e.at], e.value
+            ))),
+            None => Ok(()),
+        }
+    }
+
     /// Relatório a enviar antes de ler `kind`, se o perfil pedir um.
     pub fn read_request(&self, kind: CapabilityKind) -> Option<HidReport> {
         let req = self.read_spec(kind)?.request.as_ref()?;

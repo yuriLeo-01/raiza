@@ -234,58 +234,13 @@
           "$ref": "#/$defs/report"
         },
         "response": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "type",
-            "report_id",
-            "length",
-            "expect"
-          ],
-          "properties": {
-            "type": {
-              "enum": [
-                "feature",
-                "input"
-              ]
-            },
-            "report_id": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 255
-            },
-            "length": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 64
-            },
-            "expect": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "at",
-                  "value"
-                ],
-                "properties": {
-                  "at": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 63
-                  },
-                  "value": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 255
-                  }
-                }
-              }
-            }
-          }
+          "$ref": "#/$defs/fixedResponse"
         }
       }
+    },
+    "write_ack": {
+      "$ref": "#/$defs/fixedResponse",
+      "description": "Confirmação de escrita: a resposta que o aparelho manda ao aceitar cada relatório. Sem ela, o executor não espera confirmação."
     }
   },
   "$defs": {
@@ -575,7 +530,64 @@
         },
         "connection": {
           "description": "Meio desta conexão: wired (cabo) ou wireless (dongle).",
-          "enum": ["wired", "wireless", "bluetooth", "other"]
+          "enum": [
+            "wired",
+            "wireless",
+            "bluetooth",
+            "other"
+          ]
+        }
+      }
+    },
+    "fixedResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "report_id",
+        "length",
+        "expect"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "feature",
+            "input"
+          ]
+        },
+        "report_id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "length": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "expect": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "at",
+              "value"
+            ],
+            "properties": {
+              "at": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 63
+              },
+              "value": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              }
+            }
+          }
         }
       }
     }

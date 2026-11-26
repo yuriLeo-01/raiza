@@ -7,8 +7,8 @@
 use std::collections::BTreeSet;
 
 use crate::format::{
-    ChecksumKind, Encoding, Field, FieldName, Profile, ReadSpec, ReportTemplate, ReportType,
-    ResponseSpec,
+    ChecksumKind, Encoding, Field, FieldName, IdentifyResponse, Profile, ReadSpec, ReportTemplate,
+    ReportType, ResponseSpec,
 };
 
 /// Maior relatório aceito, em bytes (sem o report ID). É o tamanho de pacote de um
@@ -277,28 +277,43 @@ pub fn validate(p: &Profile) -> Result<(), ProfileError> {
 
     if let Some(id) = &p.identify {
         check_template(&id.request, "identify.request", &[], &[])?;
-        let r = &id.response;
-        ensure(
-            matches!(r.report_type, ReportType::Feature | ReportType::Input),
-            "identify.response.type",
-            || "respostas só podem ser feature ou input".into(),
+        check_fixed_response(
+            &id.response,
+            "identify.response",
+            "informe os bytes que identificam o aparelho",
         )?;
-        ensure(
-            (1..=MAX_REPORT_LEN).contains(&r.length),
-            "identify.response.length",
-            || format!("tamanho {} fora de 1..={MAX_REPORT_LEN}", r.length),
-        )?;
-        ensure(!r.expect.is_empty(), "identify.response.expect", || {
-            "informe os bytes que identificam o aparelho".into()
-        })?;
-        for e in &r.expect {
-            ensure(e.at < r.length, "identify.response.expect", || {
-                format!("posição {} passa do fim da resposta", e.at)
-            })?;
-        }
+    }
+    if let Some(ack) = &p.write_ack {
+        check_fixed_response(ack, "write_ack", "informe os bytes que confirmam a escrita")?;
     }
 
     check_opcodes(p)
+}
+
+/// Resposta fixa (identificação ou confirmação de escrita): tipo, tamanho e bytes esperados.
+fn check_fixed_response(
+    r: &IdentifyResponse,
+    path: &str,
+    missing_expect: &str,
+) -> Result<(), ProfileError> {
+    ensure(
+        matches!(r.report_type, ReportType::Feature | ReportType::Input),
+        &format!("{path}.type"),
+        || "respostas só podem ser feature ou input".into(),
+    )?;
+    ensure(
+        (1..=MAX_REPORT_LEN).contains(&r.length),
+        &format!("{path}.length"),
+        || format!("tamanho {} fora de 1..={MAX_REPORT_LEN}", r.length),
+    )?;
+    let epath = format!("{path}.expect");
+    ensure(!r.expect.is_empty(), &epath, || missing_expect.into())?;
+    for e in &r.expect {
+        ensure(e.at < r.length, &epath, || {
+            format!("posição {} passa do fim da resposta", e.at)
+        })?;
+    }
+    Ok(())
 }
 
 fn raw_of(value: u32, f: &Field) -> u32 {

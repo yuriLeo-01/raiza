@@ -689,6 +689,16 @@ fn rapoo_vt2_le_o_status_documentado() {
         &[0x06, 0xA5, 0xA5, 0x02, 0xCE, 0x08, 0x00, 0x00, 0xA4, 0x06]
     );
     assert!(reports.iter().all(|r| r.bytes.len() == 33));
+    // Confirmação de escrita: resposta `06 01 …` (32 bytes) lida do aparelho; `02` (ocupado)
+    // e `00` (mouse dormindo) não confirmam.
+    let mut ack = [0u8; 32];
+    ack[0] = 0x06;
+    ack[1] = 0x01;
+    assert!(p.check_write_ack(&ack).is_ok());
+    for status in [0x00, 0x02] {
+        ack[1] = status;
+        assert!(matches!(p.check_write_ack(&ack), Err(RaizaError::Io(_))));
+    }
     // Sem estágio lido do aparelho, nada é gerado.
     let inicial = p
         .capabilities()
@@ -801,4 +811,34 @@ fn stage_exige_leitura_e_limite() {
         v["capabilities"]["dpi"]["write"][1]["fields"]["stage"]["encoding"] = json!("u8");
     });
     assert!(e.contains("último estágio"), "{e}");
+}
+
+/// `write_ack` usa as mesmas regras da resposta do `identify`.
+#[test]
+fn write_ack_validado() {
+    let ok = carregar_com(|v| {
+        v["write_ack"] = json!({"type": "input", "report_id": 6, "length": 31,
+                                "expect": [{"at": 0, "value": 1}]});
+    });
+    assert!(ok.is_ok(), "{ok:?}");
+    rejeitado(
+        carregar_com(|v| {
+            v["write_ack"] = json!({"type": "input", "report_id": 6, "length": 31, "expect": []});
+        }),
+        "confirmam a escrita",
+    );
+    rejeitado(
+        carregar_com(|v| {
+            v["write_ack"] = json!({"type": "output", "report_id": 6, "length": 31,
+                                    "expect": [{"at": 0, "value": 1}]});
+        }),
+        "feature ou input",
+    );
+    rejeitado(
+        carregar_com(|v| {
+            v["write_ack"] = json!({"type": "input", "report_id": 6, "length": 4,
+                                    "expect": [{"at": 9, "value": 1}]});
+        }),
+        "passa do fim",
+    );
 }

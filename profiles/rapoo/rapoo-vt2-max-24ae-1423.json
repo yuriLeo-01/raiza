@@ -22,6 +22,17 @@
       "connection": "wireless"
     }
   ],
+  "write_ack": {
+    "type": "input",
+    "report_id": 6,
+    "length": 31,
+    "expect": [
+      {
+        "at": 0,
+        "value": 1
+      }
+    ]
+  },
   "capabilities": {
     "dpi": {
       "min": 50,

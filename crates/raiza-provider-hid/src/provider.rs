@@ -365,9 +365,27 @@ impl<B: HidBackend, P: ProfileSource> Provider for HidProfilesProvider<B, P> {
             info!(%id, %kind, "escrita recusada: perfil não verificado");
             return Err(RaizaError::ReadOnly(kind));
         }
+        // Sem uma leitura válida, o estado em cache é o inicial do perfil: lê antes de
+        // gravar (o DPI, por exemplo, precisa do estágio em uso).
+        if device.profile.response_spec(kind).is_some() && !device.seen(kind) {
+            let timeout = if is_spontaneous(&device.profile, kind) {
+                self.inner.timeouts.spontaneous
+            } else {
+                self.inner.timeouts.response
+            };
+            let reader = Arc::clone(&device);
+            blocking(move || reader.read_now(kind, timeout))
+                .await
+                .map_err(|e| {
+                    RaizaError::Io(format!(
+                        "não foi possível ler o estado atual antes de gravar: {e}"
+                    ))
+                })?;
+        }
+        let ack_timeout = self.inner.timeouts.response;
         let id = id.clone();
         blocking(move || {
-            device.write_now(&value).inspect_err(|e| {
+            device.write_now(&value, ack_timeout).inspect_err(|e| {
                 warn!(%id, %kind, error = %e, "escrita falhou");
             })
         })

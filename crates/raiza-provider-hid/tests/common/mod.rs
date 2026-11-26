@@ -3,7 +3,8 @@
 //! Protocolo do mouse falso (interface 1, usage page `ff00`):
 //! - output `08 03 …`: pede o DPI; responde com input `08 03 <status> 00 <dpi/50 u16le> …`,
 //!   precedido de `busy` respostas "ocupado" (status `02`). Status `01` = pronto.
-//! - output `08 04 00 00 <dpi/50 u16le> …`: grava o DPI.
+//! - output `08 04 00 00 <dpi/50 u16le> …`: grava o DPI. Com `write_ack`, responde com
+//!   input `08 04 <status> …` (`01` = aceito; outro valor = recusado, sem gravar).
 //! - GET_FEATURE do report `0`: devolve `identity` (resposta da identificação).
 //! - input `07 20 <bateria> <carregando no bit 7> …`: relatório espontâneo ([`FakeMouse::push_input`]).
 
@@ -87,6 +88,8 @@ pub struct MouseState {
     pub busy: usize,
     /// Resposta do GET_FEATURE do report 0.
     pub identity: Vec<u8>,
+    /// Status da confirmação de escrita (`None`: não confirma). Só `01` grava.
+    pub write_ack: Option<u8>,
     /// Tudo o que o host mandou: `(tipo, bytes com o report ID)`.
     pub sent: Vec<(ReportType, Vec<u8>)>,
 }
@@ -110,6 +113,7 @@ impl FakeMouse {
                 dpi_raw: 32,
                 busy: 0,
                 identity: IDENTIDADE_CERTA.to_vec(),
+                write_ack: None,
                 sent: Vec::new(),
             }),
             queues: Mutex::default(),
@@ -186,10 +190,20 @@ impl FakeMouse {
                     }
                     out
                 }
-                [8, 4, _, _, _, lo, hi, ..] => {
-                    st.dpi_raw = u16::from_le_bytes([*lo, *hi]);
-                    Vec::new()
-                }
+                [8, 4, _, _, _, lo, hi, ..] => match st.write_ack {
+                    None => {
+                        st.dpi_raw = u16::from_le_bytes([*lo, *hi]);
+                        Vec::new()
+                    }
+                    Some(status) => {
+                        if status == 1 {
+                            st.dpi_raw = u16::from_le_bytes([*lo, *hi]);
+                        }
+                        let mut ack = vec![0u8; 17];
+                        ack[..3].copy_from_slice(&[8, 4, status]);
+                        vec![ack]
+                    }
+                },
                 _ => Vec::new(),
             }
         };

@@ -101,6 +101,24 @@ o aparelho fica somente leitura.
 }
 ```
 
+### Confirmação de escrita (`write_ack`)
+
+Se o aparelho responde a cada escrita com um "aceito", descreva essa resposta em `write_ack`
+(mesmo formato da resposta de `identify`). O Raiza então manda cada relatório de escrita e espera
+a confirmação antes do próximo, descartando respostas que não batem (como "ocupado") até o tempo
+acabar. Sem confirmação, a escrita volta como erro e o valor mostrado não muda. Sem `write_ack`, o
+Raiza só envia, sem conferir se o aparelho aceitou.
+
+```json
+"write_ack": { "type": "input", "report_id": 6, "length": 31, "expect": [{ "at": 0, "value": 1 }] }
+```
+
+No Rapoo VT2, `01` é "pronto", `02` é "ocupado" e `00` é "o dongle respondeu, mas o mouse está
+dormindo ou longe".
+
+Antes de gravar, se a capacidade ainda não teve nenhuma leitura válida, o Raiza lê primeiro (o DPI
+por estágio, por exemplo, precisa saber o estágio em uso). Se essa leitura falha, nada é gravado.
+
 ### Campo (`fields.<nome>`)
 
 | Chave | Padrão | Significado |
