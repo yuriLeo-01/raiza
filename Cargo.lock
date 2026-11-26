@@ -1318,7 +1318,6 @@ dependencies = [
 name = "raiza-gtk"
 version = "0.0.1"
 dependencies = [
- "anyhow",
  "futures-util",
  "raiza-core",
  "relm4",

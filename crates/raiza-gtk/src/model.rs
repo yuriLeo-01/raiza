@@ -151,6 +151,7 @@ impl Devices {
     }
 
     /// Quantos dispositivos existem.
+    #[cfg(test)]
     pub fn len(&self) -> usize {
         self.entries.len()
     }
