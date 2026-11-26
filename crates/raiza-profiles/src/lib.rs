@@ -115,6 +115,35 @@ impl Profile {
         out
     }
 
+    /// Pedido de identificação, se o perfil tiver um. O executor deve mandá-lo e passar a
+    /// resposta para [`Profile::check_identity`] **antes de qualquer escrita** (pilar 1).
+    pub fn identify_request(&self) -> Option<HidReport> {
+        self.identify.as_ref().map(|i| encode(&i.request, &[]))
+    }
+
+    /// Confere a resposta da identificação (`bytes[0]` é o report ID). Sem `identify` no
+    /// perfil, sempre aceita. Resposta diferente vira erro, e o executor deve tratar o
+    /// aparelho como somente leitura: ele não é o que o perfil descreve.
+    pub fn check_identity(&self, bytes: &[u8]) -> Result<(), RaizaError> {
+        let Some(id) = &self.identify else {
+            return Ok(());
+        };
+        let r = &id.response;
+        let matches = bytes.split_first().is_some_and(|(&rid, data)| {
+            rid == r.report_id
+                && data.len() >= r.length
+                && r.expect.iter().all(|e| data[e.at] == e.value)
+        });
+        if matches {
+            Ok(())
+        } else {
+            Err(RaizaError::Io(format!(
+                "identificação não confere com o perfil {:?}: o aparelho fica somente leitura",
+                self.name
+            )))
+        }
+    }
+
     /// Relatório a enviar antes de ler `kind`, se o perfil pedir um.
     pub fn read_request(&self, kind: CapabilityKind) -> Option<HidReport> {
         let req = self.read_spec(kind)?.request.as_ref()?;
@@ -339,15 +368,28 @@ fn encode(t: &ReportTemplate, values: &[(FieldName, u32)]) -> HidReport {
         }
     }
     if let Some(c) = &t.checksum {
-        let range = &data[c.from..c.to];
-        data[c.at] = match c.kind {
-            format::ChecksumKind::Sum8 => range.iter().fold(0u8, |a, b| a.wrapping_add(*b)),
-            format::ChecksumKind::Sum8Neg => range
-                .iter()
-                .fold(0u8, |a, b| a.wrapping_add(*b))
-                .wrapping_neg(),
-            format::ChecksumKind::Xor8 => range.iter().fold(0u8, |a, b| a ^ b),
-        };
+        let id = c.include_report_id.then_some(t.report_id);
+        let covered: Vec<u8> = id
+            .into_iter()
+            .chain(data[c.from..c.to].iter().copied())
+            .collect();
+        let sum = covered.iter().fold(0u8, |a, b| a.wrapping_add(*b));
+        match c.kind {
+            format::ChecksumKind::Sum8 => data[c.at] = sum,
+            format::ChecksumKind::Sum8Neg => data[c.at] = sum.wrapping_neg(),
+            format::ChecksumKind::Sum8Inv => data[c.at] = 0xFF - sum,
+            format::ChecksumKind::Xor8 => data[c.at] = covered.iter().fold(0u8, |a, b| a ^ b),
+            format::ChecksumKind::Crc16 => {
+                let poly = c.poly.map_or(0, |h| h.0);
+                let init = c.init.map_or(0, |h| h.0);
+                let crc = crc16(&covered, poly, init);
+                let bytes = match c.encoding {
+                    Some(format::Encoding::U16le) => crc.to_le_bytes(),
+                    _ => crc.to_be_bytes(),
+                };
+                data[c.at..c.at + 2].copy_from_slice(&bytes);
+            }
+        }
     }
     let mut bytes = Vec::with_capacity(data.len() + 1);
     bytes.push(t.report_id);
@@ -356,6 +398,22 @@ fn encode(t: &ReportTemplate, values: &[(FieldName, u32)]) -> HidReport {
         report_type: t.report_type,
         bytes,
     }
+}
+
+/// CRC de 16 bits deslocando à direita (veja [`format::ChecksumKind::Crc16`]).
+pub fn crc16(bytes: &[u8], poly: u16, init: u16) -> u16 {
+    let mut crc = init;
+    for &b in bytes {
+        crc ^= u16::from(b);
+        for _ in 0..8 {
+            crc = if crc & 1 != 0 {
+                (crc >> 1) ^ poly
+            } else {
+                crc >> 1
+            };
+        }
+    }
+    crc
 }
 
 /// Lê um campo da resposta (já validado: cabe em `data`).

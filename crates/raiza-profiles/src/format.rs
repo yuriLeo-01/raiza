@@ -30,8 +30,38 @@ pub struct Profile {
     /// dongle). A primeira entrada é a conexão preferida.
     #[serde(rename = "match")]
     pub matcher: Matchers,
+    /// Consulta de identificação. Quando existe, o executor só escreve no dispositivo
+    /// depois que a resposta bater (pilar 1). Use quando o VID:PID é compartilhado por
+    /// aparelhos com protocolos diferentes.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub identify: Option<IdentifySpec>,
     /// O que o perfil sabe ler e escrever.
     pub capabilities: ProfileCapabilities,
+}
+
+/// Consulta de identificação: um pedido fixo e os bytes que a resposta precisa ter.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct IdentifySpec {
+    /// Pedido fixo, sem campos variáveis.
+    pub request: ReportTemplate,
+    /// Resposta esperada.
+    pub response: IdentifyResponse,
+}
+
+/// Resposta esperada da identificação.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct IdentifyResponse {
+    /// `feature` ou `input`.
+    #[serde(rename = "type")]
+    pub report_type: ReportType,
+    /// Report ID da resposta.
+    pub report_id: u8,
+    /// Tamanho da resposta, sem o report ID.
+    pub length: usize,
+    /// Bytes que identificam o aparelho. Não pode ser vazio.
+    pub expect: Vec<Expect>,
 }
 
 /// Uma ou mais identificações; no JSON, um objeto ou uma lista de objetos.
@@ -394,7 +424,7 @@ impl Encoding {
     }
 }
 
-/// Checksum de um byte.
+/// Checksum do relatório, calculado depois de aplicar os campos.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Checksum {
@@ -406,6 +436,28 @@ pub struct Checksum {
     pub from: usize,
     /// Último byte somado (exclusive).
     pub to: usize,
+    /// Se o report ID entra no cálculo, antes de `data[from..to]` (ex.: CRC do Akko S9 Ultra).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub include_report_id: bool,
+    /// Só `crc16`: polinômio, aplicado bit a bit deslocando à direita.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub poly: Option<Hex16>,
+    /// Só `crc16`: valor inicial.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub init: Option<Hex16>,
+    /// Só `crc16`: `u16le` ou `u16be`, como os 2 bytes são gravados.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub encoding: Option<Encoding>,
+}
+
+impl Checksum {
+    /// Quantos bytes o checksum ocupa.
+    pub fn width(&self) -> usize {
+        match self.kind {
+            ChecksumKind::Crc16 => 2,
+            _ => 1,
+        }
+    }
 }
 
 /// Algoritmos de checksum aceitos.
@@ -416,6 +468,11 @@ pub enum ChecksumKind {
     Sum8,
     /// Complemento de dois da soma (`0x100 - soma`), módulo 256.
     Sum8Neg,
+    /// Complemento de um da soma (`0xFF - soma`), módulo 256 (teclados ROYUAN, como o Akko).
+    Sum8Inv,
     /// XOR dos bytes.
     Xor8,
+    /// CRC de 16 bits: `crc ^= byte`, e em cada um dos 8 bits, se o bit 0 é 1,
+    /// `crc = (crc >> 1) ^ poly`, senão `crc >>= 1`. Pede `poly`, `init` e `encoding`.
+    Crc16,
 }

@@ -21,7 +21,10 @@ Os perfis ficam em `profiles/<fabricante>/<modelo>.json` e são validados pelo c
   - relatório enviado do tipo `input`, ou resposta do tipo `output`;
   - campo ou capacidade desconhecidos;
   - as sequências ASCII `DFU`, `BOOT`, `BTLD`, `IAP`, `FLASH`, `ERASE` ou `FIRMWARE` em qualquer
-    relatório enviado. São padrões de bootloader e gravação de firmware.
+    relatório enviado. São padrões de bootloader e gravação de firmware;
+  - a sequência `55 AA 55 AA` (gatilho de bootloader) em qualquer relatório enviado;
+  - opcodes destrutivos conhecidos de um fabricante, no primeiro byte do relatório. Hoje: VID
+    `3151` (ROYUAN) com `AC` (apaga a flash), `2C` (apaga a tela), `7F` ou `30` (bootloader).
 - **Pedidos de leitura (`read.request`) são consultas fixas**: não têm campos variáveis. Mesmo
   com `"verified": false`, o Raiza os envia para ler. Por isso, na revisão confira que o pedido
   só **consulta** e não altera nada no dispositivo.
@@ -73,7 +76,29 @@ Um exemplo completo e testado está em
 - `data`: os bytes fixos **depois** do report ID. O tamanho de `data` é o tamanho do relatório.
 - `fields`: onde o valor entra. `at` conta a partir do início de `data`.
 - `checksum`: calculado depois de aplicar os campos, sobre `data[from..to]` (o byte `to` fica
-  de fora). `sum8` = soma módulo 256; `sum8_neg` = `0x100 - soma`; `xor8` = XOR.
+  de fora). Com `"include_report_id": true`, o report ID entra antes desses bytes.
+  - `sum8` = soma módulo 256; `sum8_neg` = `0x100 - soma`; `sum8_inv` = `0xFF - soma` (teclados
+    ROYUAN, como os Akko); `xor8` = XOR. Todos ocupam 1 byte.
+  - `crc16`: 2 bytes, com `poly`, `init` (hex de 4 dígitos) e `encoding` (`u16le` ou `u16be`).
+    Algoritmo: `crc ^= byte` e, em cada um dos 8 bits, `crc = (crc >> 1) ^ poly` se o bit 0 for 1,
+    senão `crc >>= 1`. Exemplo, o headset Akko S9 Ultra:
+    `{"kind": "crc16", "at": 61, "from": 0, "to": 61, "include_report_id": true, "poly": "8005", "init": "ffff", "encoding": "u16be"}`.
+
+### Identificação (`identify`)
+
+Quando o mesmo VID:PID é usado por aparelhos com protocolos diferentes (caso dos teclados ROYUAN,
+VID `3151`), o perfil **deve** ter `identify`: uma consulta fixa e os bytes que a resposta precisa
+ter. O Raiza manda a consulta ao conectar e só permite escritas se a resposta bater. Se não bater,
+o aparelho fica somente leitura.
+
+```json
+"identify": {
+  "request": { "type": "feature", "report_id": 0, "data": "8f 00 00 00 00 00 00 00",
+               "checksum": { "kind": "sum8_inv", "at": 7, "from": 0, "to": 7 } },
+  "response": { "type": "feature", "report_id": 0, "length": 8,
+                "expect": [{ "at": 0, "value": 143 }, { "at": 1, "value": 13 }, { "at": 2, "value": 11 }] }
+}
+```
 
 ### Campo (`fields.<nome>`)
 

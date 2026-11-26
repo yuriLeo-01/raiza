@@ -391,6 +391,17 @@ fn schema_json_concorda_com_o_formato() {
         serde_json::from_str(include_str!("../../../profiles/schema.json")).unwrap();
     let validador = jsonschema::draft202012::new(&schema).expect("schema.json é válido");
     assert!(validador.is_valid(&json_base()));
+    // As extensões (CRC-16 e identify) também passam no schema.
+    assert!(validador.is_valid(&perfil_crc16()));
+    let mut com_id = json_base();
+    com_identify(&mut com_id);
+    assert!(validador.is_valid(&com_id));
+    let mut crc_sem_poly = perfil_crc16();
+    crc_sem_poly["capabilities"]["battery"]["read"]["request"]["checksum"]
+        .as_object_mut()
+        .unwrap()
+        .remove("poly");
+    assert!(!validador.is_valid(&crc_sem_poly));
     // O que a Rust reserializa também passa no schema.
     assert!(validador.is_valid(&serde_json::to_value(perfil()).unwrap()));
 
@@ -447,4 +458,126 @@ fn perfis_do_repositorio_sao_validos() {
             panic!("{}: {e}", p.display());
         }
     }
+}
+
+/// Perfil mínimo no formato do headset Akko S9 Ultra (pesquisa da T20): consulta de
+/// bateria `02 12 01 00`, com CRC-16 de 2 bytes que cobre o report ID.
+fn perfil_crc16() -> Value {
+    let mut pedido = vec!["12", "01", "00"];
+    pedido.resize(63, "00");
+    json!({
+        "schema": 1, "name": "Headset de teste", "vendor": "Teste", "kind": "headset",
+        "verified": false, "authors": ["teste"],
+        "match": {"vendor_id": "36eb", "product_id": "1087"},
+        "capabilities": {"battery": {"read": {
+            "request": {
+                "type": "output", "report_id": 2, "data": pedido.join(" "),
+                "checksum": {"kind": "crc16", "at": 61, "from": 0, "to": 61,
+                             "include_report_id": true, "poly": "8005", "init": "ffff",
+                             "encoding": "u16be"}
+            },
+            "response": {"type": "input", "report_id": 2, "length": 63,
+                         "expect": [{"at": 0, "value": 18}],
+                         "fields": {"percent": {"at": 3}}}
+        }}}
+    })
+}
+
+#[test]
+fn crc16_bate_com_a_captura_do_s9_ultra() {
+    let p = load(&perfil_crc16().to_string()).unwrap();
+    let pedido = p.read_request(CapabilityKind::Battery).unwrap();
+    assert_eq!(pedido.bytes.len(), 64);
+    assert_eq!(&pedido.bytes[..4], &[0x02, 0x12, 0x01, 0x00]);
+    // Valor citado no protocolo documentado pelo HaloBattery para esta consulta.
+    assert_eq!(&pedido.bytes[62..], &[0x71, 0x12]);
+    assert_eq!(
+        raiza_profiles::crc16(&pedido.bytes[..62], 0x8005, 0xffff),
+        0x7112
+    );
+}
+
+#[test]
+fn crc16_exige_parametros() {
+    let mut v = perfil_crc16();
+    v["capabilities"]["battery"]["read"]["request"]["checksum"]
+        .as_object_mut()
+        .unwrap()
+        .remove("poly");
+    rejeitado(load(&v.to_string()), "crc16 precisa");
+    let mut v = perfil_crc16();
+    let c = &mut v["capabilities"]["battery"]["read"]["request"]["checksum"];
+    c["kind"] = json!("sum8");
+    c["at"] = json!(62);
+    rejeitado(load(&v.to_string()), "só valem para crc16");
+}
+
+/// Identificação no estilo ROYUAN (Akko 5087 V3 HE, id 2829): `8F` com checksum
+/// `0xFF - soma` no byte 7.
+fn com_identify(v: &mut Value) {
+    v["identify"] = json!({
+        "request": {"type": "feature", "report_id": 0, "data": "8f 00 00 00 00 00 00 00",
+                    "checksum": {"kind": "sum8_inv", "at": 7, "from": 0, "to": 7}},
+        "response": {"type": "feature", "report_id": 0, "length": 8,
+                     "expect": [{"at": 0, "value": 143}, {"at": 1, "value": 13},
+                                {"at": 2, "value": 11}, {"at": 3, "value": 0},
+                                {"at": 4, "value": 0}]}
+    });
+}
+
+#[test]
+fn identify_confere_o_aparelho() {
+    let p = carregar_com(com_identify).unwrap();
+    let pedido = p.identify_request().unwrap();
+    // 0xFF - 0x8F = 0x70, o mesmo checksum registrado pelo Sharkfin para o `8F`.
+    assert_eq!(pedido.bytes, [0x00, 0x8f, 0, 0, 0, 0, 0, 0, 0x70]);
+    assert_eq!(pedido.report_type, ReportType::Feature);
+    let certo = [0x00, 0x8f, 0x0d, 0x0b, 0x00, 0x00, 0, 0, 0];
+    assert!(p.check_identity(&certo).is_ok());
+    let outro = [0x00, 0x8f, 0x0f, 0x0b, 0x00, 0x00, 0, 0, 0];
+    assert!(p.check_identity(&outro).is_err());
+    assert!(p.check_identity(&[]).is_err());
+    // Sem `identify`, nada a conferir.
+    assert!(perfil().check_identity(&[]).is_ok());
+
+    rejeitado(
+        carregar_com(|v| {
+            com_identify(v);
+            v["identify"]["response"]["expect"] = json!([]);
+        }),
+        "identificam",
+    );
+}
+
+#[test]
+fn rejeita_opcodes_destrutivos_e_gatilho_de_bootloader() {
+    let apaga_flash = |v: &mut Value| {
+        v["capabilities"]["polling_rate"]["write"]["data"] = json!("ac 01 00 00 00 00 00 00");
+    };
+    // No VID 3151 (ROYUAN), 0xAC apaga o chip de flash.
+    rejeitado(
+        carregar_com(|v| {
+            apaga_flash(v);
+            v["match"]["vendor_id"] = json!("3151");
+        }),
+        "destrutivo",
+    );
+    // Em outro fabricante, o mesmo byte não tem esse significado.
+    assert!(carregar_com(apaga_flash).is_ok());
+    // O trailer de entrada no bootloader é proibido em qualquer aparelho.
+    rejeitado(
+        carregar_com(|v| {
+            v["capabilities"]["polling_rate"]["write"]["data"] = json!("09 01 00 55 aa 55 aa 00");
+        }),
+        "bootloader",
+    );
+    // Vale também para o pedido de identificação.
+    rejeitado(
+        carregar_com(|v| {
+            com_identify(v);
+            v["match"]["vendor_id"] = json!("3151");
+            v["identify"]["request"]["data"] = json!("7f 00 00 00 00 00 00 00");
+        }),
+        "destrutivo",
+    );
 }

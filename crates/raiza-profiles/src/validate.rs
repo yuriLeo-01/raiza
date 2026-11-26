@@ -7,7 +7,8 @@
 use std::collections::BTreeSet;
 
 use crate::format::{
-    Field, FieldName, Profile, ReadSpec, ReportTemplate, ReportType, ResponseSpec,
+    ChecksumKind, Encoding, Field, FieldName, Profile, ReadSpec, ReportTemplate, ReportType,
+    ResponseSpec,
 };
 
 /// Maior relatório aceito, em bytes (sem o report ID). É o tamanho de pacote de um
@@ -228,7 +229,31 @@ pub fn validate(p: &Profile) -> Result<(), ProfileError> {
             &[FieldName::Percent, FieldName::Charging],
         )?;
     }
-    Ok(())
+
+    if let Some(id) = &p.identify {
+        check_template(&id.request, "identify.request", &[], &[])?;
+        let r = &id.response;
+        ensure(
+            matches!(r.report_type, ReportType::Feature | ReportType::Input),
+            "identify.response.type",
+            || "respostas só podem ser feature ou input".into(),
+        )?;
+        ensure(
+            (1..=MAX_REPORT_LEN).contains(&r.length),
+            "identify.response.length",
+            || format!("tamanho {} fora de 1..={MAX_REPORT_LEN}", r.length),
+        )?;
+        ensure(!r.expect.is_empty(), "identify.response.expect", || {
+            "informe os bytes que identificam o aparelho".into()
+        })?;
+        for e in &r.expect {
+            ensure(e.at < r.length, "identify.response.expect", || {
+                format!("posição {} passa do fim da resposta", e.at)
+            })?;
+        }
+    }
+
+    check_opcodes(p)
 }
 
 fn raw_of(value: u32, f: &Field) -> u32 {
@@ -317,14 +342,93 @@ fn check_template(
         ensure(c.from < c.to && c.to <= len, &cpath, || {
             format!("intervalo {}..{} inválido para {len} bytes", c.from, c.to)
         })?;
+        let bytes = c.at..c.at + c.width();
         ensure(
-            c.at < len && !(c.from..c.to).contains(&c.at),
+            bytes.end <= len && bytes.clone().all(|b| !(c.from..c.to).contains(&b)),
             &cpath,
             || "o checksum precisa ficar dentro do relatório e fora do intervalo somado".into(),
         )?;
-        ensure(!used.contains(&c.at), &cpath, || {
-            format!("byte {} já é de um campo", c.at)
-        })?;
+        for b in bytes {
+            ensure(!used.contains(&b), &cpath, || {
+                format!("byte {b} já é de um campo")
+            })?;
+        }
+        let crc_params = c.poly.is_some() || c.init.is_some() || c.encoding.is_some();
+        if c.kind == ChecksumKind::Crc16 {
+            ensure(
+                c.poly.is_some()
+                    && c.init.is_some()
+                    && matches!(c.encoding, Some(Encoding::U16le | Encoding::U16be)),
+                &cpath,
+                || "crc16 precisa de poly, init e encoding (u16le ou u16be)".into(),
+            )?;
+        } else {
+            ensure(!crc_params, &cpath, || {
+                "poly, init e encoding só valem para crc16".into()
+            })?;
+        }
+    }
+    Ok(())
+}
+
+/// Opcodes perigosos por fabricante de controladora, no primeiro byte do relatório.
+/// VID `0x3151` (ROYUAN, teclados Akko/Ajazz/AttackShark): `0xAC` apaga o chip de flash,
+/// `0x2C` apaga a tela, `0x7F` e `0x30` entram no bootloader (documentado pelo Sharkfin).
+pub const FORBIDDEN_OPCODES: &[(u16, &[u8])] = &[(0x3151, &[0xAC, 0x2C, 0x7F, 0x30])];
+
+/// Gatilho de bootloader que não pode aparecer em nenhum relatório enviado.
+pub const FORBIDDEN_SEQUENCES: &[&[u8]] = &[&[0x55, 0xAA, 0x55, 0xAA]];
+
+/// Todo relatório que o perfil pode mandar ao dispositivo, com o caminho no JSON.
+fn sent_templates(p: &Profile) -> Vec<(String, &ReportTemplate)> {
+    let mut out = Vec::new();
+    let c = &p.capabilities;
+    let reads: [(&str, Option<&ReadSpec>); 3] = [
+        ("dpi", c.dpi.as_ref().and_then(|d| d.read.as_ref())),
+        (
+            "polling_rate",
+            c.polling_rate.as_ref().and_then(|d| d.read.as_ref()),
+        ),
+        ("battery", c.battery.as_ref().map(|b| &b.read)),
+    ];
+    for (name, r) in reads {
+        if let Some(req) = r.and_then(|r| r.request.as_ref()) {
+            out.push((format!("capabilities.{name}.read.request"), req));
+        }
+    }
+    if let Some(w) = c.dpi.as_ref().and_then(|d| d.write.as_ref()) {
+        out.push(("capabilities.dpi.write".into(), w));
+    }
+    if let Some(w) = c.polling_rate.as_ref().and_then(|d| d.write.as_ref()) {
+        out.push(("capabilities.polling_rate.write".into(), w));
+    }
+    if let Some(rgb) = &c.rgb {
+        out.push(("capabilities.rgb.write".into(), &rgb.write));
+    }
+    if let Some(id) = &p.identify {
+        out.push(("identify.request".into(), &id.request));
+    }
+    out
+}
+
+fn check_opcodes(p: &Profile) -> Result<(), ProfileError> {
+    let vids: Vec<u16> = p.matcher.0.iter().map(|m| m.vendor_id.0).collect();
+    for (path, t) in sent_templates(p) {
+        let data = &t.data.0;
+        for seq in FORBIDDEN_SEQUENCES {
+            ensure(!data.windows(seq.len()).any(|w| w == *seq), &path, || {
+                format!("contém {seq:02x?}: gatilho de bootloader não é permitido (pilar 1)")
+            })?;
+        }
+        for (vid, ops) in FORBIDDEN_OPCODES {
+            if let Some(first) = data.first() {
+                ensure(!(vids.contains(vid) && ops.contains(first)), &path, || {
+                    format!(
+                        "opcode {first:#04x} é destrutivo nos aparelhos {vid:04x} (apaga flash ou entra no bootloader)"
+                    )
+                })?;
+            }
+        }
     }
     Ok(())
 }

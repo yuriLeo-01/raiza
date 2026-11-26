@@ -203,6 +203,72 @@
           }
         }
       }
+    },
+    "identify": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request",
+        "response"
+      ],
+      "description": "Consulta de identificação: o executor só escreve depois que a resposta bater.",
+      "properties": {
+        "request": {
+          "$ref": "#/$defs/report"
+        },
+        "response": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "report_id",
+            "length",
+            "expect"
+          ],
+          "properties": {
+            "type": {
+              "enum": [
+                "feature",
+                "input"
+              ]
+            },
+            "report_id": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "length": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 64
+            },
+            "expect": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "at",
+                  "value"
+                ],
+                "properties": {
+                  "at": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 63
+                  },
+                  "value": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "$defs": {
@@ -314,7 +380,9 @@
               "enum": [
                 "sum8",
                 "sum8_neg",
-                "xor8"
+                "sum8_inv",
+                "xor8",
+                "crc16"
               ]
             },
             "at": {
@@ -331,8 +399,67 @@
               "type": "integer",
               "minimum": 1,
               "maximum": 64
+            },
+            "include_report_id": {
+              "type": "boolean",
+              "default": false,
+              "description": "Inclui o report ID no cálculo, antes de data[from..to]."
+            },
+            "poly": {
+              "$ref": "#/$defs/hex16",
+              "description": "Só crc16."
+            },
+            "init": {
+              "$ref": "#/$defs/hex16",
+              "description": "Só crc16."
+            },
+            "encoding": {
+              "enum": [
+                "u16le",
+                "u16be"
+              ],
+              "description": "Só crc16."
             }
-          }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "kind": {
+                    "const": "crc16"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "poly",
+                  "init",
+                  "encoding"
+                ]
+              },
+              "else": {
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "poly"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "init"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "encoding"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ]
         }
       }
     },
