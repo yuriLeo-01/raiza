@@ -1,7 +1,7 @@
 # T11: Provedor evdev (controles)
 
 - **Fase:** F2
-- **Agente sugerido:** claude
+- **Agente sugerido:** sonnet
 - **Depende de:** T01
 - **Escopo:** `crates/raiza-provider-evdev/**`
 
@@ -35,4 +35,4 @@ Crate `evdev`. A bateria de controles com driver no kernel (`hid-playstation`, `
 ## Critérios de aceite
 - [ ] Testes com sysfs falso (fixtures em diretório temporário), incluindo `capacity_level`
 - [ ] Limite de duração e intensidade do rumble testado (o backend simulado nunca recebe valor fora do limite)
-- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings` e `cargo test` passam
+- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam

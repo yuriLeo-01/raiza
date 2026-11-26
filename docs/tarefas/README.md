@@ -32,7 +32,7 @@ descartado em 2026-11-25); `sonnet` para tarefas simples.
 | T08 | [Provedor BlueZ + UPower](T08-provider-bluez-upower.md) | claude | T01 | ✅ |
 | T09 | [Provedor PipeWire](T09-provider-pipewire.md) | claude | T01 | ✅ |
 | T10 | [Provedor DDC/CI (monitores)](T10-provider-ddc.md) | — | T01 | ❌ cancelada: monitores fora do escopo |
-| T11 | [Provedor evdev (controles)](T11-provider-evdev.md) | claude | T01 | ⬜ prioridade menor |
+| T11 | [Provedor evdev (controles)](T11-provider-evdev.md) | sonnet | T01 | 🟦 |
 | T12 | [Provedor OpenRGB](T12-provider-openrgb.md) | claude | T01 | ⏸ adiada |
 
 ## F3: Interface GTK4/libadwaita
