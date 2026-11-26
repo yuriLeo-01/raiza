@@ -1,0 +1,28 @@
+[package]
+name = "raiza-provider-hid"
+description = "Provedor hid-perfis do Raiza: executa perfis HID declarativos via /dev/hidraw*"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+raiza-core = { workspace = true }
+raiza-profiles = { path = "../raiza-profiles" }
+async-trait = "0.1"
+futures-util = "0.3"
+# Backend hidraw em Rust puro (sem compilar a biblioteca C).
+hidapi = { version = "2.6", default-features = false, features = ["linux-native"] }
+notify = { version = "8", default-features = false }
+tokio = { version = "1", features = ["macros", "net", "rt", "sync", "time"] }
+tracing = "0.1"
+# `send` torna o monitor `Send`, para viver dentro do fluxo de eventos.
+udev = { version = "0.9", features = ["send"] }
+
+[dev-dependencies]
+futures-util = "0.3"
+tempfile = "3"
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "time"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
