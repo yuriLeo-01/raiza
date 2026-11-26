@@ -157,6 +157,7 @@ impl CapabilityRow for DpiRow {
             level,
             stages,
             writable,
+            ..
         } = capability
         else {
             return;

@@ -193,7 +193,20 @@ impl Profile {
         }
         let read = |name: FieldName| spec.fields.get(&name).map(|f| decode(f, data));
         match kind {
-            CapabilityKind::Dpi => Ok(self.dpi_capability(read(FieldName::Value).unwrap_or(0))),
+            CapabilityKind::Dpi => {
+                let stage = read(FieldName::Stage);
+                if let Some(s) = stage {
+                    let n = self.dpi_stages();
+                    if s >= n {
+                        return Err(RaizaError::Io(format!("estágio de DPI {s} fora de 0..{n}")));
+                    }
+                }
+                let mut cap = self.dpi_capability(read(FieldName::Value).unwrap_or(0));
+                if let Capability::Dpi { active_stage, .. } = &mut cap {
+                    *active_stage = stage;
+                }
+                Ok(cap)
+            }
             CapabilityKind::PollingRate => {
                 let code = read(FieldName::Value).unwrap_or(0);
                 let hz = self
@@ -234,14 +247,37 @@ impl Profile {
         let c = &self.capabilities;
         match value {
             CapabilityValue::Dpi(dpi) => {
-                let t = c
+                let templates = c
                     .dpi
                     .as_ref()
                     .and_then(|d| d.write.as_ref())
                     .ok_or(RaizaError::ReadOnly(kind))?;
-                let f = t.fields[&FieldName::Value];
-                let raw = (dpi - f.offset) / f.scale;
-                Ok(vec![encode(t, &[(FieldName::Value, raw)])])
+                // Estágio em uso, só se veio de uma leitura e está dentro do limite: um
+                // estágio desconhecido nunca vira endereço (pilar 1).
+                let stage = match current {
+                    Capability::Dpi {
+                        active_stage: Some(s),
+                        ..
+                    } if *s < self.dpi_stages() => Some(*s),
+                    _ => None,
+                };
+                templates
+                    .0
+                    .iter()
+                    .map(|t| {
+                        let f = t.fields[&FieldName::Value];
+                        let mut values = vec![(FieldName::Value, (dpi - f.offset) / f.scale)];
+                        if let Some(sf) = t.fields.get(&FieldName::Stage) {
+                            let s = stage.ok_or_else(|| {
+                                RaizaError::Io(
+                                    "estágio de DPI em uso desconhecido: leia o DPI antes".into(),
+                                )
+                            })?;
+                            values.push((FieldName::Stage, s * sf.scale + sf.offset));
+                        }
+                        Ok(encode(t, &values))
+                    })
+                    .collect()
             }
             CapabilityValue::PollingRate(hz) => {
                 let pr = c
@@ -327,6 +363,15 @@ impl Profile {
         rates
     }
 
+    /// Número de estágios de DPI declarado (0 se o perfil não declara).
+    fn dpi_stages(&self) -> u32 {
+        self.capabilities
+            .dpi
+            .as_ref()
+            .and_then(|d| d.stages)
+            .unwrap_or(0)
+    }
+
     fn dpi_capability(&self, current: u32) -> Capability {
         let dpi = self.capabilities.dpi.as_ref();
         Capability::Dpi {
@@ -337,6 +382,7 @@ impl Profile {
                 step: dpi.map_or(1, |d| d.step),
             },
             stages: Vec::new(),
+            active_stage: None,
             writable: self.verified && dpi.is_some_and(|d| d.write.is_some()),
         }
     }

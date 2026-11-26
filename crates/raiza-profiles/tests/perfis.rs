@@ -601,7 +601,7 @@ fn rapoo_vt2_le_o_status_documentado() {
         .filter(|c| c.is_writable())
         .map(|c| c.kind())
         .collect();
-    assert_eq!(writable, [CapabilityKind::PollingRate]);
+    assert_eq!(writable, [CapabilityKind::Dpi, CapabilityKind::PollingRate]);
     let atual = p
         .capabilities()
         .into_iter()
@@ -667,11 +667,43 @@ fn rapoo_vt2_le_o_status_documentado() {
     agora[11] = 0x84;
     assert_eq!(polling(&agora), 2000);
     assert_eq!(polling(&status), 2000);
-    // DPI X do estágio ativo: `40 06` = 1600, igual ao app oficial.
+    // DPI X do estágio ativo: `40 06` = 1600 no estágio 3, igual ao app oficial.
+    let dpi_real = p.parse_response(CapabilityKind::Dpi, &real).unwrap();
     assert!(matches!(
-        p.parse_response(CapabilityKind::Dpi, &real).unwrap(),
-        Capability::Dpi { level, .. } if level.current == 1600
+        &dpi_real,
+        Capability::Dpi { level, active_stage: Some(3), .. } if level.current == 1600
     ));
+    // Escrita: X em 0x0888 + 2 × 3 = 0x088E e Y em 0x08C8 + 6 = 0x08CE, 1700 = `a4 06`.
+    let reports = p
+        .build_write(&dpi_real, &CapabilityValue::Dpi(1700))
+        .unwrap();
+    assert_eq!(reports.len(), 2);
+    assert_eq!(
+        &reports[0].bytes[..10],
+        &[0x06, 0xA5, 0xA5, 0x02, 0x8E, 0x08, 0x00, 0x00, 0xA4, 0x06]
+    );
+    assert_eq!(
+        &reports[1].bytes[..10],
+        &[0x06, 0xA5, 0xA5, 0x02, 0xCE, 0x08, 0x00, 0x00, 0xA4, 0x06]
+    );
+    assert!(reports.iter().all(|r| r.bytes.len() == 33));
+    // Sem estágio lido do aparelho, nada é gerado.
+    let inicial = p
+        .capabilities()
+        .into_iter()
+        .find(|c| c.kind() == CapabilityKind::Dpi)
+        .unwrap();
+    assert!(matches!(
+        p.build_write(&inicial, &CapabilityValue::Dpi(1700)),
+        Err(RaizaError::Io(_))
+    ));
+    // Estágio fora de 0..7 no status: a resposta é descartada.
+    let mut estagio_invalido = real;
+    estagio_invalido[2] = 7;
+    assert!(
+        p.parse_response(CapabilityKind::Dpi, &estagio_invalido)
+            .is_err()
+    );
     // Só escuta: nada é enviado para ler.
     assert!(p.read_request(CapabilityKind::Battery).is_none());
 }
@@ -731,4 +763,40 @@ fn akko_5087_dongle_le_a_bateria_pelo_receptor() {
     let mut offline = resposta;
     offline[4] = 0x01;
     assert!(p.parse_response(CapabilityKind::Battery, &offline).is_err());
+}
+
+/// O campo `stage` só entra na escrita se o estágio é lido do aparelho e `stages` é
+/// declarado; o último estágio precisa caber na codificação.
+#[test]
+fn stage_exige_leitura_e_limite() {
+    let arquivo = format!(
+        "{}/../../profiles/rapoo/rapoo-vt2-max-24ae-1423.json",
+        env!("CARGO_MANIFEST_DIR")
+    );
+    let base: Value = serde_json::from_str(&std::fs::read_to_string(&arquivo).unwrap()).unwrap();
+    let erro = |ajuste: &dyn Fn(&mut Value)| {
+        let mut v = base.clone();
+        ajuste(&mut v);
+        load(&v.to_string()).unwrap_err().to_string()
+    };
+    let e = erro(&|v| {
+        v["capabilities"]["dpi"]["read"]["response"]["fields"]
+            .as_object_mut()
+            .unwrap()
+            .remove("stage");
+    });
+    assert!(e.contains("stage"), "{e}");
+    let e = erro(&|v| {
+        v["capabilities"]["dpi"]
+            .as_object_mut()
+            .unwrap()
+            .remove("stages");
+    });
+    assert!(e.contains("stages"), "{e}");
+    let e = erro(&|v| v["capabilities"]["dpi"]["stages"] = json!(0));
+    assert!(e.contains("stages"), "{e}");
+    let e = erro(&|v| {
+        v["capabilities"]["dpi"]["write"][1]["fields"]["stage"]["encoding"] = json!("u8");
+    });
+    assert!(e.contains("último estágio"), "{e}");
 }

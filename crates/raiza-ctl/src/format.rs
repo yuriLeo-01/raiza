@@ -275,6 +275,7 @@ pub(crate) mod tests {
                         step: 50,
                     },
                     stages: vec![800, 1600, 3200],
+                    active_stage: None,
                     writable: true,
                 },
                 Capability::PollingRate {

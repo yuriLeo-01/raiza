@@ -138,6 +138,10 @@ pub enum Capability {
         level: Level,
         /// Estágios configurados no dispositivo (o botão de DPI alterna entre eles).
         stages: Vec<u32>,
+        /// Índice (a partir de 0) do estágio em uso, quando o dispositivo informa. Escrever
+        /// o DPI muda o valor deste estágio.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        active_stage: Option<u32>,
         /// Se aceita escrita.
         writable: bool,
     },
@@ -370,6 +374,7 @@ pub(crate) mod tests {
                     step: 50,
                 },
                 stages: vec![800, 1600, 3200],
+                active_stage: None,
                 writable: true,
             },
             Capability::PollingRate {

@@ -383,6 +383,7 @@ mod tests {
                 Capability::Dpi {
                     level: level(1600, 400, 16000, 50),
                     stages: vec![800, 1600, 3200],
+                    active_stage: None,
                     writable: true,
                 },
                 "1600 DPI (de 400 a 16000, passo 50) · estágios: 800, 1600, 3200",
@@ -391,6 +392,7 @@ mod tests {
                 Capability::Dpi {
                     level: level(800, 100, 8000, 1),
                     stages: vec![],
+                    active_stage: None,
                     writable: false,
                 },
                 "800 DPI (de 100 a 8000)",

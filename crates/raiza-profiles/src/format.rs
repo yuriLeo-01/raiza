@@ -209,9 +209,40 @@ pub struct DpiSpec {
     /// Como ler o DPI atual.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub read: Option<ReadSpec>,
-    /// Como escrever um DPI.
+    /// Quantos estágios de DPI o aparelho tem. Obrigatório quando algum relatório usa o
+    /// campo `stage`: um estágio lido fora de `0..stages` é descartado e nunca vira endereço.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub write: Option<ReportTemplate>,
+    pub stages: Option<u32>,
+    /// Como escrever um DPI: um relatório ou uma lista, enviados em ordem (ex.: X e Y).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub write: Option<Templates>,
+}
+
+/// Um ou mais relatórios; no JSON, um objeto ou uma lista de objetos.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Templates(pub Vec<ReportTemplate>);
+
+impl Serialize for Templates {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        match self.0.as_slice() {
+            [one] => one.serialize(s),
+            many => many.serialize(s),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for Templates {
+    // Manual (e não `untagged`) para preservar a mensagem de erro de cada campo.
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+        let value = serde_json::Value::deserialize(d)?;
+        let list = if value.is_array() {
+            serde_json::from_value(value).map_err(D::Error::custom)?
+        } else {
+            vec![serde_json::from_value(value).map_err(D::Error::custom)?]
+        };
+        Ok(Templates(list))
+    }
 }
 
 /// Taxa de atualização. Campo usado: `value`, que leva o código bruto de `rates`.
@@ -344,6 +375,10 @@ pub enum FieldName {
     Percent,
     /// Carregando (≠ 0).
     Charging,
+    /// Estágio de DPI em uso (índice a partir de 0). Na leitura, `bruto × scale + offset`
+    /// é o estágio. Na escrita, entra `estágio × scale + offset` (ex.: o endereço do estágio
+    /// na memória do aparelho: `scale` = tamanho de cada entrada, `offset` = início da tabela).
+    Stage,
 }
 
 impl fmt::Display for FieldName {
@@ -357,6 +392,7 @@ impl fmt::Display for FieldName {
             FieldName::Zone => "zone",
             FieldName::Percent => "percent",
             FieldName::Charging => "charging",
+            FieldName::Stage => "stage",
         };
         f.write_str(s)
     }

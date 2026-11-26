@@ -115,7 +115,7 @@ Campos aceitos por capacidade:
 
 | Capacidade | Escrita | Leitura |
 |---|---|---|
-| `dpi` | `value` | `value` |
+| `dpi` | `value` e, opcional, `stage` | `value` e, opcional, `stage` |
 | `polling_rate` | `value` (código da tabela `rates`) | `value` (código, convertido de volta em Hz) |
 | `rgb` | `red`, `green`, `blue` (juntos), `mode`, `zone` | — (não lido na versão 1) |
 | `battery` | — | `percent` e, opcional, `charging` (≠ 0 = carregando) |
@@ -141,6 +141,13 @@ Campos aceitos por capacidade:
 
 - `dpi`: `min`, `max`, `step` e `read`/`write`. `max - min` precisa ser múltiplo de `step`, e
   todo DPI permitido precisa virar um número inteiro com o `scale`/`offset` do campo.
+  - `write` pode ser uma **lista** de relatórios, enviados em ordem (ex.: DPI X e DPI Y).
+  - **Estágio em uso (`stage`):** quando o DPI atual é uma entrada numa tabela de estágios, a
+    leitura pode trazer o campo `stage` (índice a partir de 0), e a escrita pode usá-lo para
+    montar o endereço: entra `estágio × scale + offset`. Exige `stages` (número de estágios) e a
+    leitura com `stage`. Um estágio lido fora de `0..stages` descarta a resposta, e sem estágio
+    lido nada é escrito (pilar 1). Exemplo, Rapoo VT2 (tabela X em `0x0888`, 2 bytes por estágio):
+    `"stage": {"at": 3, "encoding": "u16le", "scale": 2, "offset": 2184}`.
 - `polling_rate`: `rates` mapeia Hz para o código do dispositivo: `{"125": 8, "1000": 1}`.
 - `rgb`: `zones` (nomes; o índice é o código de zona), `modes` (nome → código) e `write`.
   `all_zones` é o código de "todas as zonas"; sem ele, o Raiza manda um relatório por zona.

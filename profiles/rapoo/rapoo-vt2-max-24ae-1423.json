@@ -25,8 +25,9 @@
   "capabilities": {
     "dpi": {
       "min": 50,
-      "max": 26000,
+      "max": 30000,
       "step": 10,
+      "stages": 7,
       "read": {
         "response": {
           "type": "input",
@@ -36,10 +37,49 @@
             "value": {
               "at": 2,
               "encoding": "u16le"
+            },
+            "stage": {
+              "at": 1
             }
           }
         }
-      }
+      },
+      "write": [
+        {
+          "type": "output",
+          "report_id": 6,
+          "data": "a5 a5 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00",
+          "fields": {
+            "value": {
+              "at": 7,
+              "encoding": "u16le"
+            },
+            "stage": {
+              "at": 3,
+              "encoding": "u16le",
+              "scale": 2,
+              "offset": 2184
+            }
+          }
+        },
+        {
+          "type": "output",
+          "report_id": 6,
+          "data": "a5 a5 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00",
+          "fields": {
+            "value": {
+              "at": 7,
+              "encoding": "u16le"
+            },
+            "stage": {
+              "at": 3,
+              "encoding": "u16le",
+              "scale": 2,
+              "offset": 2248
+            }
+          }
+        }
+      ]
     },
     "polling_rate": {
       "rates": {

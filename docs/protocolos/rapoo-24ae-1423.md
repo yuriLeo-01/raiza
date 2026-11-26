@@ -14,4 +14,4 @@ e lacunas em [`docs/tarefas/notas/T17.md`](../tarefas/notas/T17.md).
 
 Perfil: [`profiles/rapoo/rapoo-vt2-max-24ae-1423.json`](../../profiles/rapoo/rapoo-vt2-max-24ae-1423.json)
 (verificado: leitura de bateria, carga, DPI e report rate pelo status `0x07`; escrita do report rate
-com 1 byte em `0x0880`, testada no aparelho. **Não** grave o bloco de 4 bytes do periph: `0x0881` é o key scan rate).
+com 1 byte em `0x0880` e do DPI do estágio em uso (X em `0x0888 + 2s`, Y em `0x08C8 + 2s`), testadas no aparelho. **Não** grave o bloco de 4 bytes do periph: `0x0881` é o key scan rate).

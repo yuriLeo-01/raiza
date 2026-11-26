@@ -198,6 +198,7 @@ mod tests {
                 step: 400,
             },
             stages: vec![],
+            active_stage: None,
             writable,
         }
     }

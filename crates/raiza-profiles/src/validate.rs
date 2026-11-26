@@ -14,6 +14,8 @@ use crate::format::{
 /// Maior relatório aceito, em bytes (sem o report ID). É o tamanho de pacote de um
 /// dispositivo HID full-speed.
 pub const MAX_REPORT_LEN: usize = 64;
+/// Maior número de estágios de DPI aceito em `capabilities.dpi.stages`.
+pub const MAX_DPI_STAGES: u32 = 16;
 
 /// Sequências ASCII que indicam bootloader, DFU ou gravação de firmware. Um perfil que
 /// as contenha em qualquer relatório enviado é rejeitado, sem diferenciar maiúsculas.
@@ -99,33 +101,76 @@ pub fn validate(p: &Profile) -> Result<(), ProfileError> {
         ensure(dpi.read.is_some() || dpi.write.is_some(), path, || {
             "precisa de read ou write".into()
         })?;
-        if let Some(read) = &dpi.read {
-            check_read(
-                read,
-                &format!("{path}.read"),
-                &[FieldName::Value],
-                &[FieldName::Value],
+        if let Some(n) = dpi.stages {
+            ensure(
+                (1..=MAX_DPI_STAGES).contains(&n),
+                &format!("{path}.stages"),
+                || format!("precisa estar em 1..={MAX_DPI_STAGES}"),
             )?;
         }
-        if let Some(write) = &dpi.write {
-            let wpath = format!("{path}.write");
-            check_template(write, &wpath, &[FieldName::Value], &[FieldName::Value])?;
-            let f = write.fields[&FieldName::Value];
-            let fpath = format!("{wpath}.fields.value");
-            ensure(dpi.min >= f.offset, &fpath, || {
-                format!("offset {} maior que o DPI mínimo {}", f.offset, dpi.min)
-            })?;
-            ensure(
-                (dpi.min - f.offset) % f.scale == 0 && dpi.step % f.scale == 0,
-                &fpath,
-                || {
-                    format!(
-                        "com scale {} nem todo DPI entre min e max vira um número inteiro",
-                        f.scale
-                    )
-                },
+        let reads_stage = dpi
+            .read
+            .as_ref()
+            .is_some_and(|r| r.response.fields.contains_key(&FieldName::Stage));
+        if let Some(read) = &dpi.read {
+            let rpath = format!("{path}.read");
+            check_read(
+                read,
+                &rpath,
+                &[FieldName::Value],
+                &[FieldName::Value, FieldName::Stage],
             )?;
-            check_fits(raw_of(dpi.max, &f), &f, &fpath, "DPI máximo")?;
+            ensure(!reads_stage || dpi.stages.is_some(), &rpath, || {
+                "o campo stage exige capabilities.dpi.stages".into()
+            })?;
+        }
+        if let Some(write) = &dpi.write {
+            let many = write.0.len() > 1;
+            ensure(!write.0.is_empty(), &format!("{path}.write"), || {
+                "lista vazia".into()
+            })?;
+            for (i, t) in write.0.iter().enumerate() {
+                let wpath = if many {
+                    format!("{path}.write[{i}]")
+                } else {
+                    format!("{path}.write")
+                };
+                check_template(
+                    t,
+                    &wpath,
+                    &[FieldName::Value],
+                    &[FieldName::Value, FieldName::Stage],
+                )?;
+                let f = t.fields[&FieldName::Value];
+                let fpath = format!("{wpath}.fields.value");
+                ensure(dpi.min >= f.offset, &fpath, || {
+                    format!("offset {} maior que o DPI mínimo {}", f.offset, dpi.min)
+                })?;
+                ensure(
+                    (dpi.min - f.offset) % f.scale == 0 && dpi.step % f.scale == 0,
+                    &fpath,
+                    || {
+                        format!(
+                            "com scale {} nem todo DPI entre min e max vira um número inteiro",
+                            f.scale
+                        )
+                    },
+                )?;
+                check_fits(raw_of(dpi.max, &f), &f, &fpath, "DPI máximo")?;
+                if let Some(sf) = t.fields.get(&FieldName::Stage) {
+                    let spath = format!("{wpath}.fields.stage");
+                    // Sem ler o estágio do aparelho não há o que pôr neste campo.
+                    ensure(reads_stage, &spath, || {
+                        "exige ler o estágio (campo stage em capabilities.dpi.read)".into()
+                    })?;
+                    ensure(sf.mask.is_none(), &spath, || {
+                        "mask só vale em respostas".into()
+                    })?;
+                    let last = dpi.stages.unwrap_or(1).saturating_sub(1);
+                    let raw = last.saturating_mul(sf.scale).saturating_add(sf.offset);
+                    check_fits(raw, sf, &spath, "o último estágio")?;
+                }
+            }
         }
     }
 
@@ -397,7 +442,9 @@ fn sent_templates(p: &Profile) -> Vec<(String, &ReportTemplate)> {
         }
     }
     if let Some(w) = c.dpi.as_ref().and_then(|d| d.write.as_ref()) {
-        out.push(("capabilities.dpi.write".into(), w));
+        for (i, t) in w.0.iter().enumerate() {
+            out.push((format!("capabilities.dpi.write[{i}]"), t));
+        }
     }
     if let Some(w) = c.polling_rate.as_ref().and_then(|d| d.write.as_ref()) {
         out.push(("capabilities.polling_rate.write".into(), w));

@@ -60,7 +60,7 @@ Por que JSON e não `a{sv}`:
 | `kind` | Campos |
 |---|---|
 | `battery` | `percent` (0–100), `charging` |
-| `dpi` | `level`, `stages`, `writable` |
+| `dpi` | `level`, `stages`, `active_stage` (opcional: índice do estágio em uso, a partir de 0), `writable` |
 | `polling_rate` | `current` (Hz), `supported`, `writable` |
 | `rgb` | `zones` (`[{"name", "color": "#rrggbb"}]`), `modes`, `current_mode`, `writable` |
 | `volume` | `level`, `writable` |

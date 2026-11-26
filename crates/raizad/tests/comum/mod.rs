@@ -20,6 +20,7 @@ pub fn dpi(current: u32) -> Capability {
             step: 400,
         },
         stages: vec![],
+        active_stage: None,
         writable: true,
     }
 }
