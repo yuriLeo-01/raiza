@@ -10,7 +10,7 @@ Detalhes em [`docs/tarefas/notas/T20.md`](../tarefas/notas/T20.md).
   report ID: init `0xFFFF`, deslocando à direita com polinômio `0x8005`. Conferido pelo Raiza contra
   três exemplos.
 - Conexão: `02 10 01 00 …` → `02 10 01 00 01` ligado, `… 00` desligado.
-- Bateria: `02 12 01 00 …` → `02 12 01 00 <nível %>`. Byte 3 = `01` significa sem nível.
+- Bateria: `02 12 01 00 …` → `02 12 01 00 <nível %>`. Byte 3 = `01` significa sem nível (confirmado no aparelho em 2026-11-26: com o headset desligado vem `01`, e a bateria aparece pela releitura assim que ele liga).
 - Carregando: só pelo cabo, quando o headset aparece como `36eb:0087`.
 - Sidetone e EQ: **não documentados** (aguardam capturas, T20).
 
