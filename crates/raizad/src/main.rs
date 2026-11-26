@@ -8,8 +8,10 @@ use std::path::PathBuf;
 use anyhow::{Context, Result, bail};
 use raiza_core::DBUS_SERVICE;
 use raiza_core::dbus::DBUS_PATH;
+use raizad::battery::{self, DesktopNotifier};
 use raizad::{ConfigStore, Daemon, Service, forward_signals, providers};
 use tokio::signal::unix::{SignalKind, signal};
+use tokio::sync::mpsc;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
@@ -108,7 +110,24 @@ async fn main() -> Result<()> {
         })?;
     info!(servico = DBUS_SERVICE, "no ar");
 
-    let forwarder = tokio::spawn(forward_signals(conn.clone(), signals));
+    // Os sinais vão para a D-Bus e para o vigia de bateria.
+    let (dbus_tx, dbus_rx) = mpsc::unbounded_channel();
+    let (battery_tx, battery_rx) = mpsc::unbounded_channel();
+    let tee = tokio::spawn(async move {
+        let mut signals = signals;
+        while let Some(signal) = signals.recv().await {
+            let _ = battery_tx.send(signal.clone());
+            if dbus_tx.send(signal).is_err() {
+                break;
+            }
+        }
+    });
+    let forwarder = tokio::spawn(forward_signals(conn.clone(), dbus_rx));
+    let battery = tokio::spawn(battery::watch(
+        daemon.clone(),
+        battery_rx,
+        DesktopNotifier::new(conn.clone()),
+    ));
     let running = daemon.start();
 
     let mut sigterm = signal(SignalKind::terminate()).context("SIGTERM")?;
@@ -121,6 +140,8 @@ async fn main() -> Result<()> {
     // As configurações são gravadas a cada escrita: não há nada pendente para salvar.
     running.shutdown();
     forwarder.abort();
+    battery.abort();
+    tee.abort();
     if let Err(e) = conn.release_name(DBUS_SERVICE).await {
         tracing::debug!(error = %e, "falha ao liberar o nome");
     }

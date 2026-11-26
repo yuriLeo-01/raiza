@@ -9,8 +9,8 @@ use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 
 use futures_util::{FutureExt, StreamExt};
 use raiza_core::{
-    Capability, CapabilityValue, DeviceId, DeviceInfo, EventStream, Provider, ProviderEvent,
-    RaizaError, capability_owner, fuse,
+    Capability, CapabilityKind, CapabilityValue, DeviceId, DeviceInfo, EventStream, Provider,
+    ProviderEvent, RaizaError, capability_owner, fuse,
 };
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
@@ -193,6 +193,17 @@ impl Daemon {
             warn!(error = %e, "escrita aplicada, mas não foi possível salvar a configuração");
         }
         Ok(())
+    }
+
+    /// Id do provedor dono da bateria do dispositivo `id`, se ele tiver bateria.
+    pub fn battery_owner(&self, id: &DeviceId) -> Option<String> {
+        let state = lock(&self.inner.state);
+        capability_owner(
+            state.iter().filter_map(|m| m.get(id)),
+            id,
+            CapabilityKind::Battery,
+        )
+        .map(str::to_owned)
     }
 
     /// Índice do provedor dono da capacidade de `value` no dispositivo `id`.

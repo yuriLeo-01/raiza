@@ -33,6 +33,9 @@ Raiza builds on what Linux already knows about the device:
 | Rumble | evdev | gamepads |
 | List of connected devices | udev | everything plugged in |
 
+**Low battery alerts:** a desktop notification at 15% and again at 5%, for batteries your desktop
+doesn't already watch (the ones read through profiles). Works with the app closed.
+
 Devices that only report "connected" (hubs, controllers with nothing attached) are hidden by
 default. The eye button in the app and `raiza-ctl list --all` show everything.
 
