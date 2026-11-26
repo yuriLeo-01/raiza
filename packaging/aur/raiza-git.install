@@ -1,0 +1,10 @@
+post_install() {
+  echo ':: Raiza instalado. Para iniciar o daemon na sua sessão:'
+  echo '     systemctl --user enable --now raizad'
+  echo ':: Desplugue e plugue de novo os aparelhos para a regra udev valer.'
+}
+
+post_upgrade() {
+  post_install
+  echo ':: Se o daemon já estava rodando, reinicie-o: systemctl --user restart raizad'
+}
