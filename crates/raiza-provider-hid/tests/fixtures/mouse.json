@@ -1,0 +1,62 @@
+{
+  "$schema": "../../../../profiles/schema.json",
+  "schema": 1,
+  "name": "Mouse de Teste T16",
+  "vendor": "Fictícia",
+  "kind": "mouse",
+  "verified": true,
+  "authors": ["Raiza (perfil de teste, não é um dispositivo real)"],
+  "match": [
+    { "vendor_id": "1234", "product_id": "5678", "interface": 1, "usage_page": "ff00" },
+    { "vendor_id": "1234", "product_id": "9abc", "interface": 1, "usage_page": "ff00" }
+  ],
+  "capabilities": {
+    "dpi": {
+      "min": 400,
+      "max": 16000,
+      "step": 50,
+      "read": {
+        "request": {
+          "type": "output",
+          "report_id": 8,
+          "data": "03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 fd"
+        },
+        "response": {
+          "type": "input",
+          "report_id": 8,
+          "length": 16,
+          "expect": [{ "at": 0, "value": 3 }, { "at": 1, "value": 1 }],
+          "fields": { "value": { "at": 4, "encoding": "u16le", "scale": 50 } }
+        }
+      },
+      "write": {
+        "type": "output",
+        "report_id": 8,
+        "data": "04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00",
+        "fields": { "value": { "at": 4, "encoding": "u16le", "scale": 50 } },
+        "checksum": { "kind": "sum8_neg", "at": 15, "from": 0, "to": 15 }
+      }
+    },
+    "polling_rate": {
+      "rates": { "125": 8, "250": 4, "500": 2, "1000": 1 },
+      "write": {
+        "type": "feature",
+        "report_id": 6,
+        "data": "09 01 00 00 00 00 00 00",
+        "fields": { "value": { "at": 2 } },
+        "checksum": { "kind": "xor8", "at": 7, "from": 0, "to": 7 }
+      }
+    },
+    "battery": {
+      "read": {
+        "response": {
+          "type": "input",
+          "report_id": 7,
+          "length": 8,
+          "expect": [{ "at": 0, "value": 32 }],
+          "fields": { "percent": { "at": 1 }, "charging": { "at": 2, "mask": 128 } }
+        }
+      }
+    }
+  }
+}
