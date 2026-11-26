@@ -621,10 +621,12 @@ fn rapoo_vt2_le_o_status_documentado() {
         p.build_write(&atual, &CapabilityValue::PollingRate(300))
             .is_err()
     );
-    assert_eq!(p.match_index(0x24ae, 0x1423, Some(1), None, None), Some(0));
-    assert_eq!(p.match_index(0x24ae, 0x4623, Some(1), None, None), Some(1));
-    assert_eq!(p.connection(0), Some(raiza_core::ConnectionKind::Wireless));
-    assert_eq!(p.connection(1), Some(raiza_core::ConnectionKind::Wired));
+    // Cabo primeiro: com o cabo plugado o mouse só fala por ele e o dongle fica mudo
+    // (testado no aparelho do mantenedor).
+    assert_eq!(p.match_index(0x24ae, 0x4623, Some(1), None, None), Some(0));
+    assert_eq!(p.match_index(0x24ae, 0x1423, Some(1), None, None), Some(1));
+    assert_eq!(p.connection(0), Some(raiza_core::ConnectionKind::Wired));
+    assert_eq!(p.connection(1), Some(raiza_core::ConnectionKind::Wireless));
     let status = [
         0x07, 0x20, 0x02, 0xB0, 0x04, 0xB0, 0x04, 0x01, 0x53, 0x00, 0x84, 0x84, 0x00, 0x00, 0x00,
         0x00, 0x01, 0x05, 0x00,
