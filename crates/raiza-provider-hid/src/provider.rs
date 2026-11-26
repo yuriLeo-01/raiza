@@ -127,7 +127,7 @@ impl<B: HidBackend, P: ProfileSource> HidProfilesProvider<B, P> {
 }
 
 /// Índice do `match` do perfil que serve para a interface, olhando todas as coleções.
-fn match_index(profile: &Profile, iface: &HidInterface) -> Option<usize> {
+pub(crate) fn match_index(profile: &Profile, iface: &HidInterface) -> Option<usize> {
     let (vid, pid, interface) = (iface.vendor_id, iface.product_id, iface.interface);
     if iface.collections.is_empty() {
         return profile.match_index(vid, pid, interface, None, None);

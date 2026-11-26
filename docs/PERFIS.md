@@ -55,6 +55,7 @@ Os perfis ficam em `profiles/<fabricante>/<modelo>.json` e são validados pelo c
 | `match.vendor_id`, `match.product_id` | IDs USB em hex (veja `lsusb`) |
 | `match.interface` | `bInterfaceNumber` da interface que recebe os comandos (veja `lsusb -v`) |
 | `match.usage_page`, `match.usage` | Opcionais, para desempatar interfaces. `ff00` costuma ser a de comandos do fabricante |
+| `match.connection` | Opcional: `wired` (cabo) ou `wireless` (dongle). O Raiza mostra esse meio na conexão do aparelho, já que o udev vê todo USB como cabo |
 
 Um exemplo completo e testado está em
 [`crates/raiza-profiles/tests/fixtures/ficticio.json`](../crates/raiza-profiles/tests/fixtures/ficticio.json).

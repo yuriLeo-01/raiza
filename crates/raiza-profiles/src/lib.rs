@@ -17,7 +17,9 @@
 pub mod format;
 mod validate;
 
-use raiza_core::{Capability, CapabilityKind, CapabilityValue, Color, Level, RaizaError, RgbZone};
+use raiza_core::{
+    Capability, CapabilityKind, CapabilityValue, Color, ConnectionKind, Level, RaizaError, RgbZone,
+};
 
 pub use format::Profile;
 use format::{Field, FieldName, ReportTemplate, ReportType, ResponseSpec};
@@ -74,6 +76,11 @@ impl Profile {
                 && opt(m.usage_page.map(|h| h.0), usage_page)
                 && opt(m.usage.map(|h| h.0), usage)
         })
+    }
+
+    /// Meio da conexão `index` do `match`, se o perfil o declara.
+    pub fn connection(&self, index: usize) -> Option<ConnectionKind> {
+        self.matcher.0.get(index).and_then(|m| m.connection)
     }
 
     /// Capacidades descritas, com estado inicial (antes de qualquer leitura): DPI no

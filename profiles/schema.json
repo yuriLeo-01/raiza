@@ -554,6 +554,10 @@
         },
         "usage": {
           "$ref": "#/$defs/hex16"
+        },
+        "connection": {
+          "description": "Meio desta conexão: wired (cabo) ou wireless (dongle).",
+          "enum": ["wired", "wireless", "bluetooth", "other"]
         }
       }
     }

@@ -94,7 +94,18 @@ impl Device {
         let hub = uses_input(&profile).then(|| Arc::new(InputHub::default()));
         // O cache guarda a escrita que o perfil permite; enquanto a identificação não
         // confirmar o aparelho, tudo sai como somente leitura (veja `visible`).
-        let caps = profile.capabilities();
+        let mut caps = profile.capabilities();
+        // Meio declarado no `match` (cabo ou dongle): mais preciso que o do udev, que vê
+        // todo aparelho USB como cabo. Somente leitura: o perfil não conecta nem desconecta.
+        if let Some(medium) =
+            crate::provider::match_index(&profile, iface).and_then(|i| profile.connection(i))
+        {
+            caps.push(Capability::Connection {
+                medium,
+                connected: true,
+                writable: false,
+            });
+        }
         let device = Arc::new(Device {
             id,
             path: iface.path.clone(),

@@ -425,3 +425,36 @@ async fn aparelho_desconhecido() {
         Err(RaizaError::Unsupported(CapabilityKind::Volume))
     );
 }
+
+/// `match.connection` vira a capacidade de conexão (somente leitura), com o meio da
+/// entrada que casou; sem o campo, o provedor não anuncia conexão.
+#[tokio::test]
+async fn meio_da_conexao_vem_do_match() {
+    let perfil_com_meio = perfil(|v| {
+        v["match"][0]["connection"] = "wired".into();
+        v["match"][1]["connection"] = "wireless".into();
+    });
+    let backend = FakeBackend::default();
+    let dongle = FakeMouse::new(PID_DONGLE, "1-2");
+    backend.plug(&dongle);
+    let (p, _) = provedor(&backend, vec![perfil_com_meio]);
+    let lista = p.discover().await.unwrap();
+    assert_eq!(lista[0].id, id_dongle());
+    assert_eq!(
+        lista[0].capability(CapabilityKind::Connection),
+        Some(&Capability::Connection {
+            medium: raiza_core::ConnectionKind::Wireless,
+            connected: true,
+            writable: false,
+        })
+    );
+    let erro = p
+        .write(&id_dongle(), CapabilityValue::Connection(false))
+        .await
+        .unwrap_err();
+    assert!(matches!(erro, RaizaError::ReadOnly(_)), "{erro:?}");
+
+    let (sem_meio, _, _) = mouse_no_cabo(perfil(|_| {})).await;
+    let lista = sem_meio.discover().await.unwrap();
+    assert!(lista[0].capability(CapabilityKind::Connection).is_none());
+}

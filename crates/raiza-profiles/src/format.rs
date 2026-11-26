@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 use std::fmt;
 
-use raiza_core::DeviceKind;
+use raiza_core::{ConnectionKind, DeviceKind};
 use serde::{Deserialize, Serialize};
 
 /// Perfil HID declarativo de um dispositivo.
@@ -108,6 +108,10 @@ pub struct DeviceMatch {
     /// Usage HID da interface.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub usage: Option<Hex16>,
+    /// Meio desta conexão (`"wired"` no cabo, `"wireless"` no dongle). Quando presente,
+    /// o executor anuncia a capacidade de conexão com esse meio.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub connection: Option<ConnectionKind>,
 }
 
 /// Número de 16 bits escrito em hex no JSON (`"24ae"`).

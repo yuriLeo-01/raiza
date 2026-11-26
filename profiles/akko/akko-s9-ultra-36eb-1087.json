@@ -11,7 +11,8 @@
   "match": {
     "vendor_id": "36eb",
     "product_id": "1087",
-    "interface": 3
+    "interface": 3,
+    "connection": "wireless"
   },
   "capabilities": {
     "battery": {

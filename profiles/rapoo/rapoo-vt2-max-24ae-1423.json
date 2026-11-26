@@ -12,12 +12,14 @@
     {
       "vendor_id": "24ae",
       "product_id": "1423",
-      "interface": 1
+      "interface": 1,
+      "connection": "wireless"
     },
     {
       "vendor_id": "24ae",
       "product_id": "4623",
-      "interface": 1
+      "interface": 1,
+      "connection": "wired"
     }
   ],
   "capabilities": {
