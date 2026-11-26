@@ -581,3 +581,70 @@ fn rejeita_opcodes_destrutivos_e_gatilho_de_bootloader() {
         "destrutivo",
     );
 }
+
+fn perfil_do_repositorio(caminho: &str) -> Profile {
+    let arquivo = format!("{}/../../profiles/{caminho}", env!("CARGO_MANIFEST_DIR"));
+    load(&std::fs::read_to_string(&arquivo).unwrap()).unwrap()
+}
+
+/// Bytes do status espontâneo 0x07 registrados pelo periph (`docs/descriptors.md`):
+/// bateria 0x53 = 83 %, `01` = na bateria, polling `84` = 2000 Hz.
+#[test]
+fn rapoo_vt2_le_o_status_documentado() {
+    let p = perfil_do_repositorio("rapoo/rapoo-vt2-max-24ae-1423.json");
+    assert!(!p.verified);
+    assert!(p.capabilities().iter().all(|c| !c.is_writable()));
+    assert_eq!(p.match_index(0x24ae, 0x1423, Some(1), None, None), Some(0));
+    assert_eq!(p.match_index(0x24ae, 0x4623, Some(1), None, None), Some(1));
+    let status = [
+        0x07, 0x20, 0x02, 0xB0, 0x04, 0xB0, 0x04, 0x01, 0x53, 0x00, 0x84, 0x84, 0x00, 0x00, 0x00,
+        0x00, 0x01, 0x05, 0x00,
+    ];
+    assert_eq!(
+        p.parse_response(CapabilityKind::Battery, &status).unwrap(),
+        Capability::Battery {
+            percent: 83,
+            charging: false
+        }
+    );
+    let mut carregando = status;
+    carregando[7] = 0x02;
+    assert!(matches!(
+        p.parse_response(CapabilityKind::Battery, &carregando)
+            .unwrap(),
+        Capability::Battery { charging: true, .. }
+    ));
+    assert!(matches!(
+        p.parse_response(CapabilityKind::PollingRate, &status)
+            .unwrap(),
+        Capability::PollingRate { current: 2000, .. }
+    ));
+    // Só escuta: nada é enviado para ler.
+    assert!(p.read_request(CapabilityKind::Battery).is_none());
+}
+
+/// Resposta `02 12 01 00 64` (100 %) documentada pelo HaloBattery a partir das capturas.
+#[test]
+fn akko_s9_le_a_bateria_documentada() {
+    let p = perfil_do_repositorio("akko/akko-s9-ultra-36eb-1087.json");
+    assert!(!p.verified);
+    let pedido = p.read_request(CapabilityKind::Battery).unwrap();
+    assert_eq!(&pedido.bytes[..4], &[0x02, 0x12, 0x01, 0x00]);
+    assert_eq!(&pedido.bytes[62..], &[0x71, 0x12]);
+    let mut resposta = vec![0x02, 0x12, 0x01, 0x00, 0x64];
+    resposta.resize(64, 0);
+    assert_eq!(
+        p.parse_response(CapabilityKind::Battery, &resposta)
+            .unwrap(),
+        Capability::Battery {
+            percent: 100,
+            charging: false
+        }
+    );
+    // Byte 3 = 1: o headset não informou o nível (desligado ou longe). A resposta é descartada.
+    resposta[3] = 0x01;
+    assert!(
+        p.parse_response(CapabilityKind::Battery, &resposta)
+            .is_err()
+    );
+}

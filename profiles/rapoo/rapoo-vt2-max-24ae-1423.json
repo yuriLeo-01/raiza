@@ -1,0 +1,66 @@
+{
+  "$schema": "../schema.json",
+  "schema": 1,
+  "name": "Rapoo VT2 Max / VT2 Pro Max",
+  "vendor": "Rapoo",
+  "kind": "mouse",
+  "verified": false,
+  "authors": [
+    "Raiza (a partir do protocolo documentado pelo projeto periph, MIT)"
+  ],
+  "match": [
+    {
+      "vendor_id": "24ae",
+      "product_id": "1423",
+      "interface": 1
+    },
+    {
+      "vendor_id": "24ae",
+      "product_id": "4623",
+      "interface": 1
+    }
+  ],
+  "capabilities": {
+    "polling_rate": {
+      "rates": {
+        "125": 8,
+        "250": 4,
+        "500": 2,
+        "1000": 1,
+        "2000": 132,
+        "4000": 130,
+        "8000": 129
+      },
+      "read": {
+        "response": {
+          "type": "input",
+          "report_id": 7,
+          "length": 18,
+          "fields": {
+            "value": {
+              "at": 9
+            }
+          }
+        }
+      }
+    },
+    "battery": {
+      "read": {
+        "response": {
+          "type": "input",
+          "report_id": 7,
+          "length": 18,
+          "fields": {
+            "percent": {
+              "at": 7
+            },
+            "charging": {
+              "at": 6,
+              "mask": 2
+            }
+          }
+        }
+      }
+    }
+  }
+}
