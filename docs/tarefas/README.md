@@ -57,7 +57,7 @@ descartado em 2026-11-25); `sonnet` para tarefas simples.
 
 | Id | Tarefa | Agente | Depende | Status |
 |---|---|---|---|---|
-| T19 | [PKGBUILD para o AUR e guia de instalação](T19-aur.md) | claude | T04, T07, T13 | ⬜ |
+| T19 | [PKGBUILD para o AUR e guia de instalação](T19-aur.md) | sonnet | T04, T07, T13 | 🟦 |
 
 ## Ordem sugerida das levas
 
