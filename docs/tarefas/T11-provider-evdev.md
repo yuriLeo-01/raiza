@@ -33,6 +33,6 @@ Crate `evdev`. A bateria de controles com driver no kernel (`hid-playstation`, `
 4. Camada de I/O injetável.
 
 ## Critérios de aceite
-- [ ] Testes com sysfs falso (fixtures em diretório temporário), incluindo `capacity_level`
-- [ ] Limite de duração e intensidade do rumble testado (o backend simulado nunca recebe valor fora do limite)
-- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam
+- [x] Testes com sysfs falso (fixtures em diretório temporário), incluindo `capacity_level`
+- [x] Limite de duração e intensidade do rumble testado (o backend simulado nunca recebe valor fora do limite)
+- [x] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam

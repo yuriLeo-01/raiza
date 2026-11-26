@@ -6,6 +6,7 @@ use raiza_core::{
     Capability, ConnectionKind, DeviceId, DeviceInfo, DeviceKind, Level, Provider, RgbZone,
 };
 use raiza_provider_bluez::{BluezProvider, UpowerProvider};
+use raiza_provider_evdev::EvdevProvider;
 use raiza_provider_hid::{DirProfiles, HidProfilesProvider, SystemHid, Timeouts};
 use raiza_provider_pipewire::PipeWireProvider;
 use raiza_provider_udev::UdevProvider;
@@ -21,7 +22,7 @@ pub fn system_providers() -> Vec<Box<dyn Provider>> {
         Box::new(BluezProvider::system()),
         Box::new(UpowerProvider::system()),
         Box::new(PipeWireProvider::new()),
-        // 6. evdev (T11)
+        Box::new(EvdevProvider::new()),
         Box::new(UdevProvider::new()),
     ]
 }
