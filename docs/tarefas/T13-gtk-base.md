@@ -25,7 +25,7 @@ Janela libadwaita no estilo do app Configurações do GNOME: barra lateral com o
 6. Separe a lógica (agrupamento por tipo, ordenação, texto de cada capacidade, aplicação dos eventos ao modelo) da interface, para testá-la sem GTK.
 
 ## Critérios de aceite
-- [ ] Com `raizad --mock`, o app lista e atualiza os dispositivos (descreva nas notas como testou; screenshot se conseguir)
-- [ ] Testes da lógica sem GTK (agrupamento, texto das capacidades, aplicação de `ProviderEvent` ao modelo, inclusive o par Removed+Added)
-- [ ] `desktop-file-validate` e `appstreamcli validate` passam
-- [ ] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam
+- [x] Com `raizad --mock`, o app lista e atualiza os dispositivos (descreva nas notas como testou; screenshot se conseguir)
+- [x] Testes da lógica sem GTK (agrupamento, texto das capacidades, aplicação de `ProviderEvent` ao modelo, inclusive o par Removed+Added)
+- [x] `desktop-file-validate` e `appstreamcli validate` passam
+- [x] `cargo fmt --all --check`, `cargo clippy --all-targets --all-features -- -D warnings` e `cargo test --all-features` passam

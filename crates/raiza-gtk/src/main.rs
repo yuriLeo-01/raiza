@@ -12,7 +12,6 @@ mod sidebar;
 mod text;
 
 use relm4::adw;
-use relm4::gtk::gio;
 use tracing_subscriber::EnvFilter;
 
 fn main() {
@@ -23,12 +22,10 @@ fn main() {
         .with_writer(std::io::stderr)
         .init();
 
-    // O app id é igual ao nome D-Bus do daemon (`raiza_core::DBUS_SERVICE`). Sem
-    // `NON_UNIQUE`, o GApplication tentaria ser dono desse nome: falharia com o `raizad`
-    // rodando, ou o tomaria para si com ele parado. Veja docs/tarefas/notas/T13.md.
+    // App de instância única: abrir de novo traz a janela existente. O daemon usa outro
+    // nome no barramento (`raiza_core::DBUS_SERVICE`, terminado em `.Daemon`).
     let app = adw::Application::builder()
         .application_id(app::APP_ID)
-        .flags(gio::ApplicationFlags::NON_UNIQUE)
         .build();
     relm4::RelmApp::from_app(app).run::<app::App>(());
 }
