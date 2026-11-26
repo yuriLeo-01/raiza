@@ -14,11 +14,14 @@ ACTION=="remove", GOTO="raiza_end"
 
 # Rapoo, mouse (24ae:1423)
 SUBSYSTEM=="hidraw", ATTRS{idVendor}=="24ae", ATTRS{idProduct}=="1423", TAG+="uaccess"
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="24ae", ATTRS{idProduct}=="4623", TAG+="uaccess"
 
 # Akko, teclado com fio (3151:502f)
 SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3151", ATTRS{idProduct}=="502f", TAG+="uaccess"
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3151", ATTRS{idProduct}=="5038", TAG+="uaccess"
 
 # Akko S9 Ultra, headset sem fio (dongle 2.4 GHz) (36eb:1087)
 SUBSYSTEM=="hidraw", ATTRS{idVendor}=="36eb", ATTRS{idProduct}=="1087", TAG+="uaccess"
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="36eb", ATTRS{idProduct}=="0087", TAG+="uaccess"
 
 LABEL="raiza_end"
