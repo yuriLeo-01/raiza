@@ -5,12 +5,17 @@
 //! botão "Tentar de novo"), nenhum dispositivo, e a lista com a página de detalhes num
 //! `AdwNavigationSplitView`, que vira navegação em pilha quando a janela é estreita.
 
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::time::{Duration, Instant};
+
 use raiza_core::DeviceId;
 use raiza_core::dbus::RaizaClient;
 use relm4::adw;
 use relm4::adw::prelude::*;
 use relm4::gtk;
 use relm4::{Component, ComponentParts, ComponentSender};
+
 use tokio::task::JoinHandle;
 use tracing::debug;
 
@@ -67,6 +72,30 @@ pub struct AppWidgets {
     content: adw::NavigationPage,
     sidebar: Sidebar,
     detail: Detail,
+}
+
+/// Quanto tempo um toast fica na tela.
+const TOAST_SECONDS: u32 = 5;
+
+/// Filtra toasts repetidos: a mesma mensagem não volta enquanto a anterior ainda está na
+/// tela (ex.: o slider recusado que o GTK reaplica ao soltar o botão do mouse).
+#[derive(Debug, Default)]
+struct RecentMessages {
+    last: Option<(String, Instant)>,
+}
+
+impl RecentMessages {
+    /// Se `message` deve virar toast agora.
+    fn admit(&mut self, message: &str, now: Instant) -> bool {
+        let window = Duration::from_secs(TOAST_SECONDS.into());
+        let repeated = self.last.as_ref().is_some_and(|(last, at)| {
+            last == message && now.saturating_duration_since(*at) < window
+        });
+        if !repeated {
+            self.last = Some((message.to_owned(), now));
+        }
+        !repeated
+    }
 }
 
 const PAGE_LOADING: &str = "loading";
@@ -236,7 +265,22 @@ impl Component for App {
             .child(&sidebar_view)
             .build();
 
-        let detail = Detail::new();
+        // Erros de escrita das linhas viram toasts.
+        let toasts = adw::ToastOverlay::new();
+        let detail = Detail::new(Rc::new({
+            let toasts = toasts.clone();
+            let recent = RefCell::new(RecentMessages::default());
+            move |message: &str| {
+                if !recent.borrow_mut().admit(message, Instant::now()) {
+                    return;
+                }
+                let toast = adw::Toast::builder()
+                    .title(crate::text::escape_markup(message))
+                    .timeout(TOAST_SECONDS)
+                    .build();
+                toasts.add_toast(toast);
+            }
+        }));
         let content_view = adw::ToolbarView::new();
         content_view.add_top_bar(&adw::HeaderBar::new());
         content_view.set_content(Some(detail.widget()));
@@ -258,7 +302,8 @@ impl Component for App {
         stack.add_named(&status_page(&problem), Some(PAGE_PROBLEM));
         stack.add_named(&status_page(&empty), Some(PAGE_EMPTY));
         stack.add_named(&split, Some(PAGE_DEVICES));
-        root.set_content(Some(&stack));
+        toasts.set_child(Some(&stack));
+        root.set_content(Some(&toasts));
 
         let breakpoint = adw::Breakpoint::new(adw::BreakpointCondition::new_length(
             adw::BreakpointConditionLengthType::MaxWidth,
@@ -341,5 +386,21 @@ impl Component for App {
         if let Some(session) = self.session.take() {
             session.abort();
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn toast_repetido_e_filtrado() {
+        let mut recent = RecentMessages::default();
+        let t = Instant::now();
+        assert!(recent.admit("a", t));
+        assert!(!recent.admit("a", t + Duration::from_secs(1)));
+        assert!(recent.admit("b", t + Duration::from_secs(2)));
+        assert!(recent.admit("a", t + Duration::from_secs(3)));
+        assert!(recent.admit("a", t + Duration::from_secs(9)));
     }
 }

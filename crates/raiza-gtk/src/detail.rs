@@ -9,7 +9,7 @@ use raiza_core::{CapabilityKind, DeviceId, DeviceInfo};
 use relm4::adw;
 use relm4::adw::prelude::*;
 
-use crate::capabilities::{self, CapabilityRow, RowContext};
+use crate::capabilities::{self, CapabilityRow, Reporter, RowContext};
 use crate::model;
 use crate::text;
 
@@ -23,11 +23,13 @@ pub struct Detail {
     rows: Vec<Box<dyn CapabilityRow>>,
     /// O que as linhas mostram hoje: dispositivo e tipos de capacidade.
     shown: Option<(DeviceId, Vec<CapabilityKind>)>,
+    /// Para as linhas avisarem a janela de erros de escrita.
+    report: Reporter,
 }
 
 impl Detail {
-    /// Cria a página vazia.
-    pub fn new() -> Self {
+    /// Cria a página vazia. `report` mostra os erros de escrita na janela.
+    pub fn new(report: Reporter) -> Self {
         let page = adw::PreferencesPage::new();
         let info = adw::PreferencesGroup::new();
         let providers = adw::ActionRow::builder()
@@ -55,6 +57,7 @@ impl Detail {
             caps,
             rows: Vec::new(),
             shown: None,
+            report,
         }
     }
 
@@ -92,6 +95,7 @@ impl Detail {
         let ctx = RowContext {
             device: &device.id,
             client,
+            report: &self.report,
         };
         for cap in caps {
             let row = capabilities::row_for(cap, &ctx);
