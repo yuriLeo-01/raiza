@@ -65,7 +65,7 @@ descartado em 2026-11-25); `sonnet` para tarefas simples.
 |---|---|---|---|---|
 | T22 | [Tabela de estágios de DPI e Key Scan Rate](T22-dpi-estagios-scan-rate.md) | claude (líder) + humano | T16, T17 | ✅ |
 | T23 | [App GTK: editar estágios de DPI e Key Scan Rate](T23-gtk-estagios-scan-rate.md) | claude | T22 | ✅ |
-| T24 | [Extensão do GNOME Shell: bateria no painel](T24-extensao-gnome.md) | claude | T04 | ⬜ |
+| T24 | [Extensão do GNOME Shell: bateria no painel](T24-extensao-gnome.md) | claude | T04 | ✅ |
 | T25 | [Ícone de bandeja SNI (KDE e outros)](T25-bandeja-sni.md) | claude | T04 | ⬜ |
 | T26 | [Interface em inglês e português (gettext)](T26-traducao.md) | claude | T23, T25 | ⬜ |
 
