@@ -35,6 +35,8 @@ O Raiza aproveita o que o próprio Linux já sabe sobre o aparelho:
 **Aviso de bateria fraca:** uma notificação em 15 % e outra em 5 %, para as baterias que a área de
 trabalho ainda não vigia (as lidas por perfil). Funciona com o app fechado.
 
+**Extensão do GNOME Shell:** a bateria dos aparelhos no painel (GNOME 46 a 51), veja [`extensions/gnome`](extensions/gnome/README.md).
+
 Aparelhos que só dizem "conectado" (hubs, controladoras sem nada ligado) ficam escondidos por padrão.
 O botão de olho no app e `raiza-ctl list --all` mostram todos.
 

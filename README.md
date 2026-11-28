@@ -36,6 +36,8 @@ Raiza builds on what Linux already knows about the device:
 **Low battery alerts:** a desktop notification at 15% and again at 5%, for batteries your desktop
 doesn't already watch (the ones read through profiles). Works with the app closed.
 
+**GNOME Shell extension:** device batteries in the top bar (GNOME 46–51), see [`extensions/gnome`](extensions/gnome/README.md).
+
 Devices that only report "connected" (hubs, controllers with nothing attached) are hidden by
 default. The eye button in the app and `raiza-ctl list --all` show everything.
 
