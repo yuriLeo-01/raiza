@@ -96,8 +96,8 @@ impl DpiStages {
     /// Grupo vazio; o conteúdo vem de [`DpiStages::update`].
     pub fn new(level: Level, writer: Writer) -> Self {
         let group = adw::PreferencesGroup::builder()
-            .title(text::DPI_STAGES_TITLE)
-            .description(text::DPI_STAGES_DESCRIPTION)
+            .title(text::dpi_stages_title())
+            .description(text::dpi_stages_description())
             .visible(false)
             .build();
         DpiStages {
@@ -138,7 +138,7 @@ impl DpiStages {
         }
         for (row, view) in rows.iter().zip(&views) {
             row.row.set_subtitle(if view.active {
-                text::DPI_STAGE_IN_USE
+                text::dpi_stage_in_use()
             } else {
                 ""
             });
@@ -160,17 +160,17 @@ mod tests {
             views,
             vec![
                 StageView {
-                    title: "Estágio 1".into(),
+                    title: "Stage 1".into(),
                     value: 800,
                     active: false
                 },
                 StageView {
-                    title: "Estágio 2".into(),
+                    title: "Stage 2".into(),
                     value: 1600,
                     active: true
                 },
                 StageView {
-                    title: "Estágio 3".into(),
+                    title: "Stage 3".into(),
                     value: 3200,
                     active: false
                 },
@@ -197,6 +197,6 @@ mod tests {
         let views = stage_views(&[1600, 1600], Some(0));
         assert_eq!(views.len(), 2);
         assert!(views[0].active && !views[1].active);
-        assert_eq!(views[1].title, "Estágio 2");
+        assert_eq!(views[1].title, "Stage 2");
     }
 }

@@ -41,12 +41,16 @@ build() {
   export CARGO_TARGET_DIR=target
   cargo build --frozen --release -p raizad -p raiza-ctl -p raiza-gtk -p raiza-tray
 
-  # Completions geradas pelo próprio binário.
+  # Completions geradas pelo próprio binário, sempre em inglês (msgids), mesmo que a
+  # máquina de build esteja em outra língua e já tenha o Raiza instalado.
   mkdir -p completions
   local shell
   for shell in bash zsh fish; do
-    target/release/raiza-ctl completions "$shell" > "completions/$shell"
+    LANGUAGE= LC_ALL=C target/release/raiza-ctl completions "$shell" > "completions/$shell"
   done
+
+  # Tradução do app, da bandeja, do CLI e dos avisos (domínio raiza, po/LINGUAS).
+  po/compilar.sh locale
 
   # Tradução da extensão do GNOME Shell (o msgfmt vem no gettext, do base-devel).
   local po
@@ -100,6 +104,11 @@ package() {
   while IFS= read -r -d '' mo; do
     install -Dm644 "$mo" "$ext/${mo#extensions/gnome/}"
   done < <(find extensions/gnome/locale -name '*.mo' -print0)
+
+  local catalog
+  while IFS= read -r -d '' catalog; do
+    install -Dm644 "$catalog" "$pkgdir/usr/share/${catalog}"
+  done < <(find locale -name 'raiza.mo' -print0)
 
   install -Dm644 completions/bash \
     "$pkgdir/usr/share/bash-completion/completions/raiza-ctl"

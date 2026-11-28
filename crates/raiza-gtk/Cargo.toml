@@ -9,6 +9,7 @@ repository.workspace = true
 
 [dependencies]
 raiza-core = { workspace = true, features = ["dbus"] }
+raiza-i18n.workspace = true
 futures-util = "0.3"
 # `gnome_46` = GTK 4.14 e libadwaita 1.5, o que o Ubuntu 24.04 (CI) oferece.
 relm4 = { version = "0.10", default-features = false, features = ["macros", "libadwaita", "gnome_46"] }

@@ -9,6 +9,7 @@ repository.workspace = true
 
 [dependencies]
 raiza-core = { workspace = true, features = ["dbus"] }
+raiza-i18n.workspace = true
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 clap_complete = "4"

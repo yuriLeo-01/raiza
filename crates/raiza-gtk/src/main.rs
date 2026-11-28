@@ -21,6 +21,8 @@ fn main() {
         )
         .with_writer(std::io::stderr)
         .init();
+    // A língua vem do ambiente (LANGUAGE, LC_ALL, LC_MESSAGES, LANG); veja `raiza-i18n`.
+    raiza_i18n::init();
 
     // App de instância única: abrir de novo traz a janela existente. O daemon usa outro
     // nome no barramento (`raiza_core::DBUS_SERVICE`, terminado em `.Daemon`).

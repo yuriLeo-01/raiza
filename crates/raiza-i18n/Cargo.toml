@@ -1,0 +1,12 @@
+[package]
+name = "raiza-i18n"
+description = "Tradução das interfaces do Raiza: catálogos gettext (.mo) lidos em Rust puro"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gettext = "0.4.0"
+tracing = "0.1"

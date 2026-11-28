@@ -237,7 +237,7 @@ mod tests {
         link.user_changed(80);
         // Uma tentativa (sem conexão: aviso) e o widget volta ao confirmado sem reescrever.
         assert_eq!(reports.borrow().len(), 1);
-        assert!(reports.borrow()[0].contains("sem conexão"));
+        assert!(reports.borrow()[0].contains("no connection"));
         assert_eq!(*shown.borrow(), vec![50, 50]);
     }
 }

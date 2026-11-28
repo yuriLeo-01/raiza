@@ -11,3 +11,4 @@ repository = "https://github.com/yuriLeo-01/raiza"
 
 [workspace.dependencies]
 raiza-core = { path = "crates/raiza-core" }
+raiza-i18n = { path = "crates/raiza-i18n" }

@@ -1,0 +1,8 @@
+crates/raiza-ctl/src/cli.rs
+crates/raiza-ctl/src/errors.rs
+crates/raiza-ctl/src/format.rs
+crates/raiza-ctl/src/main.rs
+crates/raiza-ctl/src/run.rs
+crates/raizad/src/battery.rs
+crates/raiza-gtk/src/text.rs
+crates/raiza-tray/src/text.rs

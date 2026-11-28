@@ -89,5 +89,5 @@ pub fn row_for(capability: &Capability, ctx: &RowContext<'_>) -> Box<dyn Capabil
 /// explicação na dica (pilar 1).
 fn set_writable(widget: &impl IsA<gtk::Widget>, writable: bool) {
     widget.set_sensitive(writable);
-    widget.set_tooltip_text((!writable).then_some(text::READ_ONLY_TOOLTIP));
+    widget.set_tooltip_text((!writable).then_some(text::read_only_tooltip()));
 }

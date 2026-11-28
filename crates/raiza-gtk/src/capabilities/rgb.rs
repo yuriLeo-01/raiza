@@ -48,7 +48,7 @@ struct ZoneRow {
 impl ZoneRow {
     fn new(index: u32, zone: &RgbZone, writer: Writer) -> Self {
         let dialog = gtk::ColorDialog::builder()
-            .title(format!("Cor da zona {}", zone.name))
+            .title(text::zone_color_title(&zone.name))
             .with_alpha(false)
             .modal(true)
             .build();
@@ -116,7 +116,7 @@ impl RgbRow {
         )));
         let mode_names = gtk::StringList::new(&[]);
         let mode_row = adw::ComboRow::builder()
-            .title("Modo")
+            .title(text::rgb_mode_title())
             .model(&mode_names)
             .build();
         row.add_row(&mode_row);
@@ -229,7 +229,7 @@ impl CapabilityRow for RgbRow {
             .set_subtitle(&text::escape_markup(&text::capability_summary(capability)));
         // A linha de fora continua expansível para mostrar as cores, mesmo sem escrita.
         self.row
-            .set_tooltip_text((!*writable).then_some(text::READ_ONLY_TOOLTIP));
+            .set_tooltip_text((!*writable).then_some(text::read_only_tooltip()));
         self.set_modes(modes, current_mode);
         set_writable(&self.mode_row, *writable);
         self.mode_link.daemon_changed(current_mode.clone());

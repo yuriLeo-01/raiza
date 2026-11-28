@@ -1,0 +1,836 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the raiza package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: raiza\n"
+"Report-Msgid-Bugs-To: https://github.com/yuriLeo-01/raiza/issues\n"
+"POT-Creation-Date: 2026-11-28 02:10-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: crates/raiza-ctl/src/cli.rs:89 crates/raiza-gtk/src/text.rs:216
+msgid "On"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:90 crates/raiza-gtk/src/text.rs:218
+msgid "Off"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:186
+msgid "rgb: give at least --mode or --color"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:215
+msgid "Print this message or the help of the given subcommand(s)"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:220
+msgid "Print help"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:221
+msgid "Print version"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:223
+msgid "Peripheral hub for Linux: talks to the raizad daemon over D-Bus"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:224
+msgid "List the devices known to the daemon"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:226
+msgid "Print the daemon JSON, for scripts (always with every device)"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:229
+msgid "Also show devices without controls (that only say \"connected\")"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:231
+msgid "Show every capability of a device"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:232
+msgid "Device id (e.g. usb:24ae:1423:0)"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:233
+msgid "Print the daemon JSON, for scripts"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:234
+msgid "Change a capability of a device"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:235
+msgid "Capability and new value"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:236
+msgid "Follow the daemon events in real time (one per line)"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:237
+msgid "Print one JSON object per line"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:238
+msgid "Generate the completion script for your shell"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:239
+msgid "Target shell"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:241
+msgid "Sensor resolution (DPI)"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:242
+msgid "New DPI"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:244
+msgid "One stage of the DPI table (the one in use or another)"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:246
+msgid "Stage index, starting at 0"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:247
+msgid "New DPI of the stage"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:248
+msgid "Polling rate in Hz"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:249
+msgid "New rate in Hz"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:250
+msgid "Key Scan Rate in Hz"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:251
+msgid "Volume in percent"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:252
+msgid "New volume (%)"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:253
+msgid "Turn mute on or off"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:254
+msgid "`on` mutes, `off` unmutes"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:255
+msgid "Connect or disconnect the device"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:256
+msgid "`on` connects, `off` disconnects"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:257
+msgid "RGB lighting (give at least --mode or --color)"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:258
+msgid "Zone index; without it, applies to all zones"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:259
+msgid "Mode name (e.g. static)"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:260
+msgid "Color as #rrggbb"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:261
+msgid "Send a rumble pulse"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:262
+msgid "Strength from 0 to 100"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:263
+msgid "Duration in milliseconds"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:287
+msgid "Usage:"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:291
+msgid "Commands"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:306
+msgid "Arguments"
+msgstr ""
+
+#: crates/raiza-ctl/src/cli.rs:308
+msgid "Options"
+msgstr ""
+
+#: crates/raiza-ctl/src/errors.rs:8
+msgid "the daemon is not running; start it with: systemctl --user start raizad"
+msgstr ""
+
+#: crates/raiza-ctl/src/errors.rs:26
+#, rust-format
+msgid ""
+"could not talk to the D-Bus session bus (is there an active user session?): "
+"{detail}"
+msgstr ""
+
+#: crates/raiza-ctl/src/errors.rs:30
+#, rust-format
+msgid "D-Bus error: {detail}"
+msgstr ""
+
+#: crates/raiza-ctl/src/errors.rs:37
+#, rust-format
+msgid "device not found: {id} (list the ids with: raiza-ctl list)"
+msgstr ""
+
+#: crates/raiza-ctl/src/errors.rs:41
+#, rust-format
+msgid "the device does not have the {capability} capability"
+msgstr ""
+
+#: crates/raiza-ctl/src/errors.rs:46
+#, rust-format
+msgid ""
+"the {capability} capability is read-only on this device (the hardware does "
+"not accept writes or the profile has not been verified yet)"
+msgstr ""
+
+#: crates/raiza-ctl/src/errors.rs:51
+#, rust-format
+msgid "value out of range for {capability}: {detail}"
+msgstr ""
+
+#: crates/raiza-ctl/src/errors.rs:55
+#, rust-format
+msgid "failed to talk to the device: {detail}"
+msgstr ""
+
+#: crates/raiza-ctl/src/errors.rs:58
+#, rust-format
+msgid "no permission: {detail}"
+msgstr ""
+
+#: crates/raiza-ctl/src/errors.rs:68
+#, rust-format
+msgid "the daemon refused the request: {detail}"
+msgstr ""
+
+#: crates/raiza-ctl/src/errors.rs:71
+#, rust-format
+msgid "daemon error: {detail}"
+msgstr ""
+
+#: crates/raiza-ctl/src/errors.rs:73
+#, rust-format
+msgid "could not understand the daemon reply (different versions?): {detail}"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:12
+msgid "mouse"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:13
+msgid "keyboard"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:14
+msgid "headset"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:15
+msgid "controller"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:16
+msgid "microphone"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:17
+msgid "RGB controller"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:18
+msgid "other"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:25
+msgid "battery"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:26 crates/raiza-gtk/src/text.rs:56
+msgid "DPI"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:27
+msgid "polling"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:28
+msgid "key scan"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:29
+msgid "RGB"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:30
+msgid "volume"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:31
+msgid "mute"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:32
+msgid "rumble"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:33
+msgid "connection"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:39
+msgid "cable"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:40
+msgid "wireless"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:41
+msgid "bluetooth"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:42
+msgid "other medium"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:47
+msgid "no"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:47
+msgid "yes"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:53
+#, rust-format
+msgid "limits: {min} to {max}, step {step}"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:75
+#, rust-format
+msgid "{percent}% (charging)"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:105
+#, rust-format
+msgid "up to {duration} ms"
+msgstr ""
+
+#. Translators: {medium} é "USB cable", "Bluetooth"…
+#: crates/raiza-ctl/src/format.rs:112 crates/raiza-gtk/src/text.rs:238
+#, rust-format
+msgid "{medium}, connected"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:114 crates/raiza-gtk/src/text.rs:240
+#, rust-format
+msgid "{medium}, disconnected"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:129
+msgid "no devices found"
+msgstr ""
+
+#. Translators: cabeçalhos da tabela de `raiza-ctl list`.
+#: crates/raiza-ctl/src/format.rs:134
+msgid "ID"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:135
+msgid "TYPE"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:136
+msgid "NAME"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:137
+msgid "PROVIDERS"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:138
+msgid "CAPABILITIES"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:197 crates/raiza-gtk/src/text.rs:175
+#, rust-format
+msgid "stages: {list}"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:206
+#, rust-format
+msgid "accepted: {list} Hz"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:218
+#, rust-format
+msgid "zones: {list}"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:219
+#, rust-format
+msgid "modes: {list}"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:226
+#, rust-format
+msgid "maximum duration: {duration} ms"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:241
+#, rust-format
+msgid "type: {value}"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:243
+#, rust-format
+msgid "vendor: {value}"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:245
+#, rust-format
+msgid "providers: {value}"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:247
+msgid "capabilities: none"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:250
+msgid "capabilities:"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:261
+msgid "access: read and write"
+msgstr ""
+
+#: crates/raiza-ctl/src/format.rs:263
+msgid "access: read-only"
+msgstr ""
+
+#: crates/raiza-ctl/src/run.rs:38
+#, rust-format
+msgid "({count} device without controls hidden; use --all to see it)"
+msgid_plural "({count} devices without controls hidden; use --all to see them)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: crates/raiza-ctl/src/run.rs:84
+#, rust-format
+msgid "zone {zone}"
+msgstr ""
+
+#: crates/raiza-ctl/src/run.rs:87
+#, rust-format
+msgid "mode {mode}"
+msgstr ""
+
+#: crates/raiza-ctl/src/run.rs:90
+#, rust-format
+msgid "color {color}"
+msgstr ""
+
+#: crates/raiza-ctl/src/run.rs:98
+#, rust-format
+msgid "rumble {strength}% for {duration} ms"
+msgstr ""
+
+#: crates/raiza-ctl/src/run.rs:130
+#, rust-format
+msgid "warning: {detail}"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:16
+msgid "Mice"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:17
+msgid "Keyboards"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:18
+msgid "Headsets"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:19
+msgid "Controllers"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:20
+msgid "Microphones"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:21
+msgid "RGB Lighting"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:22
+msgid "Others"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:29
+msgid "Mouse"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:30
+msgid "Keyboard"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:31
+msgid "Headset"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:32
+msgid "Controller"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:33
+msgid "Microphone"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:34
+msgid "RGB Controller"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:35
+msgid "Other Device"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:55
+msgid "Battery"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:57
+msgid "Polling Rate"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:58
+msgid "Scan Rate"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:59
+msgid "Lighting"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:60
+msgid "Volume"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:61
+msgid "Mute"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:62
+msgid "Rumble"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:63
+msgid "Connection"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:71
+msgid "Key Scan Rate: how many times per second the device reads its keys"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:79
+msgid "DPI Stages"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:84
+msgid "The mouse DPI button cycles through these values"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:89
+#, rust-format
+msgid "Stage {number}"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:94
+msgid "In use"
+msgstr ""
+
+#. Translators: {current} já traz a unidade ("1600 DPI", "50%").
+#: crates/raiza-gtk/src/text.rs:141
+#, rust-format
+msgid "{current} (from {min} to {max}, step {step})"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:143
+#, rust-format
+msgid "{current} (from {min} to {max})"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:165
+#, rust-format
+msgid "{percent}%, charging"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:191
+#, rust-format
+msgid "{current} Hz (accepts {list})"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:204
+#, rust-format
+msgid "Mode {mode}"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:224
+#, rust-format
+msgid "Pulses of up to {duration} ms"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:231
+msgid "USB cable"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:232
+msgid "Wireless (dongle)"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:233
+msgid "Bluetooth"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:234
+msgid "Other medium"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:306 crates/raiza-tray/src/text.rs:25
+msgid "The Raiza service is not running"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:308
+msgid ""
+"Start the daemon with <tt>systemctl --user start raizad</tt>. The window "
+"connects by itself when it shows up."
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:326
+msgid "No session bus"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:328
+msgid "Could not talk to the session D-Bus. Is there an active user session?"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:333 crates/raiza-gtk/src/text.rs:349
+msgid "Incompatible versions"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:335
+#, rust-format
+msgid "The daemon reply could not be read. Update Raiza. ({detail})"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:340
+msgid "Error talking to the daemon"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:352
+#, rust-format
+msgid ""
+"Daemon {version} uses API {daemon_api}, but this interface uses API {api}. "
+"Update Raiza."
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:366
+msgid "read-only: unverified profile or the device does not accept changes"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:372
+#, rust-format
+msgid "Could not change {capability}: no connection to the Raiza service"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:382
+#, rust-format
+msgid "value out of range ({detail})"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:386
+msgid "the capability is read-only"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:389
+msgid "the device does not have this capability"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:392
+msgid "the device is no longer connected"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:395
+#, rust-format
+msgid "failed to talk to the device ({detail})"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:399
+#, rust-format
+msgid "no permission to access the device ({detail})"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:402
+msgid "the Raiza service did not respond"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:404
+#, rust-format
+msgid "invalid reply from the daemon ({detail})"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:409
+#, rust-format
+msgid "Could not change {capability}: {reason}"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:416
+msgid "Connecting to the Raiza service…"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:421
+msgid "Try Again"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:426
+msgid "No Devices"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:431
+msgid "Connect a supported peripheral. It shows up here by itself."
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:437
+msgid "Hide devices without controls"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:441
+#, rust-format
+msgid "Show all devices ({count} without controls hidden)"
+msgid_plural "Show all devices ({count} without controls hidden)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: crates/raiza-gtk/src/text.rs:448
+msgid "Show all devices"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:454
+msgid "Device"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:459
+msgid "Providers"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:464
+msgid "Identifier"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:469
+msgid "Capabilities"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:474
+msgid "Test"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:480
+#, rust-format
+msgid "From {min} to {max}, step {step}"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:482
+#, rust-format
+msgid "From {min} to {max}"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:496
+#, rust-format
+msgid "Zone {zone} color"
+msgstr ""
+
+#: crates/raiza-gtk/src/text.rs:501
+msgid "Mode"
+msgstr ""
+
+#: crates/raiza-tray/src/text.rs:10
+msgid "Open Raiza"
+msgstr ""
+
+#: crates/raiza-tray/src/text.rs:15
+msgid "Quit"
+msgstr ""
+
+#: crates/raiza-tray/src/text.rs:20
+msgid "No device with a battery"
+msgstr ""
+
+#: crates/raiza-tray/src/text.rs:31
+#, rust-format
+msgid "{name}: {percent}%, charging"
+msgstr ""
+
+#: crates/raiza-tray/src/text.rs:33
+#, rust-format
+msgid "{name}: {percent}%"
+msgstr ""
+
+#: crates/raizad/src/battery.rs:56
+#, rust-format
+msgid "Low battery: {name}"
+msgstr ""
+
+#: crates/raizad/src/battery.rs:57
+#, rust-format
+msgid "Battery almost empty: {name}"
+msgstr ""
+
+#: crates/raizad/src/battery.rs:65
+#, rust-format
+msgid "{percent}% remaining. Plug in the charger."
+msgstr ""
