@@ -61,6 +61,30 @@ pub fn capability_title(kind: CapabilityKind) -> &'static str {
     }
 }
 
+/// Explicação curta da capacidade, para o subtítulo da linha, quando o nome não basta.
+pub fn capability_hint(kind: CapabilityKind) -> Option<&'static str> {
+    match kind {
+        CapabilityKind::ScanRate => {
+            Some("Key Scan Rate: quantas vezes por segundo o aparelho lê os botões")
+        }
+        _ => None,
+    }
+}
+
+/// Título do grupo com a tabela de estágios de DPI.
+pub const DPI_STAGES_TITLE: &str = "Estágios de DPI";
+
+/// Descrição do grupo de estágios de DPI.
+pub const DPI_STAGES_DESCRIPTION: &str = "O botão de DPI do mouse alterna entre estes valores";
+
+/// Título da linha de um estágio de DPI (`index` a partir de 0).
+pub fn dpi_stage_title(index: usize) -> String {
+    format!("Estágio {}", index + 1)
+}
+
+/// Marca do estágio de DPI em uso.
+pub const DPI_STAGE_IN_USE: &str = "Em uso";
+
 /// Ícone da capacidade. A bateria usa [`battery_icon`], que depende do nível.
 pub fn capability_icon(capability: &Capability) -> String {
     let name = match capability {
@@ -485,6 +509,14 @@ mod tests {
         for (cap, esperado) in casos {
             assert_eq!(capability_summary(&cap), esperado, "{:?}", cap.kind());
         }
+    }
+
+    #[test]
+    fn textos_dos_estagios_e_da_varredura() {
+        assert_eq!(dpi_stage_title(0), "Estágio 1");
+        assert_eq!(dpi_stage_title(4), "Estágio 5");
+        assert!(capability_hint(CapabilityKind::ScanRate).is_some());
+        assert_eq!(capability_hint(CapabilityKind::PollingRate), None);
     }
 
     #[test]
