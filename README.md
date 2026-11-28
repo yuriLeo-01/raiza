@@ -5,8 +5,9 @@
 **One hub to manage your peripherals on Linux, any brand, even without vendor support.**
 
 Mice, keyboards, headsets and microphones (and gamepads, at a lower priority) in one place:
-battery, DPI, polling rate, volume, mute and connection, with a native GNOME app
-(GTK4/libadwaita) and a command-line tool.
+battery, DPI (including every DPI stage), polling rate, key scan rate, volume, mute and connection,
+with a native GNOME app (GTK4/libadwaita), a battery indicator for the top bar or system tray, and a
+command-line tool.
 
 > 🧪 **Test version (0.0.1).** It already works day to day with the devices in the table below, but
 > it may still change a lot. Follow the roadmap in [`docs/tarefas/README.md`](docs/tarefas/README.md)
@@ -36,7 +37,10 @@ Raiza builds on what Linux already knows about the device:
 **Low battery alerts:** a desktop notification at 15% and again at 5%, for batteries your desktop
 doesn't already watch (the ones read through profiles). Works with the app closed.
 
-**GNOME Shell extension:** device batteries in the top bar (GNOME 46–51), see [`extensions/gnome`](extensions/gnome/README.md).
+**Battery in the top bar:** on GNOME, a Shell extension (GNOME 46–51, see
+[`extensions/gnome`](extensions/gnome/README.md)); on KDE, XFCE, Cinnamon and other desktops with a
+system tray, the `raiza-tray` icon, which starts on login. Both show the lowest battery and list
+every device.
 
 Devices that only report "connected" (hubs, controllers with nothing attached) are hidden by
 default. The eye button in the app and `raiza-ctl list --all` show everything.
@@ -49,8 +53,8 @@ on the real device (see [safety](#safety)).
 
 | Device | Connection | Reads | Writes |
 |---|---|---|---|
-| Rapoo VT2 Max / VT2 Pro Max | dongle `24ae:1423`, cable `24ae:4623` | battery, charging, DPI, polling rate | DPI, polling rate |
-| Akko Verge S9 Ultra (headset) | dongle `36eb:1087` | battery | — |
+| Rapoo VT2 Max / VT2 Pro Max | dongle `24ae:1423`, cable `24ae:4623` | battery, charging, DPI and its 7 stages, polling rate, key scan rate | DPI (any stage), polling rate, key scan rate |
+| Akko Verge S9 Ultra (headset) | dongle `36eb:1087`, cable `36eb:0087` | battery, charging (on the cable) | — |
 | Akko 5087 V3 HE (keyboard) | dongle `3151:5038` | battery | — |
 
 Have a device that isn't listed? [Request support](https://github.com/yuriLeo-01/raiza/issues/new?template=aparelho.yml)
@@ -79,14 +83,17 @@ For other distributions, see the manual installation in [`docs/INSTALACAO.md`](d
 raiza-ctl list                                  # devices and capabilities
 raiza-ctl get usb:24ae:1423:2607-54L            # details of one device
 raiza-ctl set usb:24ae:1423:2607-54L dpi 1600
+raiza-ctl set usb:24ae:1423:2607-54L dpi-stage 2 950   # stage 2 (counting from 0)
 raiza-ctl set usb:24ae:1423:2607-54L polling-rate 2000
+raiza-ctl set usb:24ae:1423:2607-54L scan-rate 4000
 raiza-ctl watch                                 # follow changes live
 ```
 
 `--json` on `list`, `get` and `watch` gives script-friendly output. `raiza-ctl completions bash|zsh|fish`
 generates shell completions (the package already installs them).
 
-The interface is in Brazilian Portuguese for now; translations are welcome.
+The app, tray, CLI and notifications are in English and Brazilian Portuguese, following your
+system language. Translations are welcome: see [`po/README.md`](po/README.md).
 
 ## Safety
 
@@ -108,7 +115,8 @@ Sending the wrong command to a peripheral can brick it. That's why Raiza follows
 
 ```
 raizad (daemon, user session) ── D-Bus ──► raiza-gtk (app) · raiza-ctl (CLI)
-   ├── HID profiles → /dev/hidraw  (DPI, polling rate, battery over vendor protocols)
+                                            raiza-tray (tray) · GNOME Shell extension
+   ├── HID profiles → /dev/hidraw  (DPI, polling and key scan rate, battery over vendor protocols)
    ├── BlueZ        → Bluetooth and battery
    ├── UPower       → battery
    ├── PipeWire     → volume and mute
