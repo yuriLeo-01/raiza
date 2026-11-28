@@ -11,7 +11,7 @@ mod run;
 use std::{io::Write, process::ExitCode};
 
 use anyhow::Result;
-use clap::Parser;
+use clap::FromArgMatches as _;
 use raiza_core::dbus::{API_VERSION, RaizaClient};
 
 use cli::{Cli, Command};
@@ -24,9 +24,12 @@ async fn connect() -> Result<RaizaClient> {
     // (o `watch` sozinho ficaria esperando para sempre).
     let (api, _daemon) = client.version().await.map_err(client_err)?;
     if api != API_VERSION {
-        anyhow::bail!(
-            "o daemon fala a versão {api} da API, mas este raiza-ctl fala a {API_VERSION}; atualize os dois"
-        );
+        anyhow::bail!(raiza_i18n::fill(
+            raiza_i18n::gettext(
+                "the daemon speaks API version {daemon_api}, but this raiza-ctl speaks {api}; update both",
+            ),
+            &[("daemon_api", &api), ("api", &API_VERSION)],
+        ));
     }
     Ok(client)
 }
@@ -44,7 +47,12 @@ async fn real_main(cli: Cli) -> Result<()> {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> ExitCode {
-    let cli = Cli::parse();
+    // A língua vem do ambiente (LANGUAGE, LC_ALL, LC_MESSAGES, LANG); veja `raiza-i18n`.
+    raiza_i18n::init();
+    let cli = match Cli::from_arg_matches(&cli::localized_command().get_matches()) {
+        Ok(cli) => cli,
+        Err(err) => err.exit(),
+    };
     match real_main(cli).await {
         Ok(()) => ExitCode::SUCCESS,
         Err(err) => {

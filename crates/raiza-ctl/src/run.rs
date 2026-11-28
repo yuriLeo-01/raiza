@@ -9,6 +9,8 @@ use raiza_core::{
     dbus::{ClientError, RaizaClient},
 };
 
+use raiza_i18n::{fill, gettext, ngettext};
+
 use crate::{
     cli::{Command, completions},
     errors::describe,
@@ -32,11 +34,12 @@ pub async fn run(client: &RaizaClient, command: Command, out: &mut dyn Write) ->
                     devices.into_iter().partition(|d| all || d.is_actionable());
                 write!(out, "{}", format::format_list(&shown))?;
                 if !hidden.is_empty() {
-                    writeln!(
-                        out,
-                        "({} sem controles escondido(s); use --all para ver)",
-                        hidden.len()
-                    )?;
+                    let template = ngettext(
+                        "({count} device without controls hidden; use --all to see it)",
+                        "({count} devices without controls hidden; use --all to see them)",
+                        hidden.len() as u64,
+                    );
+                    writeln!(out, "{}", fill(template, &[("count", &hidden.len())]))?;
                 }
             }
         }
@@ -78,20 +81,23 @@ fn format_set(id: &DeviceId, value: &CapabilityValue) -> String {
         CapabilityValue::Rgb(s) => {
             let mut parts = vec!["rgb".to_owned()];
             if let Some(zone) = s.zone {
-                parts.push(format!("zona {zone}"));
+                parts.push(fill(gettext("zone {zone}"), &[("zone", &zone)]));
             }
             if let Some(mode) = &s.mode {
-                parts.push(format!("modo {mode}"));
+                parts.push(fill(gettext("mode {mode}"), &[("mode", mode)]));
             }
             if let Some(color) = s.color {
-                parts.push(format!("cor {color}"));
+                parts.push(fill(gettext("color {color}"), &[("color", &color)]));
             }
             parts.join(" ")
         }
         CapabilityValue::Rumble {
             strength,
             duration_ms,
-        } => format!("rumble {strength}% por {duration_ms} ms"),
+        } => fill(
+            gettext("rumble {strength}% for {duration} ms"),
+            &[("strength", strength), ("duration", duration_ms)],
+        ),
     };
     format!("{id} {what}")
 }
@@ -119,7 +125,10 @@ pub async fn watch(
                 writeln!(out, "{line}")?;
                 out.flush()?;
             }
-            Err(e) => eprintln!("aviso: {}", describe(&e)),
+            Err(e) => eprintln!(
+                "{}",
+                fill(gettext("warning: {detail}"), &[("detail", &describe(&e))])
+            ),
         }
     }
     Ok(())
@@ -257,29 +266,26 @@ mod tests {
         )
         .await
         .unwrap();
-        assert_eq!(ok, "ok: usb:24ae:1423:0 rgb modo wave cor #00ff00\n");
+        assert_eq!(ok, "ok: usb:24ae:1423:0 rgb mode wave color #00ff00\n");
 
         // set com valor fora dos limites (1625 não é múltiplo do passo 50).
         let err = ctl(&client, &["set", id, "dpi", "1625"]).await.unwrap_err();
-        assert!(
-            err.contains("fora dos limites") && err.contains("dpi"),
-            "{err}"
-        );
+        assert!(err.contains("out of range") && err.contains("dpi"), "{err}");
         let err = ctl(&client, &["set", id, "dpi", "1"]).await.unwrap_err();
-        assert!(err.contains("fora dos limites"), "{err}");
+        assert!(err.contains("out of range"), "{err}");
 
         // Somente leitura, não suportado e dispositivo inexistente.
         let err = ctl(&client, &["set", id, "polling-rate", "500"])
             .await
             .unwrap_err();
-        assert!(err.contains("somente leitura"), "{err}");
+        assert!(err.contains("read-only"), "{err}");
         let err = ctl(&client, &["set", id, "volume", "10"])
             .await
             .unwrap_err();
-        assert!(err.contains("não tem a capacidade volume"), "{err}");
+        assert!(err.contains("not have the volume capability"), "{err}");
         let err = ctl(&client, &["get", "usb:0001:0002:9"]).await.unwrap_err();
         assert!(
-            err.contains("não encontrado") && err.contains("usb:0001:0002:9"),
+            err.contains("not found") && err.contains("usb:0001:0002:9"),
             "{err}"
         );
     }

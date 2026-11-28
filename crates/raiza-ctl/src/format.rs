@@ -3,47 +3,60 @@
 use raiza_core::{
     Capability, CapabilityKind, ConnectionKind, DeviceInfo, DeviceKind, ProviderEvent,
 };
+use raiza_i18n::{fill, gettext};
 use serde_json::json;
 
-/// Tipo do dispositivo em português.
+/// Tipo do dispositivo, para leitura humana.
 pub fn kind_label(kind: DeviceKind) -> &'static str {
     match kind {
-        DeviceKind::Mouse => "mouse",
-        DeviceKind::Keyboard => "teclado",
-        DeviceKind::Headset => "headset",
-        DeviceKind::Gamepad => "controle",
-        DeviceKind::Microphone => "microfone",
-        DeviceKind::RgbController => "controlador RGB",
-        DeviceKind::Other => "outro",
+        DeviceKind::Mouse => gettext("mouse"),
+        DeviceKind::Keyboard => gettext("keyboard"),
+        DeviceKind::Headset => gettext("headset"),
+        DeviceKind::Gamepad => gettext("controller"),
+        DeviceKind::Microphone => gettext("microphone"),
+        DeviceKind::RgbController => gettext("RGB controller"),
+        DeviceKind::Other => gettext("other"),
     }
 }
 
 /// Nome da capacidade para leitura humana.
 pub fn capability_label(kind: CapabilityKind) -> &'static str {
     match kind {
-        CapabilityKind::Battery => "bateria",
-        CapabilityKind::Dpi => "DPI",
-        CapabilityKind::PollingRate => "polling",
-        CapabilityKind::ScanRate => "key scan",
-        CapabilityKind::Rgb => "RGB",
-        CapabilityKind::Volume => "volume",
-        CapabilityKind::Mute => "mudo",
-        CapabilityKind::Rumble => "vibração",
-        CapabilityKind::Connection => "conexão",
+        CapabilityKind::Battery => gettext("battery"),
+        CapabilityKind::Dpi => gettext("DPI"),
+        CapabilityKind::PollingRate => gettext("polling"),
+        CapabilityKind::ScanRate => gettext("key scan"),
+        CapabilityKind::Rgb => gettext("RGB"),
+        CapabilityKind::Volume => gettext("volume"),
+        CapabilityKind::Mute => gettext("mute"),
+        CapabilityKind::Rumble => gettext("rumble"),
+        CapabilityKind::Connection => gettext("connection"),
     }
 }
 
 fn medium_label(medium: ConnectionKind) -> &'static str {
     match medium {
-        ConnectionKind::Wired => "cabo",
-        ConnectionKind::Wireless => "sem fio",
-        ConnectionKind::Bluetooth => "bluetooth",
-        ConnectionKind::Other => "outro meio",
+        ConnectionKind::Wired => gettext("cable"),
+        ConnectionKind::Wireless => gettext("wireless"),
+        ConnectionKind::Bluetooth => gettext("bluetooth"),
+        ConnectionKind::Other => gettext("other medium"),
     }
 }
 
 fn yes_no(b: bool) -> &'static str {
-    if b { "sim" } else { "não" }
+    if b { gettext("yes") } else { gettext("no") }
+}
+
+/// Limites de um nível (DPI, volume).
+fn limits(level: &raiza_core::Level) -> String {
+    fill(
+        gettext("limits: {min} to {max}, step {step}"),
+        &[
+            ("min", &level.min),
+            ("max", &level.max),
+            ("step", &level.step),
+        ],
+    )
 }
 
 fn join<T: ToString>(items: &[T]) -> String {
@@ -59,7 +72,7 @@ pub fn capability_value(cap: &Capability) -> String {
     match cap {
         Capability::Battery { percent, charging } => {
             if *charging {
-                format!("{percent}% (carregando)")
+                fill(gettext("{percent}% (charging)"), &[("percent", percent)])
             } else {
                 format!("{percent}%")
             }
@@ -88,22 +101,24 @@ pub fn capability_value(cap: &Capability) -> String {
         Capability::Mute { muted, .. } => yes_no(*muted).to_owned(),
         Capability::Rumble {
             max_duration_ms, ..
-        } => format!("até {max_duration_ms} ms"),
+        } => fill(
+            gettext("up to {duration} ms"),
+            &[("duration", max_duration_ms)],
+        ),
         Capability::Connection {
             medium, connected, ..
-        } => format!(
-            "{}, {}",
-            medium_label(*medium),
-            if *connected {
-                "conectado"
+        } => {
+            let template = if *connected {
+                gettext("{medium}, connected")
             } else {
-                "desconectado"
-            }
-        ),
+                gettext("{medium}, disconnected")
+            };
+            fill(template, &[("medium", &medium_label(*medium))])
+        }
     }
 }
 
-/// Resumo curto para a tabela: `bateria 80%`, `DPI 1600`.
+/// Resumo curto para a tabela: `battery 80%`, `DPI 1600`.
 pub fn capability_summary(cap: &Capability) -> String {
     format!("{} {}", capability_label(cap.kind()), capability_value(cap))
 }
@@ -111,10 +126,19 @@ pub fn capability_summary(cap: &Capability) -> String {
 /// Tabela de `list`. Sem dispositivos, uma frase.
 pub fn format_list(devices: &[DeviceInfo]) -> String {
     if devices.is_empty() {
-        return "nenhum dispositivo encontrado\n".to_owned();
+        return format!("{}\n", gettext("no devices found"));
     }
-    let mut rows: Vec<[String; 5]> =
-        vec![["ID", "TIPO", "NOME", "PROVEDORES", "CAPACIDADES"].map(str::to_owned)];
+    let mut rows: Vec<[String; 5]> = vec![
+        [
+            // Translators: cabeçalhos da tabela de `raiza-ctl list`.
+            gettext("ID"),
+            gettext("TYPE"),
+            gettext("NAME"),
+            gettext("PROVIDERS"),
+            gettext("CAPABILITIES"),
+        ]
+        .map(str::to_owned),
+    ];
     for d in devices {
         rows.push([
             d.id.to_string(),
@@ -158,10 +182,7 @@ fn capability_details(cap: &Capability) -> Vec<String> {
             active_stage,
             ..
         } => {
-            let mut v = vec![format!(
-                "limites: {} a {}, passo {}",
-                level.min, level.max, level.step
-            )];
+            let mut v = vec![limits(level)];
             if !stages.is_empty() {
                 // O estágio em uso entre colchetes: `400, [800], 1600`.
                 let marked: Vec<String> = stages
@@ -172,16 +193,19 @@ fn capability_details(cap: &Capability) -> Vec<String> {
                         _ => s.to_string(),
                     })
                     .collect();
-                v.push(format!("estágios: {}", marked.join(", ")));
+                v.push(fill(
+                    gettext("stages: {list}"),
+                    &[("list", &marked.join(", "))],
+                ));
             }
             v
         }
-        Capability::Volume { level, .. } => vec![format!(
-            "limites: {} a {}, passo {}",
-            level.min, level.max, level.step
-        )],
+        Capability::Volume { level, .. } => vec![limits(level)],
         Capability::PollingRate { supported, .. } | Capability::ScanRate { supported, .. } => {
-            vec![format!("aceitas: {} Hz", join(supported))]
+            vec![fill(
+                gettext("accepted: {list} Hz"),
+                &[("list", &join(supported))],
+            )]
         }
         Capability::Rgb { zones, modes, .. } => {
             let zonas = zones
@@ -190,12 +214,18 @@ fn capability_details(cap: &Capability) -> Vec<String> {
                 .map(|(i, z)| format!("{i} {} {}", z.name, z.color))
                 .collect::<Vec<_>>()
                 .join("; ");
-            vec![format!("zonas: {zonas}"), format!("modos: {}", join(modes))]
+            vec![
+                fill(gettext("zones: {list}"), &[("list", &zonas)]),
+                fill(gettext("modes: {list}"), &[("list", &join(modes))]),
+            ]
         }
         Capability::Rumble {
             max_duration_ms, ..
         } => {
-            vec![format!("duração máxima: {max_duration_ms} ms")]
+            vec![fill(
+                gettext("maximum duration: {duration} ms"),
+                &[("duration", max_duration_ms)],
+            )]
         }
         Capability::Battery { .. } | Capability::Mute { .. } | Capability::Connection { .. } => {
             Vec::new()
@@ -206,16 +236,18 @@ fn capability_details(cap: &Capability) -> Vec<String> {
 /// Texto de `get`: cabeçalho do dispositivo e todas as capacidades.
 pub fn format_device(d: &DeviceInfo) -> String {
     let mut out = format!("{} ({})\n", d.name, d.id);
-    out.push_str(&format!("  tipo: {}\n", kind_label(d.kind)));
+    let field =
+        |template: &str, value: &str| format!("  {}\n", fill(template, &[("value", &value)]));
+    out.push_str(&field(gettext("type: {value}"), kind_label(d.kind)));
     if let Some(vendor) = &d.vendor {
-        out.push_str(&format!("  fabricante: {vendor}\n"));
+        out.push_str(&field(gettext("vendor: {value}"), vendor));
     }
-    out.push_str(&format!("  provedores: {}\n", join(&d.providers)));
+    out.push_str(&field(gettext("providers: {value}"), &join(&d.providers)));
     if d.capabilities.is_empty() {
-        out.push_str("  capacidades: nenhuma\n");
+        out.push_str(&format!("  {}\n", gettext("capabilities: none")));
         return out;
     }
-    out.push_str("  capacidades:\n");
+    out.push_str(&format!("  {}\n", gettext("capabilities:")));
     for cap in &d.capabilities {
         out.push_str(&format!(
             "    {}: {}\n",
@@ -225,12 +257,12 @@ pub fn format_device(d: &DeviceInfo) -> String {
         for detail in capability_details(cap) {
             out.push_str(&format!("      {detail}\n"));
         }
-        let acesso = if cap.is_writable() {
-            "leitura e escrita"
+        let access = if cap.is_writable() {
+            gettext("access: read and write")
         } else {
-            "somente leitura"
+            gettext("access: read-only")
         };
-        out.push_str(&format!("      acesso: {acesso}\n"));
+        out.push_str(&format!("      {access}\n"));
     }
     out
 }
@@ -345,7 +377,7 @@ pub(crate) mod tests {
         assert_eq!(
             resumos,
             [
-                "bateria 80%",
+                "battery 80%",
                 "DPI 1600",
                 "polling 1000 Hz",
                 "RGB static #ff0000"
@@ -356,16 +388,16 @@ pub(crate) mod tests {
         assert_eq!(
             resumos,
             [
-                "bateria 55% (carregando)",
-                "mudo sim",
-                "conexão bluetooth, conectado"
+                "battery 55% (charging)",
+                "mute yes",
+                "connection bluetooth, connected"
             ]
         );
     }
 
     #[test]
     fn lista_vazia() {
-        assert_eq!(format_list(&[]), "nenhum dispositivo encontrado\n");
+        assert_eq!(format_list(&[]), "no devices found\n");
     }
 
     #[test]
@@ -375,14 +407,14 @@ pub(crate) mod tests {
         assert_eq!(linhas.len(), 3);
         assert!(linhas[0].starts_with("ID "));
         // A coluna TIPO começa no mesmo ponto em todas as linhas.
-        let col_tipo = linhas[0].find("TIPO").unwrap();
+        let col_tipo = linhas[0].find("TYPE").unwrap();
         assert_eq!(linhas[1].find("mouse"), Some(col_tipo));
         assert_eq!(linhas[2].find("headset"), Some(col_tipo));
-        let col_nome = linhas[0].find("NOME").unwrap();
+        let col_nome = linhas[0].find("NAME").unwrap();
         assert_eq!(linhas[1].find("Rapoo VT9"), Some(col_nome));
         assert_eq!(linhas[2].find("Fone Ágil"), Some(col_nome));
         assert!(linhas[1].ends_with("RGB static #ff0000"));
-        assert!(linhas[2].ends_with("conexão bluetooth, conectado"));
+        assert!(linhas[2].ends_with("connection bluetooth, connected"));
         assert!(!texto.lines().any(|l| l.ends_with(' ')));
     }
 
@@ -391,23 +423,23 @@ pub(crate) mod tests {
         let texto = format_device(&mouse());
         let esperado = "\
 Rapoo VT9 (usb:24ae:1423:0)
-  tipo: mouse
-  fabricante: Rapoo
-  provedores: hid-perfis, udev
-  capacidades:
-    bateria: 80%
-      acesso: somente leitura
+  type: mouse
+  vendor: Rapoo
+  providers: hid-perfis, udev
+  capabilities:
+    battery: 80%
+      access: read-only
     DPI: 1600
-      limites: 400 a 16000, passo 50
-      estágios: 800, 1600, 3200
-      acesso: leitura e escrita
+      limits: 400 to 16000, step 50
+      stages: 800, 1600, 3200
+      access: read and write
     polling: 1000 Hz
-      aceitas: 125, 500, 1000 Hz
-      acesso: somente leitura
+      accepted: 125, 500, 1000 Hz
+      access: read-only
     RGB: static #ff0000
-      zonas: 0 logo #ff0000
-      modos: static, wave
-      acesso: leitura e escrita
+      zones: 0 logo #ff0000
+      modes: static, wave
+      access: read and write
 ";
         assert_eq!(texto, esperado);
     }
@@ -417,7 +449,7 @@ Rapoo VT9 (usb:24ae:1423:0)
         let mut d = fone();
         d.capabilities.clear();
         d.vendor = None;
-        assert!(format_device(&d).ends_with("  capacidades: nenhuma\n"));
+        assert!(format_device(&d).ends_with("  capabilities: none\n"));
     }
 
     #[test]
@@ -445,7 +477,7 @@ Rapoo VT9 (usb:24ae:1423:0)
                 id: fone().id,
                 capability: fone().capabilities[0].clone()
             }),
-            "~ bt:DE:1E:59:99:7C:AE battery 55% (carregando)"
+            "~ bt:DE:1E:59:99:7C:AE battery 55% (charging)"
         );
     }
 

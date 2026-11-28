@@ -143,12 +143,7 @@ impl CapabilityRow for DpiRow {
                 .quietly(|| set_limits(&self.row.adjustment(), level));
             self.level.set(*level);
         }
-        let subtitle = if level.step > 1 {
-            format!("De {} a {}, passo {}", level.min, level.max, level.step)
-        } else {
-            format!("De {} a {}", level.min, level.max)
-        };
-        self.row.set_subtitle(&subtitle);
+        self.row.set_subtitle(&text::level_limits(level));
         self.stages.update(level, stages, *active_stage, *writable);
         set_writable(&self.row, *writable);
         self.link.daemon_changed(level.current);

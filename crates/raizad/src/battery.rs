@@ -8,6 +8,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::sync::Mutex;
 
 use raiza_core::{Capability, DeviceId};
+use raiza_i18n::{fill, gettext};
 use tokio::sync::mpsc::UnboundedReceiver;
 use tracing::{debug, info, warn};
 use zbus::zvariant::Value;
@@ -51,15 +52,19 @@ pub struct Alert {
 impl Alert {
     /// Título da notificação.
     pub fn summary(&self) -> String {
-        match self.level {
-            Level::Low => format!("Bateria fraca: {}", self.name),
-            Level::Critical => format!("Bateria acabando: {}", self.name),
-        }
+        let template = match self.level {
+            Level::Low => gettext("Low battery: {name}"),
+            Level::Critical => gettext("Battery almost empty: {name}"),
+        };
+        fill(template, &[("name", &self.name)])
     }
 
     /// Texto da notificação.
     pub fn body(&self) -> String {
-        format!("{}% restantes. Conecte o carregador.", self.percent)
+        fill(
+            gettext("{percent}% remaining. Plug in the charger."),
+            &[("percent", &self.percent)],
+        )
     }
 }
 
@@ -144,8 +149,10 @@ pub struct DesktopNotifier {
 }
 
 impl DesktopNotifier {
-    /// Notificador sobre a conexão de sessão do daemon.
+    /// Notificador sobre a conexão de sessão do daemon. Também escolhe a língua dos avisos
+    /// (o `raizad` não tem outros textos para o usuário).
     pub fn new(conn: zbus::Connection) -> Self {
+        raiza_i18n::init();
         DesktopNotifier {
             conn,
             shown: Mutex::default(),
@@ -293,8 +300,8 @@ mod tests {
     fn texto_do_aviso() {
         let mut w = BatteryWatch::default();
         let a = w.observe(&id(), "Rapoo VT2", 12, false).unwrap();
-        assert_eq!(a.summary(), "Bateria fraca: Rapoo VT2");
-        assert_eq!(a.body(), "12% restantes. Conecte o carregador.");
+        assert_eq!(a.summary(), "Low battery: Rapoo VT2");
+        assert_eq!(a.body(), "12% remaining. Plug in the charger.");
     }
 
     fn com_bateria(percent: u8) -> DeviceInfo {

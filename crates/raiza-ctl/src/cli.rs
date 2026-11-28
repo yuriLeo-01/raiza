@@ -1,9 +1,13 @@
 //! Definição da linha de comando (clap) e conversão para [`CapabilityValue`].
 //!
 //! Nada aqui faz I/O: dá para testar só com `Cli::try_parse_from`.
+//!
+//! Os comentários `///` documentam o código. O texto de ajuda que o usuário vê vem de
+//! [`help_text`], traduzido pelo `raiza-i18n` e aplicado por [`localized_command`].
 
-use clap::{ArgGroup, Parser, Subcommand, ValueEnum};
+use clap::{ArgGroup, Command as ClapCommand, CommandFactory, Parser, Subcommand, ValueEnum};
 use raiza_core::{CapabilityValue, Color, DeviceId, RgbSetting};
+use raiza_i18n::gettext;
 
 /// Hub de periféricos para Linux: fala com o daemon `raizad` pelo D-Bus.
 #[derive(Debug, Parser)]
@@ -66,13 +70,27 @@ pub enum CompletionShell {
     Fish,
 }
 
-/// `on` ou `off`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+/// `on` ou `off`. O `ValueEnum` é à mão para a ajuda de cada valor ser traduzida.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OnOff {
-    /// Ligado
+    /// Ligado.
     On,
-    /// Desligado
+    /// Desligado.
     Off,
+}
+
+impl ValueEnum for OnOff {
+    fn value_variants<'a>() -> &'a [Self] {
+        &[OnOff::On, OnOff::Off]
+    }
+
+    fn to_possible_value(&self) -> Option<clap::builder::PossibleValue> {
+        let (name, help) = match self {
+            OnOff::On => ("on", gettext("On")),
+            OnOff::Off => ("off", gettext("Off")),
+        };
+        Some(clap::builder::PossibleValue::new(name).help(help))
+    }
 }
 
 impl OnOff {
@@ -165,7 +183,7 @@ impl SetCommand {
             SetCommand::Connection { state } => CapabilityValue::Connection(state.as_bool()),
             SetCommand::Rgb { zone, mode, color } => {
                 if mode.is_none() && color.is_none() {
-                    return Err("rgb: informe pelo menos --mode ou --color".into());
+                    return Err(gettext("rgb: give at least --mode or --color").into());
                 }
                 CapabilityValue::Rgb(RgbSetting {
                     zone: *zone,
@@ -184,9 +202,130 @@ impl SetCommand {
     }
 }
 
+/// Texto de ajuda traduzido do comando em `path` (subcomandos separados por espaço, `""`
+/// para a raiz) ou, com `arg`, de um argumento dele.
+fn help_text(path: &str, arg: Option<&str>) -> Option<&'static str> {
+    // O subcomando `help` que o clap cria em cada nível. Os filhos dele só repetem os
+    // nomes dos subcomandos, sem texto.
+    if is_inside_help(path) {
+        return None;
+    }
+    if arg.is_none() && (path == "help" || path.ends_with(" help")) {
+        return Some(gettext(
+            "Print this message or the help of the given subcommand(s)",
+        ));
+    }
+    let text = match (path, arg) {
+        // Argumentos que o clap cria sozinho, em todo comando.
+        (_, Some("help")) => gettext("Print help"),
+        (_, Some("version")) => gettext("Print version"),
+
+        ("", None) => gettext("Peripheral hub for Linux: talks to the raizad daemon over D-Bus"),
+        ("list", None) => gettext("List the devices known to the daemon"),
+        ("list", Some("json")) => {
+            gettext("Print the daemon JSON, for scripts (always with every device)")
+        }
+        ("list", Some("all")) => {
+            gettext("Also show devices without controls (that only say \"connected\")")
+        }
+        ("get", None) => gettext("Show every capability of a device"),
+        ("get" | "set", Some("id")) => gettext("Device id (e.g. usb:24ae:1423:0)"),
+        ("get", Some("json")) => gettext("Print the daemon JSON, for scripts"),
+        ("set", None) => gettext("Change a capability of a device"),
+        ("set", Some("value")) => gettext("Capability and new value"),
+        ("watch", None) => gettext("Follow the daemon events in real time (one per line)"),
+        ("watch", Some("json")) => gettext("Print one JSON object per line"),
+        ("completions", None) => gettext("Generate the completion script for your shell"),
+        ("completions", Some("shell")) => gettext("Target shell"),
+
+        ("set dpi", None) => gettext("Sensor resolution (DPI)"),
+        ("set dpi", Some("value")) => gettext("New DPI"),
+        ("set dpi-stage", None) => {
+            gettext("One stage of the DPI table (the one in use or another)")
+        }
+        ("set dpi-stage", Some("stage")) => gettext("Stage index, starting at 0"),
+        ("set dpi-stage", Some("value")) => gettext("New DPI of the stage"),
+        ("set polling-rate", None) => gettext("Polling rate in Hz"),
+        ("set polling-rate" | "set scan-rate", Some("value")) => gettext("New rate in Hz"),
+        ("set scan-rate", None) => gettext("Key Scan Rate in Hz"),
+        ("set volume", None) => gettext("Volume in percent"),
+        ("set volume", Some("value")) => gettext("New volume (%)"),
+        ("set mute", None) => gettext("Turn mute on or off"),
+        ("set mute", Some("state")) => gettext("`on` mutes, `off` unmutes"),
+        ("set connection", None) => gettext("Connect or disconnect the device"),
+        ("set connection", Some("state")) => gettext("`on` connects, `off` disconnects"),
+        ("set rgb", None) => gettext("RGB lighting (give at least --mode or --color)"),
+        ("set rgb", Some("zone")) => gettext("Zone index; without it, applies to all zones"),
+        ("set rgb", Some("mode")) => gettext("Mode name (e.g. static)"),
+        ("set rgb", Some("color")) => gettext("Color as #rrggbb"),
+        ("set rumble", None) => gettext("Send a rumble pulse"),
+        ("set rumble", Some("strength")) => gettext("Strength from 0 to 100"),
+        ("set rumble", Some("duration_ms")) => gettext("Duration in milliseconds"),
+        _ => return None,
+    };
+    Some(text)
+}
+
+/// Comando abaixo de um subcomando `help` (`help set`, `set help dpi`).
+fn is_inside_help(path: &str) -> bool {
+    path.starts_with("help ") || path.contains(" help ")
+}
+
+/// A linha de comando com a ajuda na língua do usuário: textos de [`help_text`] e
+/// títulos das seções. Mensagens de erro do próprio clap continuam em inglês.
+pub fn localized_command() -> ClapCommand {
+    let mut cmd = Cli::command();
+    // Monta os argumentos automáticos (`--help`, `--version`, subcomando `help`) para
+    // poder traduzi-los também.
+    cmd.build();
+    localize(cmd, "")
+}
+
+fn localize(mut cmd: ClapCommand, path: &str) -> ClapCommand {
+    let template = format!(
+        "{{before-help}}{{about-with-newline}}\n{} {{usage}}\n\n{{all-args}}{{after-help}}",
+        gettext("Usage:")
+    );
+    cmd = cmd
+        .help_template(template)
+        .subcommand_help_heading(gettext("Commands"));
+    if let Some(about) = help_text(path, None) {
+        cmd = cmd.about(about);
+    }
+    let args: Vec<(clap::Id, bool)> = cmd
+        .get_arguments()
+        .map(|a| (a.get_id().clone(), a.is_positional()))
+        .collect();
+    for (id, positional) in args {
+        let help = help_text(path, Some(id.as_str()));
+        cmd = cmd.mut_arg(id, |mut a| {
+            if let Some(help) = help {
+                a = a.help(help);
+            }
+            a.help_heading(if positional {
+                gettext("Arguments")
+            } else {
+                gettext("Options")
+            })
+        });
+    }
+    let subs: Vec<String> = cmd
+        .get_subcommands()
+        .map(|s| s.get_name().to_owned())
+        .collect();
+    for name in subs {
+        let sub_path = if path.is_empty() {
+            name.clone()
+        } else {
+            format!("{path} {name}")
+        };
+        cmd = cmd.mut_subcommand(name, |s| localize(s, &sub_path));
+    }
+    cmd
+}
+
 /// Escreve o script de autocompletar de `shell` em `out`.
 pub fn completions(shell: CompletionShell, out: &mut dyn std::io::Write) -> std::io::Result<()> {
-    use clap::CommandFactory;
     use clap_complete::{Shell, generate};
 
     let shell = match shell {
@@ -196,7 +335,7 @@ pub fn completions(shell: CompletionShell, out: &mut dyn std::io::Write) -> std:
     };
     // Gera num buffer: o `generate` entra em pânico se o pipe fechar no meio da escrita.
     let mut buf = Vec::new();
-    generate(shell, &mut Cli::command(), "raiza-ctl", &mut buf);
+    generate(shell, &mut localized_command(), "raiza-ctl", &mut buf);
     out.write_all(&buf)
 }
 
@@ -359,6 +498,73 @@ mod tests {
         assert!(Cli::try_parse_from(["raiza-ctl", "completions", "fish"]).is_ok());
         assert!(Cli::try_parse_from(["raiza-ctl", "completions", "powershell"]).is_err());
         assert!(Cli::try_parse_from(["raiza-ctl"]).is_err());
+    }
+
+    /// Todo comando e argumento tem texto na tabela [`help_text`]: sem isso, a ajuda
+    /// mostraria o comentário `///` em português, fora da tradução.
+    #[test]
+    fn toda_ajuda_vem_da_tabela() {
+        fn confere(cmd: &ClapCommand, path: &str, faltando: &mut Vec<String>) {
+            if is_inside_help(path) {
+                return;
+            }
+            if help_text(path, None).is_none() {
+                faltando.push(format!("{path:?}"));
+            }
+            for a in cmd.get_arguments() {
+                if help_text(path, Some(a.get_id().as_str())).is_none() {
+                    faltando.push(format!("{path:?} {}", a.get_id()));
+                }
+            }
+            for s in cmd.get_subcommands() {
+                let sub = if path.is_empty() {
+                    s.get_name().to_owned()
+                } else {
+                    format!("{path} {}", s.get_name())
+                };
+                confere(s, &sub, faltando);
+            }
+        }
+        let mut cmd = Cli::command();
+        cmd.build();
+        let mut faltando = Vec::new();
+        confere(&cmd, "", &mut faltando);
+        assert!(faltando.is_empty(), "sem texto de ajuda: {faltando:?}");
+    }
+
+    #[test]
+    fn ajuda_traduzida_e_parse_continuam_valendo() {
+        let mut cmd = localized_command();
+        let ajuda = cmd.render_help().to_string();
+        assert!(ajuda.contains("Peripheral hub for Linux"), "{ajuda}");
+        assert!(ajuda.contains("Usage: raiza-ctl"), "{ajuda}");
+        assert!(
+            ajuda.contains("Commands:") && ajuda.contains("Options:"),
+            "{ajuda}"
+        );
+        assert!(ajuda.contains("List the devices known to the daemon"));
+        let set = cmd.find_subcommand_mut("set").unwrap();
+        let mute = set.find_subcommand_mut("mute").unwrap();
+        let ajuda = mute.render_long_help().to_string();
+        assert!(
+            ajuda.contains("Arguments:") && ajuda.contains("unmutes"),
+            "{ajuda}"
+        );
+        assert!(ajuda.contains("on") && ajuda.contains("On"), "{ajuda}");
+        assert!(!ajuda.contains("Ligado"), "{ajuda}");
+
+        // O comando traduzido continua convertendo para `Cli`.
+        use clap::FromArgMatches;
+        let m = localized_command()
+            .try_get_matches_from(["raiza-ctl", "set", "usb:24ae:1423:0", "mute", "on"])
+            .unwrap();
+        let cli = Cli::from_arg_matches(&m).unwrap();
+        match cli.command {
+            Command::Set { value, .. } => {
+                assert_eq!(value.to_value(), Ok(CapabilityValue::Mute(true)));
+            }
+            outro => panic!("esperava set, veio {outro:?}"),
+        }
     }
 
     #[test]

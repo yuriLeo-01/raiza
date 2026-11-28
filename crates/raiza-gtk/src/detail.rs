@@ -34,19 +34,19 @@ impl Detail {
         let page = adw::PreferencesPage::new();
         let info = adw::PreferencesGroup::new();
         let providers = adw::ActionRow::builder()
-            .title("Provedores")
+            .title(text::providers_title())
             .subtitle_selectable(true)
             .css_classes(["property"])
             .build();
         let id_row = adw::ActionRow::builder()
-            .title("Identificador")
+            .title(text::identifier_title())
             .subtitle_selectable(true)
             .css_classes(["property"])
             .build();
         info.add(&providers);
         info.add(&id_row);
         let caps = adw::PreferencesGroup::builder()
-            .title("Capacidades")
+            .title(text::capabilities_title())
             .build();
         page.add(&info);
         page.add(&caps);

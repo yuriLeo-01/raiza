@@ -40,6 +40,7 @@ async fn main() -> anyhow::Result<()> {
             EnvFilter::try_from_env("RAIZA_LOG").unwrap_or_else(|_| EnvFilter::new("info")),
         )
         .init();
+    raiza_i18n::init();
 
     let client = RaizaClient::connect_session()
         .await

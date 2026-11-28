@@ -128,9 +128,9 @@ impl Model {
         let rows = self.battery_rows();
         let lowest = lowest(&rows);
         let empty_text = if self.devices.is_some() {
-            text::NO_BATTERIES
+            text::no_batteries()
         } else {
-            text::DAEMON_DOWN
+            text::daemon_down()
         };
 
         let lines: Vec<String> = rows
@@ -259,11 +259,11 @@ mod tests {
         let view = Model::default().view();
         assert_eq!(view.visibility, Visibility::Passive);
         assert_eq!(view.icon_name, "battery-missing-symbolic");
-        assert_eq!(view.tooltip, text::DAEMON_DOWN);
+        assert_eq!(view.tooltip, text::daemon_down());
         assert_eq!(
             view.menu,
             [
-                Entry::Info(text::DAEMON_DOWN.into()),
+                Entry::Info(text::daemon_down().into()),
                 Entry::Separator,
                 Entry::OpenApp,
                 Entry::Quit
@@ -277,8 +277,8 @@ mod tests {
         model.connected(vec![device("teclado", "Teclado", None)]);
         let view = model.view();
         assert_eq!(view.visibility, Visibility::Passive);
-        assert_eq!(view.tooltip, text::NO_BATTERIES);
-        assert_eq!(view.menu[0], Entry::Info(text::NO_BATTERIES.into()));
+        assert_eq!(view.tooltip, text::no_batteries());
+        assert_eq!(view.menu[0], Entry::Info(text::no_batteries().into()));
     }
 
     #[test]
@@ -292,12 +292,12 @@ mod tests {
         let view = model.view();
         assert_eq!(view.visibility, Visibility::Active);
         assert_eq!(view.icon_name, "battery-level-10-charging-symbolic");
-        assert_eq!(view.tooltip, "Rapoo VT9: 80%\nS9 Ultra: 15%, carregando");
+        assert_eq!(view.tooltip, "Rapoo VT9: 80%\nS9 Ultra: 15%, charging");
         assert_eq!(
             view.menu,
             [
                 Entry::Info("Rapoo VT9: 80%".into()),
-                Entry::Info("S9 Ultra: 15%, carregando".into()),
+                Entry::Info("S9 Ultra: 15%, charging".into()),
                 Entry::Separator,
                 Entry::OpenApp,
                 Entry::Quit,
@@ -371,6 +371,6 @@ mod tests {
         assert_eq!(model.view().visibility, Visibility::Passive);
 
         model.disconnected();
-        assert_eq!(model.view().tooltip, text::DAEMON_DOWN);
+        assert_eq!(model.view().tooltip, text::daemon_down());
     }
 }

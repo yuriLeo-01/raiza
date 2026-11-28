@@ -49,7 +49,7 @@ impl CapabilityRow for ReadOnlyRow {
         // Não fica cinza (é só informação), mas explica por que não há controle.
         // A bateria é somente leitura por natureza: não precisa de explicação.
         let hint = (!capability.is_writable() && !matches!(capability, Capability::Battery { .. }))
-            .then_some(text::READ_ONLY_TOOLTIP);
+            .then_some(text::read_only_tooltip());
         self.row.set_tooltip_text(hint);
     }
 }
@@ -208,7 +208,7 @@ impl RumbleRow {
             capability,
         )));
         let button = gtk::Button::builder()
-            .label("Testar")
+            .label(text::test_rumble())
             .valign(gtk::Align::Center)
             .build();
         row.add_suffix(&button);

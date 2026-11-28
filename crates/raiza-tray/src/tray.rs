@@ -118,14 +118,14 @@ fn menu_item(entry: &Entry) -> MenuItem<RaizaTray> {
         .into(),
         Entry::Separator => MenuItem::Separator,
         Entry::OpenApp => StandardItem {
-            label: text::menu_label(text::OPEN_APP),
+            label: text::menu_label(text::open_app()),
             icon_name: "io.github.yurileo01.Raiza".into(),
             activate: Box::new(open_app),
             ..Default::default()
         }
         .into(),
         Entry::Quit => StandardItem {
-            label: text::menu_label(text::QUIT),
+            label: text::menu_label(text::quit()),
             icon_name: "application-exit-symbolic".into(),
             activate: Box::new(|tray: &mut RaizaTray| tray.send(Action::Quit)),
             ..Default::default()
@@ -151,14 +151,14 @@ mod tests {
         let mut model = Model::default();
         model.connected(Vec::new());
         tray.set_view(model.view());
-        assert_eq!(tray.tool_tip().description, text::NO_BATTERIES);
+        assert_eq!(tray.tool_tip().description, text::no_batteries());
 
         // "Sair" manda a ação ao laço principal.
         let menu = tray.menu();
         let Some(MenuItem::Standard(quit)) = menu.last() else {
             panic!("o último item deveria ser \"Sair\"");
         };
-        assert_eq!(quit.label, text::QUIT);
+        assert_eq!(quit.label, text::quit());
         (quit.activate)(&mut tray);
         assert_eq!(rx.try_recv().ok(), Some(Action::Quit));
 

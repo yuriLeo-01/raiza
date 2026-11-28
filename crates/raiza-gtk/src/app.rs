@@ -23,7 +23,7 @@ use crate::detail::Detail;
 use crate::model::{Change, Devices, REMOVAL_GRACE, RemovalToken};
 use crate::session::{self, SessionEvent};
 use crate::sidebar::Sidebar;
-use crate::text::Problem;
+use crate::text::{self, Problem};
 
 /// Id do aplicativo (também o nome do ícone e do `.desktop`).
 pub const APP_ID: &str = "io.github.yurileo01.Raiza";
@@ -132,13 +132,10 @@ impl App {
         let hidden = self.devices.hidden_count();
         widgets
             .show_all
-            .set_tooltip_text(Some(&if widgets.show_all.is_active() {
-                "Esconder aparelhos sem controles".to_string()
-            } else if hidden > 0 {
-                format!("Mostrar todos os aparelhos ({hidden} sem controles escondidos)")
-            } else {
-                "Mostrar todos os aparelhos".to_string()
-            }));
+            .set_tooltip_text(Some(&text::show_all_tooltip(
+                widgets.show_all.is_active(),
+                hidden,
+            )));
         match &self.state {
             State::Loading => widgets.stack.set_visible_child_name(PAGE_LOADING),
             State::Problem(problem) => {
@@ -229,13 +226,13 @@ impl Component for App {
             .halign(gtk::Align::Center)
             .build();
         let loading = adw::StatusPage::builder()
-            .title("Conectando ao serviço do Raiza…")
+            .title(text::connecting())
             .child(&spinner)
             .build();
 
         // Problema.
         let retry = gtk::Button::builder()
-            .label("Tentar de novo")
+            .label(text::retry())
             .halign(gtk::Align::Center)
             .css_classes(["pill", "suggested-action"])
             .build();
@@ -253,8 +250,8 @@ impl Component for App {
         // Nenhum dispositivo.
         let empty = adw::StatusPage::builder()
             .icon_name("input-mouse-symbolic")
-            .title("Nenhum dispositivo")
-            .description("Conecte um periférico compatível. Ele aparece aqui sozinho.")
+            .title(text::no_devices_title())
+            .description(text::no_devices_description())
             .build();
 
         // Lista e detalhes.
@@ -267,7 +264,7 @@ impl Component for App {
         // Aparelhos que só dizem "conectado" ficam escondidos; este botão mostra todos.
         let show_all = gtk::ToggleButton::builder()
             .icon_name("view-reveal-symbolic")
-            .tooltip_text("Mostrar todos os aparelhos")
+            .tooltip_text(text::show_all_tooltip(false, 0))
             .build();
         show_all.connect_toggled({
             let input = sender.input_sender().clone();
@@ -301,7 +298,7 @@ impl Component for App {
                     return;
                 }
                 let toast = adw::Toast::builder()
-                    .title(crate::text::escape_markup(message))
+                    .title(text::escape_markup(message))
                     .timeout(TOAST_SECONDS)
                     .build();
                 toasts.add_toast(toast);
@@ -311,7 +308,7 @@ impl Component for App {
         content_view.add_top_bar(&adw::HeaderBar::new());
         content_view.set_content(Some(detail.widget()));
         let content = adw::NavigationPage::builder()
-            .title("Dispositivo")
+            .title(text::device_page_title())
             .tag("device")
             .child(&content_view)
             .build();

@@ -9,6 +9,7 @@ repository.workspace = true
 
 [dependencies]
 raiza-core = { workspace = true, features = ["dbus"] }
+raiza-i18n.workspace = true
 anyhow = "1"
 futures-util = "0.3"
 # 0.3.8 saiu em 2026-11-26; fixada na 0.3.7 (2026-10-20) até ter duas semanas.

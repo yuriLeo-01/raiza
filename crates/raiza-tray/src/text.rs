@@ -1,27 +1,38 @@
-//! Textos do ícone de bandeja. Ficam todos aqui para a tradução (T26).
+//! Textos do ícone de bandeja, traduzidos pelo `raiza-i18n` (msgids em inglês).
 
-/// Título do ícone e do tooltip.
+use raiza_i18n::{fill, gettext};
+
+/// Título do ícone e do tooltip (nome do app, não se traduz).
 pub const TITLE: &str = "Raiza";
 
 /// Item do menu que abre o app.
-pub const OPEN_APP: &str = "Abrir o Raiza";
+pub fn open_app() -> &'static str {
+    gettext("Open Raiza")
+}
 
 /// Item do menu que encerra o ícone de bandeja.
-pub const QUIT: &str = "Sair";
+pub fn quit() -> &'static str {
+    gettext("Quit")
+}
 
 /// Tooltip e menu quando nenhum aparelho informa bateria.
-pub const NO_BATTERIES: &str = "Nenhum aparelho com bateria";
+pub fn no_batteries() -> &'static str {
+    gettext("No device with a battery")
+}
 
 /// Tooltip e menu quando o daemon não responde.
-pub const DAEMON_DOWN: &str = "O serviço do Raiza não está rodando";
+pub fn daemon_down() -> &'static str {
+    gettext("The Raiza service is not running")
+}
 
-/// Uma linha da lista de baterias: `Rapoo VT9: 80%` ou `Rapoo VT9: 80%, carregando`.
+/// Uma linha da lista de baterias: `Rapoo VT9: 80%` ou `Rapoo VT9: 80%, charging`.
 pub fn battery_line(name: &str, percent: u8, charging: bool) -> String {
-    if charging {
-        format!("{name}: {percent}%, carregando")
+    let template = if charging {
+        gettext("{name}: {percent}%, charging")
     } else {
-        format!("{name}: {percent}%")
-    }
+        gettext("{name}: {percent}%")
+    };
+    fill(template, &[("name", &name), ("percent", &percent)])
 }
 
 /// Escapa o texto para o subconjunto de HTML aceito na descrição do tooltip SNI.
@@ -52,10 +63,7 @@ mod tests {
     #[test]
     fn linha_de_bateria() {
         assert_eq!(battery_line("Rapoo VT9", 80, false), "Rapoo VT9: 80%");
-        assert_eq!(
-            battery_line("S9 Ultra", 5, true),
-            "S9 Ultra: 5%, carregando"
-        );
+        assert_eq!(battery_line("S9 Ultra", 5, true), "S9 Ultra: 5%, charging");
     }
 
     #[test]

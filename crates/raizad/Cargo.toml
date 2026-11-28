@@ -9,6 +9,7 @@ repository.workspace = true
 
 [dependencies]
 raiza-core = { workspace = true, features = ["dbus", "mock"] }
+raiza-i18n.workspace = true
 raiza-provider-bluez = { path = "../raiza-provider-bluez" }
 raiza-provider-evdev = { path = "../raiza-provider-evdev" }
 raiza-provider-hid = { path = "../raiza-provider-hid" }
