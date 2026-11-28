@@ -73,12 +73,17 @@ pub fn mock_devices() -> Vec<DeviceInfo> {
                         step: 50,
                     },
                     stages: vec![800, 1600, 3200],
-                    active_stage: None,
+                    active_stage: Some(1),
                     writable: true,
                 },
                 Capability::PollingRate {
                     current: 1000,
                     supported: vec![125, 250, 500, 1000],
+                    writable: true,
+                },
+                Capability::ScanRate {
+                    current: 2000,
+                    supported: vec![1000, 2000, 4000, 8000],
                     writable: true,
                 },
                 Capability::Rgb {
