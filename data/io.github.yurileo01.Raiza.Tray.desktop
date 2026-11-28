@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Raiza Tray
+Name[pt_BR]=Bandeja do Raiza
+Comment=Battery of your peripherals in the system tray
+Comment[pt_BR]=Bateria dos seus periféricos na bandeja do sistema
+Exec=raiza-tray
+Icon=io.github.yurileo01.Raiza
+Terminal=false
+NoDisplay=true
+# No GNOME a extensão do painel (T24) já mostra a bateria.
+NotShowIn=GNOME;
+X-GNOME-Autostart-enabled=true
+X-KDE-autostart-phase=2

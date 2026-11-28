@@ -38,7 +38,7 @@ build() {
   cd "$pkgname"
   export RUSTUP_TOOLCHAIN=stable
   export CARGO_TARGET_DIR=target
-  cargo build --frozen --release -p raizad -p raiza-ctl -p raiza-gtk
+  cargo build --frozen --release -p raizad -p raiza-ctl -p raiza-gtk -p raiza-tray
 
   # Completions geradas pelo próprio binário.
   mkdir -p completions
@@ -59,7 +59,8 @@ package() {
   cd "$pkgname"
 
   install -Dm755 -t "$pkgdir/usr/bin" \
-    target/release/raizad target/release/raiza-ctl target/release/raiza-gtk
+    target/release/raizad target/release/raiza-ctl target/release/raiza-gtk \
+    target/release/raiza-tray
 
   install -Dm644 packaging/udev/70-raiza.rules \
     "$pkgdir/usr/lib/udev/rules.d/70-raiza.rules"
@@ -70,6 +71,8 @@ package() {
 
   install -Dm644 data/io.github.yurileo01.Raiza.desktop \
     "$pkgdir/usr/share/applications/io.github.yurileo01.Raiza.desktop"
+  install -Dm644 data/io.github.yurileo01.Raiza.Tray.desktop \
+    "$pkgdir/etc/xdg/autostart/io.github.yurileo01.Raiza.Tray.desktop"
   install -Dm644 data/io.github.yurileo01.Raiza.metainfo.xml \
     "$pkgdir/usr/share/metainfo/io.github.yurileo01.Raiza.metainfo.xml"
 
