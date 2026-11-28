@@ -1,7 +1,8 @@
-//! Valores com limites: DPI (`AdwSpinRow` com estágios como sugestões) e volume (slider).
+//! Valores com limites: DPI (`AdwSpinRow`, mais o grupo de estágios de [`super::stages`])
+//! e volume (slider).
 //! Os dois passam pelo debounce, porque segurar a seta ou arrastar gera rajadas.
 
-use std::cell::{Cell, RefCell};
+use std::cell::Cell;
 use std::rc::Rc;
 
 use raiza_core::{Capability, CapabilityValue, Level};
@@ -10,6 +11,7 @@ use relm4::adw::prelude::*;
 use relm4::gtk;
 
 use super::link::{Link, Writer};
+use super::stages::DpiStages;
 use super::{CapabilityRow, set_writable};
 use crate::text;
 
@@ -33,18 +35,37 @@ pub fn snap(value: f64, level: &Level) -> u32 {
 }
 
 /// Passo do widget: `step`, ou 1 quando qualquer valor vale.
-fn widget_step(level: &Level) -> f64 {
+pub(super) fn widget_step(level: &Level) -> f64 {
     f64::from(level.step.max(1))
 }
 
-/// DPI: campo numérico com os limites do sensor e um menu com os estágios do aparelho.
+/// Ajuste de um campo numérico com os limites e o passo de `level`.
+pub(super) fn spin_adjustment(value: u32, level: &Level) -> gtk::Adjustment {
+    gtk::Adjustment::new(
+        f64::from(value),
+        f64::from(level.min),
+        f64::from(level.max),
+        widget_step(level),
+        widget_step(level) * 10.0,
+        0.0,
+    )
+}
+
+/// Troca os limites e o passo de um ajuste já criado.
+pub(super) fn set_limits(adj: &gtk::Adjustment, level: &Level) {
+    adj.set_lower(f64::from(level.min));
+    adj.set_upper(f64::from(level.max));
+    adj.set_step_increment(widget_step(level));
+    adj.set_page_increment(widget_step(level) * 10.0);
+}
+
+/// DPI: campo numérico com os limites do sensor. A tabela de estágios, quando conhecida,
+/// vai num grupo à parte ([`DpiStages`]).
 pub struct DpiRow {
     row: adw::SpinRow,
     level: Rc<Cell<Level>>,
     link: Rc<Link<u32>>,
-    stages_button: gtk::MenuButton,
-    stages_box: gtk::Box,
-    stages: RefCell<Vec<u32>>,
+    stages: DpiStages,
     widget: gtk::Widget,
 }
 
@@ -54,17 +75,9 @@ impl DpiRow {
         let Capability::Dpi { level, .. } = capability else {
             unreachable!("DpiRow só recebe Dpi")
         };
-        let adjustment = gtk::Adjustment::new(
-            f64::from(level.current),
-            f64::from(level.min),
-            f64::from(level.max),
-            widget_step(level),
-            widget_step(level) * 10.0,
-            0.0,
-        );
         let row = adw::SpinRow::builder()
             .title(text::capability_title(capability.kind()))
-            .adjustment(&adjustment)
+            .adjustment(&spin_adjustment(level.current, level))
             .snap_to_ticks(true)
             .numeric(true)
             .build();
@@ -72,21 +85,8 @@ impl DpiRow {
             capability,
         )));
 
-        let stages_box = gtk::Box::builder()
-            .orientation(gtk::Orientation::Vertical)
-            .spacing(2)
-            .build();
-        let popover = gtk::Popover::builder().child(&stages_box).build();
-        let stages_button = gtk::MenuButton::builder()
-            .icon_name("view-list-symbolic")
-            .tooltip_text("Estágios do aparelho")
-            .valign(gtk::Align::Center)
-            .css_classes(["flat"])
-            .popover(&popover)
-            .build();
-        row.add_suffix(&stages_button);
-
         let level_cell = Rc::new(Cell::new(*level));
+        let stages = DpiStages::new(*level, writer.clone());
         let link = Link::new(
             level.current,
             writer,
@@ -111,39 +111,11 @@ impl DpiRow {
             row,
             level: level_cell,
             link,
-            stages_button,
-            stages_box,
-            stages: RefCell::new(Vec::new()),
+            stages,
             widget,
         };
         this.update(capability);
         this
-    }
-
-    /// Recria os botões de estágio se a lista mudou.
-    fn set_stages(&self, stages: &[u32]) {
-        if *self.stages.borrow() == stages {
-            return;
-        }
-        while let Some(child) = self.stages_box.first_child() {
-            self.stages_box.remove(&child);
-        }
-        for &stage in stages {
-            let button = gtk::Button::builder()
-                .label(format!("{stage} DPI"))
-                .css_classes(["flat"])
-                .build();
-            let row = self.row.clone();
-            let menu = self.stages_button.clone();
-            button.connect_clicked(move |_| {
-                // Vira escrita pelo sinal do campo, como se o usuário tivesse digitado.
-                row.set_value(f64::from(stage));
-                menu.popdown();
-            });
-            self.stages_box.append(&button);
-        }
-        self.stages_button.set_visible(!stages.is_empty());
-        *self.stages.borrow_mut() = stages.to_vec();
     }
 }
 
@@ -152,24 +124,23 @@ impl CapabilityRow for DpiRow {
         &self.widget
     }
 
+    fn extra_group(&self) -> Option<&adw::PreferencesGroup> {
+        Some(self.stages.group())
+    }
+
     fn update(&self, capability: &Capability) {
         let Capability::Dpi {
             level,
             stages,
+            active_stage,
             writable,
-            ..
         } = capability
         else {
             return;
         };
         if self.level.get() != *level {
-            self.link.quietly(|| {
-                let adj = self.row.adjustment();
-                adj.set_lower(f64::from(level.min));
-                adj.set_upper(f64::from(level.max));
-                adj.set_step_increment(widget_step(level));
-                adj.set_page_increment(widget_step(level) * 10.0);
-            });
+            self.link
+                .quietly(|| set_limits(&self.row.adjustment(), level));
             self.level.set(*level);
         }
         let subtitle = if level.step > 1 {
@@ -178,7 +149,7 @@ impl CapabilityRow for DpiRow {
             format!("De {} a {}", level.min, level.max)
         };
         self.row.set_subtitle(&subtitle);
-        self.set_stages(stages);
+        self.stages.update(level, stages, *active_stage, *writable);
         set_writable(&self.row, *writable);
         self.link.daemon_changed(level.current);
     }

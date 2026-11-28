@@ -2,7 +2,8 @@
 //!
 //! Quando o mesmo dispositivo continua com os mesmos tipos de capacidade (o caso comum:
 //! um valor mudou, ou o par `DeviceRemoved` + `DeviceAdded`), as linhas são atualizadas
-//! no lugar, sem piscar e sem perder o foco.
+//! no lugar, sem piscar e sem perder o foco. Uma linha pode trazer um grupo extra (os
+//! estágios de DPI), que entra na página depois do grupo de capacidades.
 
 use raiza_core::dbus::RaizaClient;
 use raiza_core::{CapabilityKind, DeviceId, DeviceInfo};
@@ -89,9 +90,7 @@ impl Detail {
             return;
         }
 
-        for row in self.rows.drain(..) {
-            self.caps.remove(row.widget());
-        }
+        self.remove_rows();
         let ctx = RowContext {
             device: &device.id,
             client,
@@ -100,6 +99,9 @@ impl Detail {
         for cap in caps {
             let row = capabilities::row_for(cap, &ctx);
             self.caps.add(row.widget());
+            if let Some(group) = row.extra_group() {
+                self.page.add(group);
+            }
             self.rows.push(row);
         }
         self.caps.set_visible(!self.rows.is_empty());
@@ -111,9 +113,17 @@ impl Detail {
 
     /// Esquece o que está na página (a próxima chamada a [`Detail::show`] recria tudo).
     pub fn clear(&mut self) {
+        self.remove_rows();
+        self.shown = None;
+    }
+
+    /// Tira da página as linhas e os grupos extras delas.
+    fn remove_rows(&mut self) {
         for row in self.rows.drain(..) {
             self.caps.remove(row.widget());
+            if let Some(group) = row.extra_group() {
+                self.page.remove(group);
+            }
         }
-        self.shown = None;
     }
 }

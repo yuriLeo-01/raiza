@@ -12,10 +12,12 @@ mod level;
 pub mod link;
 mod polling;
 mod rgb;
+mod stages;
 pub mod sync;
 
 use raiza_core::dbus::RaizaClient;
 use raiza_core::{Capability, DeviceId};
+use relm4::adw;
 use relm4::adw::prelude::*;
 use relm4::gtk;
 
@@ -51,6 +53,11 @@ pub trait CapabilityRow {
     fn widget(&self) -> &gtk::Widget;
     /// Mostra o valor novo da mesma capacidade, sem recriar o widget.
     fn update(&self, capability: &Capability);
+    /// Grupo à parte que a linha quer na página, depois do grupo de capacidades
+    /// (ex.: os estágios de DPI). A linha cuida da visibilidade dele.
+    fn extra_group(&self) -> Option<&adw::PreferencesGroup> {
+        None
+    }
 }
 
 /// A linha para esta capacidade.
@@ -61,8 +68,8 @@ pub fn row_for(capability: &Capability, ctx: &RowContext<'_>) -> Box<dyn Capabil
         Capability::Volume { .. } => {
             Box::new(level::VolumeRow::new(capability, ctx.writer(capability)))
         }
-        Capability::PollingRate { .. } => {
-            Box::new(polling::PollingRow::new(capability, ctx.writer(capability)))
+        Capability::PollingRate { .. } | Capability::ScanRate { .. } => {
+            Box::new(polling::RateRow::new(capability, ctx.writer(capability)))
         }
         Capability::Rgb { .. } => Box::new(rgb::RgbRow::new(capability, ctx.writer(capability))),
         Capability::Mute { .. } => {
@@ -71,10 +78,7 @@ pub fn row_for(capability: &Capability, ctx: &RowContext<'_>) -> Box<dyn Capabil
         Capability::Connection { writable: true, .. } => {
             Box::new(basic::ToggleRow::new(capability, ctx.writer(capability)))
         }
-        // A T23 troca a taxa de varredura por uma lista de opções.
-        Capability::Connection { .. } | Capability::ScanRate { .. } => {
-            Box::new(basic::ReadOnlyRow::new(capability))
-        }
+        Capability::Connection { .. } => Box::new(basic::ReadOnlyRow::new(capability)),
         Capability::Rumble { .. } => {
             Box::new(basic::RumbleRow::new(capability, ctx.writer(capability)))
         }
