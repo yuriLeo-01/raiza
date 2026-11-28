@@ -59,6 +59,16 @@ descartado em 2026-11-25); `sonnet` para tarefas simples.
 |---|---|---|---|---|
 | T19 | [PKGBUILD para o AUR e guia de instalação](T19-aur.md) | sonnet | T04, T07, T13 | ✅ |
 
+## F6: Mais controle e presença na área de trabalho
+
+| Id | Tarefa | Agente | Depende | Status |
+|---|---|---|---|---|
+| T22 | [Tabela de estágios de DPI e Key Scan Rate](T22-dpi-estagios-scan-rate.md) | claude (líder) + humano | T16, T17 | ⬜ |
+| T23 | [App GTK: editar estágios de DPI e Key Scan Rate](T23-gtk-estagios-scan-rate.md) | claude | T22 | ⬜ |
+| T24 | [Extensão do GNOME Shell: bateria no painel](T24-extensao-gnome.md) | claude | T04 | ⬜ |
+| T25 | [Ícone de bandeja SNI (KDE e outros)](T25-bandeja-sni.md) | claude | T04 | ⬜ |
+| T26 | [Interface em inglês e português (gettext)](T26-traducao.md) | claude | T23, T25 | ⬜ |
+
 ## Ordem sugerida das levas
 
 1. **Leva 1:** T01 (líder) em paralelo com T03 e T07.
@@ -68,3 +78,5 @@ descartado em 2026-11-25); `sonnet` para tarefas simples.
    T17, T18 e T20 aguardam capturas (o mantenedor não vai capturar por enquanto). A pesquisa em
    `notas/T17.md`, `notas/T18.md` e `notas/T20.md` mostra que parte delas pode sair sem capturas.
 4. **Leva 4:** T19.
+5. **Leva 5:** T22 (líder) com T24 em paralelo; S9 no cabo (T20) com o mantenedor. Depois T23 e
+   T25; depois T26; depois a publicação no AUR.
