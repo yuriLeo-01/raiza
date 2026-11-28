@@ -1,0 +1,9 @@
+{
+  "uuid": "raiza@yurileo01.github.io",
+  "name": "Raiza",
+  "description": "Battery of your mice, keyboards and headsets in the top bar, read from the Raiza daemon (raizad).",
+  "shell-version": ["46", "47", "48", "49", "50", "51"],
+  "url": "https://github.com/yuriLeo-01/raiza",
+  "gettext-domain": "raiza-shell-extension",
+  "version-name": "0.1"
+}

@@ -13,6 +13,7 @@ optdepends=(
   'wireplumber: volume e mudo (usa wpctl)'
   'bluez: dispositivos Bluetooth'
   'upower: nível de bateria'
+  'gnome-shell: bateria dos periféricos no painel (extensão)'
 )
 provides=('raiza')
 conflicts=('raiza')
@@ -45,6 +46,13 @@ build() {
   local shell
   for shell in bash zsh fish; do
     target/release/raiza-ctl completions "$shell" > "completions/$shell"
+  done
+
+  # Tradução da extensão do GNOME Shell (o msgfmt vem no gettext, do base-devel).
+  local po
+  for po in extensions/gnome/po/*.po; do
+    mkdir -p "extensions/gnome/locale/$(basename "$po" .po)/LC_MESSAGES"
+    msgfmt -o "extensions/gnome/locale/$(basename "$po" .po)/LC_MESSAGES/raiza-shell-extension.mo" "$po"
   done
 }
 
@@ -82,6 +90,13 @@ package() {
   while IFS= read -r -d '' profile; do
     install -Dm644 "$profile" "$pkgdir/usr/share/raiza/${profile}"
   done < <(find profiles -type f -print0)
+
+  local ext="$pkgdir/usr/share/gnome-shell/extensions/raiza@yurileo01.github.io"
+  install -Dm644 -t "$ext" extensions/gnome/metadata.json extensions/gnome/extension.js
+  local mo
+  while IFS= read -r -d '' mo; do
+    install -Dm644 "$mo" "$ext/${mo#extensions/gnome/}"
+  done < <(find extensions/gnome/locale -name '*.mo' -print0)
 
   install -Dm644 completions/bash \
     "$pkgdir/usr/share/bash-completion/completions/raiza-ctl"
