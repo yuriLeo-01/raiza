@@ -11,7 +11,10 @@ Detalhes em [`docs/tarefas/notas/T20.md`](../tarefas/notas/T20.md).
   três exemplos.
 - Conexão: `02 10 01 00 …` → `02 10 01 00 01` ligado, `… 00` desligado.
 - Bateria: `02 12 01 00 …` → `02 12 01 00 <nível %>`. Byte 3 = `01` significa sem nível (confirmado no aparelho em 2026-11-26: com o headset desligado vem `01`, e a bateria aparece pela releitura assim que ele liga).
-- Carregando: só pelo cabo, quando o headset aparece como `36eb:0087`.
+- Carregando: só pelo cabo, quando o headset aparece como `36eb:0087` (mesma interface 3 e mesmos
+  comandos). A bateria pelo cabo traz o bit 7 = carregando e os bits 0–6 = nível: `bc` = carregando,
+  60 % (lido do aparelho em 2026-11-28). Enquanto isso, o dongle responde conexão `00` e bateria `01`
+  (sem nível); por isso o cabo é a conexão preferida do perfil.
 - Sidetone e EQ: **não documentados** (aguardam capturas, T20).
 
 Perfil: [`profiles/akko/akko-s9-ultra-36eb-1087.json`](../../profiles/akko/akko-s9-ultra-36eb-1087.json)

@@ -744,6 +744,21 @@ fn akko_s9_le_a_bateria_documentada() {
         p.parse_response(CapabilityKind::Battery, &resposta)
             .is_err()
     );
+    // No cabo (`36eb:0087`, lido do aparelho do mantenedor em 2026-11-28): `bc` = bit 7
+    // (carregando) + `3c` (60 %), enquanto o dongle respondia `01` (sem nível).
+    resposta[3] = 0x00;
+    resposta[4] = 0xbc;
+    assert_eq!(
+        p.parse_response(CapabilityKind::Battery, &resposta)
+            .unwrap(),
+        Capability::Battery {
+            percent: 60,
+            charging: true
+        }
+    );
+    // Cabo é a conexão preferida: com os dois presentes, só ele informa a bateria.
+    assert_eq!(p.match_index(0x36eb, 0x0087, Some(3), None, None), Some(0));
+    assert_eq!(p.match_index(0x36eb, 0x1087, Some(3), None, None), Some(1));
 }
 
 /// Status `0xF7` do receptor 2.4 GHz do teclado, lido do dongle do mantenedor em 2026-11-26:

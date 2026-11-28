@@ -8,12 +8,20 @@
   "authors": [
     "Raiza (a partir do protocolo documentado pelo projeto HaloBattery, MIT)"
   ],
-  "match": {
-    "vendor_id": "36eb",
-    "product_id": "1087",
-    "interface": 3,
-    "connection": "wireless"
-  },
+  "match": [
+    {
+      "vendor_id": "36eb",
+      "product_id": "0087",
+      "interface": 3,
+      "connection": "wired"
+    },
+    {
+      "vendor_id": "36eb",
+      "product_id": "1087",
+      "interface": 3,
+      "connection": "wireless"
+    }
+  ],
   "capabilities": {
     "battery": {
       "read": {
@@ -52,7 +60,12 @@
           ],
           "fields": {
             "percent": {
-              "at": 3
+              "at": 3,
+              "mask": 127
+            },
+            "charging": {
+              "at": 3,
+              "mask": 128
             }
           }
         }
