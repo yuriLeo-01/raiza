@@ -190,6 +190,9 @@ impl<B: HidBackend, P: ProfileSource> Inner<B, P> {
                     debug!(id = %device.id, ?kind, error = %e, "releitura sem resposta válida");
                 }
             }
+            if let Err(e) = device.read_dpi_table(self.timeouts.response) {
+                debug!(id = %device.id, error = %e, "releitura da tabela de DPI sem resposta válida");
+            }
         }
     }
 
@@ -380,6 +383,16 @@ impl<B: HidBackend, P: ProfileSource> Provider for HidProfilesProvider<B, P> {
                     RaizaError::Io(format!(
                         "não foi possível ler o estado atual antes de gravar: {e}"
                     ))
+                })?;
+        }
+        // Gravar um estágio exige a tabela (o estágio é conferido contra ela).
+        if matches!(value, CapabilityValue::DpiStage { .. }) && device.dpi_table_unknown() {
+            let timeout = self.inner.timeouts.response;
+            let reader = Arc::clone(&device);
+            blocking(move || reader.read_dpi_table(timeout))
+                .await
+                .map_err(|e| {
+                    RaizaError::Io(format!("não foi possível ler a tabela de DPI: {e}"))
                 })?;
         }
         let ack_timeout = self.inner.timeouts.response;

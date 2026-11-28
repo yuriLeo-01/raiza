@@ -9,6 +9,11 @@ e lacunas em [`docs/tarefas/notas/T17.md`](../tarefas/notas/T17.md).
   `02` ocupado e `00` mouse dormindo.
 - Status espontâneo: input `0x07` (19 bytes), ~a cada 3 s: byte 2 estágio de DPI, 3–6 DPI X/Y (u16 LE),
   7 `01` bateria / `02` carregando, 8 bateria %, 10 key scan rate (125 × 2ⁿ), 11 report rate (polling, tabela abaixo).
+- Tabela de DPI: `06 A5 A4 0E 88 08 00 00` lê os 14 bytes de `0x0888` (7 estágios X, u16 LE);
+  resposta `06 01 00 00 00 <dados>`, ou seja, dados a partir do byte 4 do conteúdo. Lida do
+  aparelho em 2026-11-28: 400, 800, 950, 1600, 950, 6400, 30000 (igual ao app oficial).
+- Key Scan Rate: `0x0881` e byte 10 do status, mesmo expoente (`05` = 4000 Hz). Só leitura no
+  perfil até a escrita ser testada.
 - Polling: 125=`08`, 250=`04`, 500=`02`, 1000=`01`, 2000=`84`, 4000=`82`, 8000=`81`.
 - **Nunca** usar a interface 2 (relatórios de 512 bytes, provavelmente firmware/macros).
 

@@ -552,3 +552,86 @@ async fn escrita_le_antes_quando_nao_ha_leitura() {
     assert_eq!(mouse.dpi_writes().len(), 1);
     assert_eq!(mouse.with_state(|st| st.dpi_raw), 64);
 }
+
+/// Perfil de teste com 3 estágios endereçados pela escrita e a tabela lida por `08 05`.
+fn com_estagios(v: &mut serde_json::Value) {
+    let dpi = &mut v["capabilities"]["dpi"];
+    dpi["stages"] = serde_json::json!(3);
+    dpi["read"]["response"]["fields"]["stage"] = serde_json::json!({ "at": 2 });
+    dpi["write"]["fields"]["stage"] = serde_json::json!({ "at": 2 });
+    dpi["table"] = serde_json::json!({
+        "request": {
+            "type": "output", "report_id": 8,
+            "data": "05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+        },
+        "response": {
+            "type": "input", "report_id": 8, "length": 16,
+            "expect": [{ "at": 0, "value": 5 }, { "at": 1, "value": 1 }],
+            "fields": { "value": { "at": 3, "encoding": "u16le", "scale": 50 } }
+        }
+    });
+}
+
+fn tabela(cap: &Capability) -> (Vec<u32>, Option<u32>, u32) {
+    match cap {
+        Capability::Dpi {
+            stages,
+            active_stage,
+            level,
+            ..
+        } => (stages.clone(), *active_stage, level.current),
+        outra => panic!("esperava DPI, veio {outra:?}"),
+    }
+}
+
+/// A tabela de estágios entra no DPI; gravar um estágio fora de uso muda só ele, e
+/// gravar o DPI muda o estágio em uso na tabela.
+#[tokio::test]
+async fn tabela_de_estagios() {
+    let backend = FakeBackend::default();
+    let mouse = FakeMouse::new(PID_CABO, "1-1");
+    mouse.with_state(|st| st.active = 1);
+    backend.plug(&mouse);
+    let (p, _) = provedor(&backend, vec![perfil(com_estagios)]);
+    p.discover().await.unwrap();
+    let cap = p.read(&id_cabo(), CapabilityKind::Dpi).await.unwrap();
+    assert_eq!(tabela(&cap), (vec![800, 1600, 3200], Some(1), 1600));
+
+    p.write(
+        &id_cabo(),
+        CapabilityValue::DpiStage {
+            stage: 2,
+            value: 5000,
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        mouse.with_state(|st| (st.stages, st.dpi_raw)),
+        ([16, 32, 100], 32)
+    );
+    let lista = p.discover().await.unwrap();
+    let cap = lista[0].capability(CapabilityKind::Dpi).unwrap();
+    assert_eq!(tabela(cap), (vec![800, 1600, 5000], Some(1), 1600));
+
+    p.write(&id_cabo(), CapabilityValue::Dpi(2000))
+        .await
+        .unwrap();
+    assert_eq!(mouse.with_state(|st| st.dpi_raw), 40);
+    let cap = p.read(&id_cabo(), CapabilityKind::Dpi).await.unwrap();
+    assert_eq!(tabela(&cap), (vec![800, 2000, 5000], Some(1), 2000));
+
+    // Estágio inexistente: recusado antes de sair qualquer byte.
+    let antes = mouse.dpi_writes().len();
+    let r = p
+        .write(
+            &id_cabo(),
+            CapabilityValue::DpiStage {
+                stage: 3,
+                value: 800,
+            },
+        )
+        .await;
+    assert!(matches!(r, Err(RaizaError::OutOfRange { .. })), "{r:?}");
+    assert_eq!(mouse.dpi_writes().len(), antes);
+}

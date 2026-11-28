@@ -112,6 +112,10 @@
               "maximum": 16,
               "description": "Número de estágios de DPI. Obrigatório com o campo stage."
             },
+            "table": {
+              "$ref": "#/$defs/read",
+              "description": "Leitura da tabela de estágios: request fixo e resposta cujo campo value é o primeiro estágio; os demais vêm em seguida, na mesma codificação. Exige stages."
+            },
             "read": {
               "$ref": "#/$defs/read",
               "description": "Resposta com o campo value e, opcional, stage (estágio em uso)."
@@ -171,6 +175,46 @@
               "$ref": "#/$defs/report"
             }
           }
+        },
+        "scan_rate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rates"
+          ],
+          "anyOf": [
+            {
+              "required": [
+                "read"
+              ]
+            },
+            {
+              "required": [
+                "write"
+              ]
+            }
+          ],
+          "properties": {
+            "rates": {
+              "type": "object",
+              "minProperties": 1,
+              "description": "Taxa em Hz (chave) -> código enviado ao dispositivo.",
+              "propertyNames": {
+                "pattern": "^[1-9][0-9]*$"
+              },
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "read": {
+              "$ref": "#/$defs/read"
+            },
+            "write": {
+              "$ref": "#/$defs/report"
+            }
+          },
+          "description": "Taxa de varredura (Key Scan Rate), no mesmo formato de polling_rate."
         },
         "rgb": {
           "type": "object",

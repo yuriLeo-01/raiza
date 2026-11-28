@@ -94,9 +94,11 @@ impl Profile {
         if let Some(dpi) = &c.dpi {
             out.push(self.dpi_capability(dpi.min));
         }
-        if c.polling_rate.is_some() {
-            let first = self.supported_rates().first().copied().unwrap_or(0);
-            out.push(self.polling_capability(first));
+        for kind in [CapabilityKind::PollingRate, CapabilityKind::ScanRate] {
+            if self.rate_spec(kind).is_some() {
+                let first = self.supported_rates(kind).first().copied().unwrap_or(0);
+                out.push(self.rate_capability(kind, first));
+            }
         }
         if let Some(rgb) = &c.rgb {
             out.push(Capability::Rgb {
@@ -204,23 +206,7 @@ impl Profile {
         let spec = self
             .response_spec(kind)
             .ok_or(RaizaError::Unsupported(kind))?;
-        let (&id, data) = bytes
-            .split_first()
-            .ok_or_else(|| RaizaError::Io("resposta vazia".into()))?;
-        if id != spec.report_id || data.len() < spec.length {
-            return Err(RaizaError::Io(format!(
-                "resposta inesperada: report ID {id}, {} bytes (esperado ID {}, {} bytes)",
-                data.len(),
-                spec.report_id,
-                spec.length
-            )));
-        }
-        if let Some(e) = spec.expect.iter().find(|e| data[e.at] != e.value) {
-            return Err(RaizaError::Io(format!(
-                "resposta inesperada: byte {} = {:#04x}, esperado {:#04x}",
-                e.at, data[e.at], e.value
-            )));
-        }
+        let data = check_response(spec, bytes)?;
         let read = |name: FieldName| spec.fields.get(&name).map(|f| decode(f, data));
         match kind {
             CapabilityKind::Dpi => {
@@ -237,18 +223,16 @@ impl Profile {
                 }
                 Ok(cap)
             }
-            CapabilityKind::PollingRate => {
+            CapabilityKind::PollingRate | CapabilityKind::ScanRate => {
                 let code = read(FieldName::Value).unwrap_or(0);
                 let hz = self
-                    .capabilities
-                    .polling_rate
-                    .as_ref()
+                    .rate_spec(kind)
                     .and_then(|pr| pr.rates.iter().find(|(_, c)| **c == code))
                     .and_then(|(hz, _)| hz.parse().ok())
                     .ok_or_else(|| {
                         RaizaError::Io(format!("código de taxa desconhecido: {code}"))
                     })?;
-                Ok(self.polling_capability(hz))
+                Ok(self.rate_capability(kind, hz))
             }
             CapabilityKind::Battery => Ok(Capability::Battery {
                 percent: u8::try_from(read(FieldName::Percent).unwrap_or(0).min(100))
@@ -277,11 +261,6 @@ impl Profile {
         let c = &self.capabilities;
         match value {
             CapabilityValue::Dpi(dpi) => {
-                let templates = c
-                    .dpi
-                    .as_ref()
-                    .and_then(|d| d.write.as_ref())
-                    .ok_or(RaizaError::ReadOnly(kind))?;
                 // Estágio em uso, só se veio de uma leitura e está dentro do limite: um
                 // estágio desconhecido nunca vira endereço (pilar 1).
                 let stage = match current {
@@ -291,29 +270,28 @@ impl Profile {
                     } if *s < self.dpi_stages() => Some(*s),
                     _ => None,
                 };
-                templates
-                    .0
-                    .iter()
-                    .map(|t| {
-                        let f = t.fields[&FieldName::Value];
-                        let mut values = vec![(FieldName::Value, (dpi - f.offset) / f.scale)];
-                        if let Some(sf) = t.fields.get(&FieldName::Stage) {
-                            let s = stage.ok_or_else(|| {
-                                RaizaError::Io(
-                                    "estágio de DPI em uso desconhecido: leia o DPI antes".into(),
-                                )
-                            })?;
-                            values.push((FieldName::Stage, s * sf.scale + sf.offset));
-                        }
-                        Ok(encode(t, &values))
-                    })
-                    .collect()
+                self.dpi_reports(*dpi, stage.ok_or("em uso desconhecido: leia o DPI antes"))
             }
-            CapabilityValue::PollingRate(hz) => {
-                let pr = c
-                    .polling_rate
-                    .as_ref()
-                    .ok_or(RaizaError::Unsupported(kind))?;
+            CapabilityValue::DpiStage { stage, value } => {
+                // `validate` já conferiu o estágio contra a tabela lida; confere de novo
+                // contra o perfil, porque o estágio vira endereço (pilar 1).
+                if *stage >= self.dpi_stages() {
+                    return Err(RaizaError::OutOfRange {
+                        kind,
+                        detail: format!("estágio {stage} fora de 0..{}", self.dpi_stages()),
+                    });
+                }
+                let templates = c.dpi.as_ref().and_then(|d| d.write.as_ref());
+                // Sem campo de estágio, a escrita só alcança o estágio em uso.
+                let addressable = templates
+                    .is_some_and(|t| t.0.iter().all(|t| t.fields.contains_key(&FieldName::Stage)));
+                if !addressable {
+                    return Err(RaizaError::ReadOnly(kind));
+                }
+                self.dpi_reports(*value, Ok(*stage))
+            }
+            CapabilityValue::PollingRate(hz) | CapabilityValue::ScanRate(hz) => {
+                let pr = self.rate_spec(kind).ok_or(RaizaError::Unsupported(kind))?;
                 let t = pr.write.as_ref().ok_or(RaizaError::ReadOnly(kind))?;
                 let code = pr.rates.get(&hz.to_string()).copied().ok_or_else(|| {
                     RaizaError::OutOfRange {
@@ -377,15 +355,94 @@ impl Profile {
         match kind {
             CapabilityKind::Dpi => c.dpi.as_ref()?.read.as_ref(),
             CapabilityKind::PollingRate => c.polling_rate.as_ref()?.read.as_ref(),
+            CapabilityKind::ScanRate => c.scan_rate.as_ref()?.read.as_ref(),
             CapabilityKind::Battery => Some(&c.battery.as_ref()?.read),
             _ => None,
         }
     }
 
-    fn supported_rates(&self) -> Vec<u32> {
-        let mut rates: Vec<u32> = self
+    /// Relatório que lê a tabela de estágios de DPI, se o perfil sabe lê-la.
+    pub fn dpi_table_request(&self) -> Option<HidReport> {
+        let table = self.capabilities.dpi.as_ref()?.table.as_ref()?;
+        table.request.as_ref().map(|r| encode(r, &[]))
+    }
+
+    /// Resposta esperada da leitura da tabela de estágios.
+    pub fn dpi_table_response(&self) -> Option<&ResponseSpec> {
+        Some(&self.capabilities.dpi.as_ref()?.table.as_ref()?.response)
+    }
+
+    /// Interpreta a resposta da tabela de estágios (`bytes[0]` é o report ID).
+    ///
+    /// Resposta inesperada, ou com algum estágio fora de `min..=max` (ex.: a confirmação
+    /// de uma escrita chegando atrasada, com zeros), vira [`RaizaError::Io`].
+    pub fn parse_dpi_table(&self, bytes: &[u8]) -> Result<Vec<u32>, RaizaError> {
+        let kind = CapabilityKind::Dpi;
+        let (Some(dpi), Some(spec)) = (self.capabilities.dpi.as_ref(), self.dpi_table_response())
+        else {
+            return Err(RaizaError::Unsupported(kind));
+        };
+        let data = check_response(spec, bytes)?;
+        let first = spec.fields[&FieldName::Value];
+        let width = first.encoding.width();
+        (0..self.dpi_stages() as usize)
+            .map(|i| {
+                let f = Field {
+                    at: first.at + i * width,
+                    ..first
+                };
+                let v = decode(&f, data);
+                if (dpi.min..=dpi.max).contains(&v) {
+                    Ok(v)
+                } else {
+                    Err(RaizaError::Io(format!(
+                        "estágio de DPI {i} = {v}, fora de {}..={}",
+                        dpi.min, dpi.max
+                    )))
+                }
+            })
+            .collect()
+    }
+
+    /// Relatórios que gravam `dpi` no estágio `stage` (o erro explica por que o estágio
+    /// não é conhecido; só é usado se algum relatório endereça o estágio).
+    fn dpi_reports(
+        &self,
+        dpi: u32,
+        stage: Result<u32, &str>,
+    ) -> Result<Vec<HidReport>, RaizaError> {
+        let templates = self
             .capabilities
-            .polling_rate
+            .dpi
+            .as_ref()
+            .and_then(|d| d.write.as_ref())
+            .ok_or(RaizaError::ReadOnly(CapabilityKind::Dpi))?;
+        templates
+            .0
+            .iter()
+            .map(|t| {
+                let f = t.fields[&FieldName::Value];
+                let mut values = vec![(FieldName::Value, (dpi - f.offset) / f.scale)];
+                if let Some(sf) = t.fields.get(&FieldName::Stage) {
+                    let s = stage.map_err(|why| RaizaError::Io(format!("estágio de DPI {why}")))?;
+                    values.push((FieldName::Stage, s * sf.scale + sf.offset));
+                }
+                Ok(encode(t, &values))
+            })
+            .collect()
+    }
+
+    fn rate_spec(&self, kind: CapabilityKind) -> Option<&format::PollingRateSpec> {
+        match kind {
+            CapabilityKind::PollingRate => self.capabilities.polling_rate.as_ref(),
+            CapabilityKind::ScanRate => self.capabilities.scan_rate.as_ref(),
+            _ => None,
+        }
+    }
+
+    fn supported_rates(&self, kind: CapabilityKind) -> Vec<u32> {
+        let mut rates: Vec<u32> = self
+            .rate_spec(kind)
             .iter()
             .flat_map(|pr| pr.rates.keys().filter_map(|k| k.parse().ok()))
             .collect();
@@ -417,18 +474,47 @@ impl Profile {
         }
     }
 
-    fn polling_capability(&self, current: u32) -> Capability {
-        Capability::PollingRate {
-            current,
-            supported: self.supported_rates(),
-            writable: self.verified
-                && self
-                    .capabilities
-                    .polling_rate
-                    .as_ref()
-                    .is_some_and(|p| p.write.is_some()),
+    /// Capacidade de taxa (`PollingRate` ou `ScanRate`) com o valor `current`.
+    fn rate_capability(&self, kind: CapabilityKind, current: u32) -> Capability {
+        let supported = self.supported_rates(kind);
+        let writable = self.verified && self.rate_spec(kind).is_some_and(|p| p.write.is_some());
+        if kind == CapabilityKind::ScanRate {
+            Capability::ScanRate {
+                current,
+                supported,
+                writable,
+            }
+        } else {
+            Capability::PollingRate {
+                current,
+                supported,
+                writable,
+            }
         }
     }
+}
+
+/// Confere report ID, tamanho e `expect` de uma resposta (`bytes[0]` é o report ID) e
+/// devolve o conteúdo sem o ID.
+fn check_response<'a>(spec: &ResponseSpec, bytes: &'a [u8]) -> Result<&'a [u8], RaizaError> {
+    let (&id, data) = bytes
+        .split_first()
+        .ok_or_else(|| RaizaError::Io("resposta vazia".into()))?;
+    if id != spec.report_id || data.len() < spec.length {
+        return Err(RaizaError::Io(format!(
+            "resposta inesperada: report ID {id}, {} bytes (esperado ID {}, {} bytes)",
+            data.len(),
+            spec.report_id,
+            spec.length
+        )));
+    }
+    if let Some(e) = spec.expect.iter().find(|e| data[e.at] != e.value) {
+        return Err(RaizaError::Io(format!(
+            "resposta inesperada: byte {} = {:#04x}, esperado {:#04x}",
+            e.at, data[e.at], e.value
+        )));
+    }
+    Ok(data)
 }
 
 /// Monta o relatório: report ID, bytes fixos, campos e checksum.

@@ -194,6 +194,9 @@ pub struct ProfileCapabilities {
     /// Taxa de atualização.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub polling_rate: Option<PollingRateSpec>,
+    /// Taxa de varredura (Key Scan Rate), no mesmo formato de `polling_rate`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scan_rate: Option<PollingRateSpec>,
     /// Iluminação.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub rgb: Option<RgbSpec>,
@@ -219,6 +222,11 @@ pub struct DpiSpec {
     /// campo `stage`: um estágio lido fora de `0..stages` é descartado e nunca vira endereço.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stages: Option<u32>,
+    /// Como ler a tabela inteira de estágios: um pedido fixo e uma resposta em que o campo
+    /// `value` é o **primeiro** estágio. Os `stages` estágios vêm em seguida, um depois do
+    /// outro, na mesma codificação. Exige `stages`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub table: Option<ReadSpec>,
     /// Como escrever um DPI: um relatório ou uma lista, enviados em ordem (ex.: X e Y).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub write: Option<Templates>,
@@ -251,7 +259,8 @@ impl<'de> Deserialize<'de> for Templates {
     }
 }
 
-/// Taxa de atualização. Campo usado: `value`, que leva o código bruto de `rates`.
+/// Taxa de atualização (ou de varredura). Campo usado: `value`, que leva o código bruto
+/// de `rates`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PollingRateSpec {

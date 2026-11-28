@@ -19,9 +19,10 @@ use crate::backend::{HidBackend, HidHandle, HidInterface};
 use crate::exchange::{self, Expected, InputHub, ReaderGuard};
 
 /// Capacidades que um perfil pode ler.
-const READABLE: [CapabilityKind; 3] = [
+const READABLE: [CapabilityKind; 4] = [
     CapabilityKind::Dpi,
     CapabilityKind::PollingRate,
+    CapabilityKind::ScanRate,
     CapabilityKind::Battery,
 ];
 
@@ -47,8 +48,12 @@ fn uses_input(profile: &Profile) -> bool {
     let ack = profile
         .write_ack()
         .is_some_and(|a| a.report_type == ReportType::Input);
+    let table = profile
+        .dpi_table_response()
+        .is_some_and(|r| r.report_type == ReportType::Input);
     identify
         || ack
+        || table
         || READABLE.iter().any(|k| {
             profile
                 .response_spec(*k)
@@ -80,6 +85,9 @@ pub(crate) struct Device {
     /// (pedida ou espontânea). Só elas são anunciadas: um valor inicial do perfil não é
     /// uma leitura, e mostrá-lo como tal engana (ex.: "bateria 0%").
     seen: Mutex<BTreeSet<CapabilityKind>>,
+    /// Tabela de estágios de DPI lida do aparelho (vazia = desconhecida). O status do
+    /// aparelho traz só o DPI em uso; [`Device::store`] junta os dois.
+    dpi_table: Mutex<Vec<u32>>,
     events: UnboundedSender<ProviderEvent>,
 }
 
@@ -124,6 +132,7 @@ impl Device {
             io: Mutex::new(()),
             caps: Mutex::new(caps),
             seen: Mutex::new(BTreeSet::new()),
+            dpi_table: Mutex::new(Vec::new()),
             events,
         });
 
@@ -156,6 +165,9 @@ impl Device {
             if let Err(e) = device.read_now(kind, timeout) {
                 warn!(id = %device.id, %kind, error = %e, "leitura inicial falhou");
             }
+        }
+        if let Err(e) = device.read_dpi_table(timeout) {
+            warn!(id = %device.id, error = %e, "leitura inicial da tabela de DPI falhou");
         }
         info!(
             id = %device.id,
@@ -274,7 +286,27 @@ impl Device {
     }
 
     /// Guarda `cap` no cache. Devolve a versão visível se o valor mudou.
-    fn store(&self, cap: Capability) -> Option<Capability> {
+    ///
+    /// DPI: uma leitura do status (sem tabela) recebe a tabela conhecida; uma escrita
+    /// aplicada (com tabela) atualiza a tabela. Nos dois casos o estágio em uso fica igual
+    /// ao DPI atual.
+    fn store(&self, mut cap: Capability) -> Option<Capability> {
+        if let Capability::Dpi {
+            level,
+            stages,
+            active_stage,
+            ..
+        } = &mut cap
+        {
+            let mut table = lock(&self.dpi_table);
+            if stages.is_empty() {
+                stages.clone_from(&table);
+            }
+            if let Some(s) = active_stage.and_then(|s| stages.get_mut(s as usize)) {
+                *s = level.current;
+            }
+            table.clone_from(stages);
+        }
         let mut caps = lock(&self.caps);
         match caps.iter_mut().find(|c| c.kind() == cap.kind()) {
             Some(old) if *old == cap => None,
@@ -363,6 +395,50 @@ impl Device {
             self.notify(changed);
         }
         self.cached(kind).ok_or(RaizaError::Unsupported(kind))
+    }
+
+    /// Se a tabela de estágios de DPI ainda é desconhecida.
+    pub fn dpi_table_unknown(&self) -> bool {
+        lock(&self.dpi_table).is_empty()
+    }
+
+    /// Lê a tabela de estágios de DPI, se o perfil sabe lê-la, e atualiza o DPI em cache.
+    /// Sem tabela no perfil, não faz nada. Bloqueia.
+    pub fn read_dpi_table(&self, timeout: Duration) -> Result<(), RaizaError> {
+        let (Some(request), Some(spec)) = (
+            self.profile.dpi_table_request(),
+            self.profile.dpi_table_response(),
+        ) else {
+            return Ok(());
+        };
+        let expected = Expected {
+            report_type: spec.report_type,
+            report_id: spec.report_id,
+            length: spec.length,
+        };
+        let table = {
+            let _io = lock(&self.io);
+            exchange::exchange(
+                self.handle.as_ref(),
+                self.hub.as_deref(),
+                Some(&request),
+                expected,
+                timeout,
+                |bytes| self.profile.parse_dpi_table(bytes),
+            )?
+        };
+        *lock(&self.dpi_table) = table.clone();
+        if let Some(mut cap) = self.raw(CapabilityKind::Dpi) {
+            if let Capability::Dpi { stages, .. } = &mut cap {
+                *stages = table;
+            }
+            if let Some(changed) = self.store(cap)
+                && self.seen(CapabilityKind::Dpi)
+            {
+                self.notify(changed);
+            }
+        }
+        Ok(())
     }
 
     /// Valida contra o estado mais recente, gera os relatórios e envia. Bloqueia.

@@ -83,7 +83,11 @@ pub fn validate(p: &Profile) -> Result<(), ProfileError> {
 
     let c = &p.capabilities;
     ensure(
-        c.dpi.is_some() || c.polling_rate.is_some() || c.rgb.is_some() || c.battery.is_some(),
+        c.dpi.is_some()
+            || c.polling_rate.is_some()
+            || c.scan_rate.is_some()
+            || c.rgb.is_some()
+            || c.battery.is_some(),
         "capabilities",
         || "nenhuma capacidade descrita".into(),
     )?;
@@ -122,6 +126,24 @@ pub fn validate(p: &Profile) -> Result<(), ProfileError> {
             )?;
             ensure(!reads_stage || dpi.stages.is_some(), &rpath, || {
                 "o campo stage exige capabilities.dpi.stages".into()
+            })?;
+        }
+        if let Some(table) = &dpi.table {
+            let tpath = format!("{path}.table");
+            check_read(table, &tpath, &[FieldName::Value], &[FieldName::Value])?;
+            ensure(table.request.is_some(), &tpath, || {
+                "a tabela é lida por consulta: falta request".into()
+            })?;
+            let n = dpi
+                .stages
+                .ok_or_else(|| invalid(&tpath, "exige capabilities.dpi.stages"))?;
+            let f = table.response.fields[&FieldName::Value];
+            let end = f.at + f.encoding.width() * n as usize;
+            ensure(end <= table.response.length, &tpath, || {
+                format!(
+                    "{n} estágios a partir do byte {} passam do tamanho {}",
+                    f.at, table.response.length
+                )
             })?;
         }
         if let Some(write) = &dpi.write {
@@ -174,8 +196,11 @@ pub fn validate(p: &Profile) -> Result<(), ProfileError> {
         }
     }
 
-    if let Some(pr) = &c.polling_rate {
-        let path = "capabilities.polling_rate";
+    for (path, pr) in [
+        ("capabilities.polling_rate", &c.polling_rate),
+        ("capabilities.scan_rate", &c.scan_rate),
+    ] {
+        let Some(pr) = pr else { continue };
         ensure(!pr.rates.is_empty(), &format!("{path}.rates"), || {
             "vazio".into()
         })?;
@@ -443,11 +468,16 @@ pub const FORBIDDEN_SEQUENCES: &[&[u8]] = &[&[0x55, 0xAA, 0x55, 0xAA]];
 fn sent_templates(p: &Profile) -> Vec<(String, &ReportTemplate)> {
     let mut out = Vec::new();
     let c = &p.capabilities;
-    let reads: [(&str, Option<&ReadSpec>); 3] = [
+    let reads: [(&str, Option<&ReadSpec>); 5] = [
         ("dpi", c.dpi.as_ref().and_then(|d| d.read.as_ref())),
+        ("dpi.table", c.dpi.as_ref().and_then(|d| d.table.as_ref())),
         (
             "polling_rate",
             c.polling_rate.as_ref().and_then(|d| d.read.as_ref()),
+        ),
+        (
+            "scan_rate",
+            c.scan_rate.as_ref().and_then(|d| d.read.as_ref()),
         ),
         ("battery", c.battery.as_ref().map(|b| &b.read)),
     ];
@@ -463,6 +493,9 @@ fn sent_templates(p: &Profile) -> Vec<(String, &ReportTemplate)> {
     }
     if let Some(w) = c.polling_rate.as_ref().and_then(|d| d.write.as_ref()) {
         out.push(("capabilities.polling_rate.write".into(), w));
+    }
+    if let Some(w) = c.scan_rate.as_ref().and_then(|d| d.write.as_ref()) {
+        out.push(("capabilities.scan_rate.write".into(), w));
     }
     if let Some(rgb) = &c.rgb {
         out.push(("capabilities.rgb.write".into(), &rgb.write));

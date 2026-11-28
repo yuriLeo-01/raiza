@@ -52,6 +52,7 @@ pub fn capability_title(kind: CapabilityKind) -> &'static str {
         CapabilityKind::Battery => "Bateria",
         CapabilityKind::Dpi => "DPI",
         CapabilityKind::PollingRate => "Taxa de atualização",
+        CapabilityKind::ScanRate => "Taxa de varredura",
         CapabilityKind::Rgb => "Iluminação",
         CapabilityKind::Volume => "Volume",
         CapabilityKind::Mute => "Mudo",
@@ -65,7 +66,9 @@ pub fn capability_icon(capability: &Capability) -> String {
     let name = match capability {
         Capability::Battery { percent, charging } => return battery_icon(*percent, *charging),
         Capability::Dpi { .. } => "input-mouse-symbolic",
-        Capability::PollingRate { .. } => "power-profile-performance-symbolic",
+        Capability::PollingRate { .. } | Capability::ScanRate { .. } => {
+            "power-profile-performance-symbolic"
+        }
         Capability::Rgb { .. } => "color-select-symbolic",
         Capability::Volume { .. } => "audio-volume-high-symbolic",
         Capability::Mute { muted: true, .. } => "audio-volume-muted-symbolic",
@@ -133,6 +136,9 @@ pub fn capability_summary(capability: &Capability) -> String {
             text
         }
         Capability::PollingRate {
+            current, supported, ..
+        }
+        | Capability::ScanRate {
             current, supported, ..
         } => {
             if supported.is_empty() {

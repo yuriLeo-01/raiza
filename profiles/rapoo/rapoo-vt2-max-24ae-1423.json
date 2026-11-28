@@ -39,6 +39,30 @@
       "max": 30000,
       "step": 10,
       "stages": 7,
+      "table": {
+        "request": {
+          "type": "output",
+          "report_id": 6,
+          "data": "a5 a4 0e 88 08 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+        },
+        "response": {
+          "type": "input",
+          "report_id": 6,
+          "length": 31,
+          "expect": [
+            {
+              "at": 0,
+              "value": 1
+            }
+          ],
+          "fields": {
+            "value": {
+              "at": 4,
+              "encoding": "u16le"
+            }
+          }
+        }
+      },
       "read": {
         "response": {
           "type": "input",
@@ -121,6 +145,29 @@
         "fields": {
           "value": {
             "at": 7
+          }
+        }
+      }
+    },
+    "scan_rate": {
+      "rates": {
+        "125": 0,
+        "250": 1,
+        "500": 2,
+        "1000": 3,
+        "2000": 4,
+        "4000": 5,
+        "8000": 6
+      },
+      "read": {
+        "response": {
+          "type": "input",
+          "report_id": 7,
+          "length": 18,
+          "fields": {
+            "value": {
+              "at": 9
+            }
           }
         }
       }

@@ -89,8 +89,20 @@ pub enum SetCommand {
         /// Novo DPI
         value: u32,
     },
+    /// Um estágio da tabela de DPI (o em uso ou outro)
+    DpiStage {
+        /// Índice do estágio, a partir de 0
+        stage: u32,
+        /// Novo DPI do estágio
+        value: u32,
+    },
     /// Taxa de atualização em Hz
     PollingRate {
+        /// Nova taxa em Hz
+        value: u32,
+    },
+    /// Taxa de varredura (Key Scan Rate) em Hz
+    ScanRate {
         /// Nova taxa em Hz
         value: u32,
     },
@@ -142,7 +154,12 @@ impl SetCommand {
     pub fn to_value(&self) -> Result<CapabilityValue, String> {
         Ok(match self {
             SetCommand::Dpi { value } => CapabilityValue::Dpi(*value),
+            SetCommand::DpiStage { stage, value } => CapabilityValue::DpiStage {
+                stage: *stage,
+                value: *value,
+            },
             SetCommand::PollingRate { value } => CapabilityValue::PollingRate(*value),
+            SetCommand::ScanRate { value } => CapabilityValue::ScanRate(*value),
             SetCommand::Volume { value } => CapabilityValue::Volume(*value),
             SetCommand::Mute { state } => CapabilityValue::Mute(state.as_bool()),
             SetCommand::Connection { state } => CapabilityValue::Connection(state.as_bool()),
@@ -211,6 +228,17 @@ mod tests {
             Ok(CapabilityValue::PollingRate(1000))
         );
         assert_eq!(set(&["volume", "40"]), Ok(CapabilityValue::Volume(40)));
+        assert_eq!(
+            set(&["dpi-stage", "2", "950"]),
+            Ok(CapabilityValue::DpiStage {
+                stage: 2,
+                value: 950
+            })
+        );
+        assert_eq!(
+            set(&["scan-rate", "4000"]),
+            Ok(CapabilityValue::ScanRate(4000))
+        );
     }
 
     #[test]

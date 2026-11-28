@@ -5,6 +5,9 @@
 //!   precedido de `busy` respostas "ocupado" (status `02`). Status `01` = pronto.
 //! - output `08 04 00 00 <dpi/50 u16le> …`: grava o DPI. Com `write_ack`, responde com
 //!   input `08 04 <status> …` (`01` = aceito; outro valor = recusado, sem gravar).
+//! - output `08 05 …`: pede a tabela de estágios; responde `08 05 01 00 <3 × dpi/50 u16le>`.
+//!   O estágio em uso (`active`, byte 3 da resposta `08 03`) vale `dpi_raw`. A escrita
+//!   `08 04 <estágio no byte 3>` grava nesse estágio.
 //! - GET_FEATURE do report `0`: devolve `identity` (resposta da identificação).
 //! - input `07 20 <bateria> <carregando no bit 7> …`: relatório espontâneo ([`FakeMouse::push_input`]).
 
@@ -82,8 +85,12 @@ impl Queue {
 
 /// Estado do mouse falso.
 pub struct MouseState {
-    /// DPI dividido por 50.
+    /// DPI dividido por 50 (o do estágio em uso).
     pub dpi_raw: u16,
+    /// Estágio em uso.
+    pub active: u8,
+    /// Tabela de 3 estágios, em DPI/50 (a posição `active` é ignorada: vale `dpi_raw`).
+    pub stages: [u16; 3],
     /// Quantas respostas "ocupado" antes de cada "pronto".
     pub busy: usize,
     /// Resposta do GET_FEATURE do report 0.
@@ -111,6 +118,8 @@ impl FakeMouse {
             token: format!("{port}-{:?}", Instant::now()),
             state: Mutex::new(MouseState {
                 dpi_raw: 32,
+                active: 0,
+                stages: [16, 32, 64],
                 busy: 0,
                 identity: IDENTIDADE_CERTA.to_vec(),
                 write_ack: None,
@@ -185,25 +194,45 @@ impl FakeMouse {
                     }
                     if st.busy != SEMPRE_OCUPADO {
                         let mut ready = vec![0u8; 17];
-                        ready[..7].copy_from_slice(&[8, 3, 1, 0, 0, lo, hi]);
+                        ready[..7].copy_from_slice(&[8, 3, 1, st.active, 0, lo, hi]);
                         out.push(ready);
                     }
                     out
                 }
-                [8, 4, _, _, _, lo, hi, ..] => match st.write_ack {
-                    None => {
-                        st.dpi_raw = u16::from_le_bytes([*lo, *hi]);
-                        Vec::new()
+                [8, 5, ..] => {
+                    let mut table = st.stages;
+                    table[usize::from(st.active)] = st.dpi_raw;
+                    let mut ready = vec![0u8; 17];
+                    ready[..4].copy_from_slice(&[8, 5, 1, 0]);
+                    for (i, v) in table.iter().enumerate() {
+                        ready[4 + 2 * i..6 + 2 * i].copy_from_slice(&v.to_le_bytes());
                     }
-                    Some(status) => {
-                        if status == 1 {
-                            st.dpi_raw = u16::from_le_bytes([*lo, *hi]);
+                    vec![ready]
+                }
+                [8, 4, _, stage, _, lo, hi, ..] => {
+                    let (stage, raw) = (*stage, u16::from_le_bytes([*lo, *hi]));
+                    let grava = |st: &mut MouseState| {
+                        if stage == st.active {
+                            st.dpi_raw = raw;
+                        } else {
+                            st.stages[usize::from(stage)] = raw;
                         }
-                        let mut ack = vec![0u8; 17];
-                        ack[..3].copy_from_slice(&[8, 4, status]);
-                        vec![ack]
+                    };
+                    match st.write_ack {
+                        None => {
+                            grava(&mut st);
+                            Vec::new()
+                        }
+                        Some(status) => {
+                            if status == 1 {
+                                grava(&mut st);
+                            }
+                            let mut ack = vec![0u8; 17];
+                            ack[..3].copy_from_slice(&[8, 4, status]);
+                            vec![ack]
+                        }
                     }
-                },
+                }
                 _ => Vec::new(),
             }
         };

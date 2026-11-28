@@ -136,7 +136,9 @@ pub enum Capability {
     Dpi {
         /// DPI atual e limites.
         level: Level,
-        /// Estágios configurados no dispositivo (o botão de DPI alterna entre eles).
+        /// Tabela de estágios do dispositivo, na ordem dele (o botão de DPI alterna entre
+        /// eles). Vazia quando o provedor não sabe lê-la. Grave um estágio com
+        /// [`CapabilityValue::DpiStage`].
         stages: Vec<u32>,
         /// Índice (a partir de 0) do estágio em uso, quando o dispositivo informa. Escrever
         /// o DPI muda o valor deste estágio.
@@ -147,6 +149,16 @@ pub enum Capability {
     },
     /// Taxa de atualização (polling) em Hz.
     PollingRate {
+        /// Taxa atual em Hz.
+        current: u32,
+        /// Taxas aceitas em Hz.
+        supported: Vec<u32>,
+        /// Se aceita escrita.
+        writable: bool,
+    },
+    /// Taxa de varredura do sensor/teclas (Key Scan Rate) em Hz. Diferente do polling,
+    /// que é a taxa de envio ao computador.
+    ScanRate {
         /// Taxa atual em Hz.
         current: u32,
         /// Taxas aceitas em Hz.
@@ -205,6 +217,7 @@ impl Capability {
             Capability::Battery { .. } => CapabilityKind::Battery,
             Capability::Dpi { .. } => CapabilityKind::Dpi,
             Capability::PollingRate { .. } => CapabilityKind::PollingRate,
+            Capability::ScanRate { .. } => CapabilityKind::ScanRate,
             Capability::Rgb { .. } => CapabilityKind::Rgb,
             Capability::Volume { .. } => CapabilityKind::Volume,
             Capability::Mute { .. } => CapabilityKind::Mute,
@@ -219,6 +232,7 @@ impl Capability {
             Capability::Battery { .. } => false,
             Capability::Dpi { writable, .. }
             | Capability::PollingRate { writable, .. }
+            | Capability::ScanRate { writable, .. }
             | Capability::Rgb { writable, .. }
             | Capability::Volume { writable, .. }
             | Capability::Mute { writable, .. }
@@ -233,6 +247,7 @@ impl Capability {
             Capability::Battery { .. } => {}
             Capability::Dpi { writable, .. }
             | Capability::PollingRate { writable, .. }
+            | Capability::ScanRate { writable, .. }
             | Capability::Rgb { writable, .. }
             | Capability::Volume { writable, .. }
             | Capability::Mute { writable, .. }
@@ -249,11 +264,40 @@ impl Capability {
     pub fn apply(&mut self, value: &CapabilityValue) -> Result<(), RaizaError> {
         value.validate(self)?;
         match (self, value) {
-            (Capability::Dpi { level, .. }, CapabilityValue::Dpi(v))
-            | (Capability::Volume { level, .. }, CapabilityValue::Volume(v)) => {
+            (
+                Capability::Dpi {
+                    level,
+                    stages,
+                    active_stage,
+                    ..
+                },
+                CapabilityValue::Dpi(v),
+            ) => {
                 level.current = *v;
+                // Escrever o DPI muda o estágio em uso.
+                if let Some(s) = active_stage.and_then(|s| stages.get_mut(s as usize)) {
+                    *s = *v;
+                }
             }
-            (Capability::PollingRate { current, .. }, CapabilityValue::PollingRate(v)) => {
+            (
+                Capability::Dpi {
+                    level,
+                    stages,
+                    active_stage,
+                    ..
+                },
+                CapabilityValue::DpiStage { stage, value },
+            ) => {
+                if let Some(s) = stages.get_mut(*stage as usize) {
+                    *s = *value;
+                }
+                if *active_stage == Some(*stage) {
+                    level.current = *value;
+                }
+            }
+            (Capability::Volume { level, .. }, CapabilityValue::Volume(v)) => level.current = *v,
+            (Capability::PollingRate { current, .. }, CapabilityValue::PollingRate(v))
+            | (Capability::ScanRate { current, .. }, CapabilityValue::ScanRate(v)) => {
                 *current = *v;
             }
             (Capability::Mute { muted, .. }, CapabilityValue::Mute(v)) => *muted = *v,
@@ -298,6 +342,8 @@ pub enum CapabilityKind {
     Dpi,
     /// Veja [`Capability::PollingRate`].
     PollingRate,
+    /// Veja [`Capability::ScanRate`].
+    ScanRate,
     /// Veja [`Capability::Rgb`].
     Rgb,
     /// Veja [`Capability::Volume`].
@@ -312,10 +358,11 @@ pub enum CapabilityKind {
 
 impl CapabilityKind {
     /// Todos os tipos, na ordem de declaração.
-    pub const ALL: [CapabilityKind; 8] = [
+    pub const ALL: [CapabilityKind; 9] = [
         CapabilityKind::Battery,
         CapabilityKind::Dpi,
         CapabilityKind::PollingRate,
+        CapabilityKind::ScanRate,
         CapabilityKind::Rgb,
         CapabilityKind::Volume,
         CapabilityKind::Mute,
@@ -329,6 +376,7 @@ impl CapabilityKind {
             CapabilityKind::Battery => "battery",
             CapabilityKind::Dpi => "dpi",
             CapabilityKind::PollingRate => "polling_rate",
+            CapabilityKind::ScanRate => "scan_rate",
             CapabilityKind::Rgb => "rgb",
             CapabilityKind::Volume => "volume",
             CapabilityKind::Mute => "mute",
@@ -380,6 +428,11 @@ pub(crate) mod tests {
             Capability::PollingRate {
                 current: 1000,
                 supported: vec![125, 500, 1000],
+                writable: true,
+            },
+            Capability::ScanRate {
+                current: 4000,
+                supported: vec![1000, 4000, 8000],
                 writable: true,
             },
             Capability::Rgb {

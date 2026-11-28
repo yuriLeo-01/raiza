@@ -842,3 +842,155 @@ fn write_ack_validado() {
         "passa do fim",
     );
 }
+
+/// Tabela de estágios e Key Scan Rate (T22). Bytes lidos do mouse do mantenedor em
+/// 2026-11-28: `06 A5 A4 0E 88 08 00 00` → `06 01 00 00 00` + 7 estágios u16 LE
+/// (400, 800, 950, 1600, 950, 6400, 30000), iguais ao app oficial.
+#[test]
+fn rapoo_vt2_tabela_de_dpi_e_key_scan() {
+    let p = perfil_do_repositorio("rapoo/rapoo-vt2-max-24ae-1423.json");
+    let pedido = p.dpi_table_request().unwrap();
+    assert_eq!(pedido.report_type, ReportType::Output);
+    assert_eq!(pedido.bytes.len(), 33);
+    assert_eq!(
+        &pedido.bytes[..8],
+        &[0x06, 0xA5, 0xA4, 0x0E, 0x88, 0x08, 0x00, 0x00]
+    );
+    assert!(pedido.bytes[8..].iter().all(|&b| b == 0));
+
+    let mut resposta = [0u8; 32];
+    resposta[..21].copy_from_slice(&[
+        0x06, 0x01, 0x00, 0x00, 0x00, 0x90, 0x01, 0x20, 0x03, 0xb6, 0x03, 0x40, 0x06, 0xb6, 0x03,
+        0x00, 0x19, 0x30, 0x75, 0x06, 0x00,
+    ]);
+    assert_eq!(
+        p.parse_dpi_table(&resposta).unwrap(),
+        [400, 800, 950, 1600, 950, 6400, 30000]
+    );
+    // Ocupado, ou uma confirmação de escrita atrasada (zeros): descartadas.
+    let mut ocupado = resposta;
+    ocupado[1] = 0x02;
+    assert!(p.parse_dpi_table(&ocupado).is_err());
+    let mut ack = [0u8; 32];
+    ack[0] = 0x06;
+    ack[1] = 0x01;
+    assert!(p.parse_dpi_table(&ack).is_err());
+
+    // Gravar o estágio 5 (não o em uso): X em 0x0888 + 10 = 0x0892, Y em 0x08D2.
+    let mut dpi = p
+        .capabilities()
+        .into_iter()
+        .find(|c| c.kind() == CapabilityKind::Dpi)
+        .unwrap();
+    let vazio = CapabilityValue::DpiStage {
+        stage: 5,
+        value: 3200,
+    };
+    // Tabela desconhecida: nada é gerado.
+    assert!(matches!(
+        p.build_write(&dpi, &vazio),
+        Err(RaizaError::OutOfRange { .. })
+    ));
+    if let Capability::Dpi {
+        stages,
+        active_stage,
+        ..
+    } = &mut dpi
+    {
+        *stages = p.parse_dpi_table(&resposta).unwrap();
+        *active_stage = Some(3);
+    }
+    let reports = p.build_write(&dpi, &vazio).unwrap();
+    assert_eq!(reports.len(), 2);
+    assert_eq!(
+        &reports[0].bytes[..10],
+        &[0x06, 0xA5, 0xA5, 0x02, 0x92, 0x08, 0x00, 0x00, 0x80, 0x0C]
+    );
+    assert_eq!(
+        &reports[1].bytes[..10],
+        &[0x06, 0xA5, 0xA5, 0x02, 0xD2, 0x08, 0x00, 0x00, 0x80, 0x0C]
+    );
+    for ruim in [(7, 800), (0, 20), (0, 805)] {
+        let v = CapabilityValue::DpiStage {
+            stage: ruim.0,
+            value: ruim.1,
+        };
+        assert!(p.build_write(&dpi, &v).is_err(), "{ruim:?}");
+    }
+
+    // Key Scan Rate no byte 10 do status (com o ID): `05` = 4000 Hz, igual ao bloco 0x0881.
+    let real = [
+        0x07, 0x20, 0x03, 0x40, 0x06, 0x40, 0x06, 0x01, 0x5a, 0x00, 0x05, 0x02, 0x00, 0x23, 0x46,
+        0x00, 0x02, 0x01, 0xb3,
+    ];
+    let scan = p.parse_response(CapabilityKind::ScanRate, &real).unwrap();
+    assert_eq!(
+        scan,
+        Capability::ScanRate {
+            current: 4000,
+            supported: vec![125, 250, 500, 1000, 2000, 4000, 8000],
+            writable: false,
+        }
+    );
+    // Sem escrita no perfil até o teste no aparelho (pilar 1).
+    assert!(matches!(
+        p.build_write(&scan, &CapabilityValue::ScanRate(1000)),
+        Err(RaizaError::ReadOnly(CapabilityKind::ScanRate))
+    ));
+
+    // O perfil do repositório também passa no schema.
+    let schema: Value =
+        serde_json::from_str(include_str!("../../../profiles/schema.json")).unwrap();
+    let validador = jsonschema::draft202012::new(&schema).unwrap();
+    let json: Value = serde_json::from_str(include_str!(
+        "../../../profiles/rapoo/rapoo-vt2-max-24ae-1423.json"
+    ))
+    .unwrap();
+    assert!(validador.is_valid(&json));
+}
+
+#[test]
+fn tabela_de_dpi_validada() {
+    let rapoo = || -> Value {
+        serde_json::from_str(include_str!(
+            "../../../profiles/rapoo/rapoo-vt2-max-24ae-1423.json"
+        ))
+        .unwrap()
+    };
+    let com = |muda: fn(&mut Value)| {
+        let mut v = rapoo();
+        muda(&mut v);
+        load(&v.to_string())
+    };
+    let erro = |r: Result<Profile, ProfileError>, trecho: &str| match r {
+        Err(e) => assert!(e.to_string().contains(trecho), "{e}"),
+        Ok(_) => panic!("deveria recusar ({trecho})"),
+    };
+    erro(
+        com(|v| {
+            v["capabilities"]["dpi"]["table"]["response"]["fields"]["value"]["at"] = json!(20);
+        }),
+        "passam do tamanho",
+    );
+    erro(
+        com(|v| {
+            v["capabilities"]["dpi"]["table"]
+                .as_object_mut()
+                .unwrap()
+                .remove("request");
+        }),
+        "falta request",
+    );
+    erro(
+        com(|v| {
+            v["capabilities"]["dpi"]["table"]["response"]["fields"]["stage"] = json!({"at": 1});
+        }),
+        "stage",
+    );
+    erro(
+        com(|v| {
+            v["capabilities"]["dpi"]["table"]["request"]["fields"] = json!({"value": {"at": 3}});
+        }),
+        "capabilities.dpi.table.request",
+    );
+}

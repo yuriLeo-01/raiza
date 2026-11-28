@@ -53,6 +53,9 @@ pub struct DeviceSettings {
     /// Taxa de atualização em Hz.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub polling_rate: Option<u32>,
+    /// Taxa de varredura (Key Scan Rate) em Hz.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scan_rate: Option<u32>,
     /// Volume (%).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub volume: Option<u32>,
@@ -69,7 +72,11 @@ impl DeviceSettings {
     pub fn remember(&mut self, value: &CapabilityValue) -> bool {
         match value {
             CapabilityValue::Dpi(v) => self.dpi = Some(*v),
+            // A tabela de estágios fica na memória do aparelho. O DPI salvo sai, para não
+            // desfazer a mudança do estágio em uso ao reconectar.
+            CapabilityValue::DpiStage { .. } => self.dpi = None,
             CapabilityValue::PollingRate(v) => self.polling_rate = Some(*v),
+            CapabilityValue::ScanRate(v) => self.scan_rate = Some(*v),
             CapabilityValue::Volume(v) => self.volume = Some(*v),
             CapabilityValue::Mute(v) => self.mute = Some(*v),
             CapabilityValue::Rgb(setting) => {
@@ -103,6 +110,9 @@ impl DeviceSettings {
         }
         if let Some(v) = self.polling_rate {
             out.push(CapabilityValue::PollingRate(v));
+        }
+        if let Some(v) = self.scan_rate {
+            out.push(CapabilityValue::ScanRate(v));
         }
         if let Some(rgb) = &self.rgb {
             if rgb.mode.is_some() || rgb.color.is_some() {

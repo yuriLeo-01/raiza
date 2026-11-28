@@ -26,8 +26,18 @@ pub struct RgbSetting {
 pub enum CapabilityValue {
     /// Novo DPI.
     Dpi(u32),
+    /// Novo valor de um estágio da tabela de DPI (o em uso ou outro). Em serde:
+    /// `{"kind": "dpi_stage", "value": {"stage": 2, "value": 950}}`.
+    DpiStage {
+        /// Índice do estágio, a partir de 0 (precisa existir em `stages`).
+        stage: u32,
+        /// Novo DPI do estágio.
+        value: u32,
+    },
     /// Nova taxa de atualização em Hz.
     PollingRate(u32),
+    /// Nova taxa de varredura (Key Scan Rate) em Hz.
+    ScanRate(u32),
     /// Nova iluminação.
     Rgb(RgbSetting),
     /// Novo volume em porcentagem.
@@ -46,11 +56,12 @@ pub enum CapabilityValue {
 }
 
 impl CapabilityValue {
-    /// Tipo de capacidade que este valor altera.
+    /// Tipo de capacidade que este valor altera. `DpiStage` altera [`CapabilityKind::Dpi`].
     pub fn kind(&self) -> CapabilityKind {
         match self {
-            CapabilityValue::Dpi(_) => CapabilityKind::Dpi,
+            CapabilityValue::Dpi(_) | CapabilityValue::DpiStage { .. } => CapabilityKind::Dpi,
             CapabilityValue::PollingRate(_) => CapabilityKind::PollingRate,
+            CapabilityValue::ScanRate(_) => CapabilityKind::ScanRate,
             CapabilityValue::Rgb(_) => CapabilityKind::Rgb,
             CapabilityValue::Volume(_) => CapabilityKind::Volume,
             CapabilityValue::Mute(_) => CapabilityKind::Mute,
@@ -78,7 +89,22 @@ impl CapabilityValue {
             | (CapabilityValue::Volume(v), Capability::Volume { level, .. }) => {
                 level.check(*v).map_err(out_of_range)
             }
-            (CapabilityValue::PollingRate(v), Capability::PollingRate { supported, .. }) => {
+            (CapabilityValue::DpiStage { stage, value }, Capability::Dpi { level, stages, .. }) => {
+                if stages.is_empty() {
+                    Err(out_of_range(
+                        "a tabela de estágios deste dispositivo é desconhecida".into(),
+                    ))
+                } else if *stage as usize >= stages.len() {
+                    Err(out_of_range(format!(
+                        "estágio {stage} não existe (o dispositivo tem {})",
+                        stages.len()
+                    )))
+                } else {
+                    level.check(*value).map_err(out_of_range)
+                }
+            }
+            (CapabilityValue::PollingRate(v), Capability::PollingRate { supported, .. })
+            | (CapabilityValue::ScanRate(v), Capability::ScanRate { supported, .. }) => {
                 if supported.contains(v) {
                     Ok(())
                 } else {
@@ -154,7 +180,12 @@ mod tests {
     fn validos() -> Vec<CapabilityValue> {
         vec![
             CapabilityValue::Dpi(3200),
+            CapabilityValue::DpiStage {
+                stage: 2,
+                value: 950,
+            },
             CapabilityValue::PollingRate(500),
+            CapabilityValue::ScanRate(8000),
             rgb(Some(1), Some("breathing"), Some(VERDE)),
             rgb(None, None, Some(VERDE)),
             CapabilityValue::Volume(150),
@@ -168,15 +199,69 @@ mod tests {
     }
 
     #[test]
+    fn estagio_sem_tabela_e_aplicar() {
+        let mut c = cap(CapabilityKind::Dpi);
+        if let Capability::Dpi {
+            stages,
+            active_stage,
+            ..
+        } = &mut c
+        {
+            *active_stage = Some(1);
+            stages.clear();
+        }
+        let v = CapabilityValue::DpiStage {
+            stage: 0,
+            value: 800,
+        };
+        assert!(matches!(v.validate(&c), Err(RaizaError::OutOfRange { .. })));
+
+        let mut c = cap(CapabilityKind::Dpi);
+        if let Capability::Dpi { active_stage, .. } = &mut c {
+            *active_stage = Some(1);
+        }
+        c.apply(&CapabilityValue::DpiStage {
+            stage: 0,
+            value: 400,
+        })
+        .unwrap();
+        c.apply(&CapabilityValue::Dpi(2000)).unwrap();
+        let Capability::Dpi { level, stages, .. } = &c else {
+            unreachable!()
+        };
+        assert_eq!(stages, &[400, 2000, 3200]);
+        assert_eq!(level.current, 2000);
+        c.apply(&CapabilityValue::DpiStage {
+            stage: 1,
+            value: 1000,
+        })
+        .unwrap();
+        let Capability::Dpi { level, .. } = &c else {
+            unreachable!()
+        };
+        assert_eq!(level.current, 1000, "estágio em uso muda o DPI atual");
+    }
+
+    #[test]
     fn serde_ida_e_volta() {
         for v in validos() {
             let json = serde_json::to_value(&v).unwrap();
-            assert_eq!(json["kind"], v.kind().as_str());
+            if !matches!(v, CapabilityValue::DpiStage { .. }) {
+                assert_eq!(json["kind"], v.kind().as_str());
+            }
             assert_eq!(serde_json::from_value::<CapabilityValue>(json).unwrap(), v);
         }
         assert_eq!(
             serde_json::to_string(&CapabilityValue::Dpi(1600)).unwrap(),
             r#"{"kind":"dpi","value":1600}"#
+        );
+        assert_eq!(
+            serde_json::to_string(&CapabilityValue::DpiStage {
+                stage: 2,
+                value: 950
+            })
+            .unwrap(),
+            r#"{"kind":"dpi_stage","value":{"stage":2,"value":950}}"#
         );
     }
 
@@ -194,7 +279,16 @@ mod tests {
             CapabilityValue::Dpi(100),   // abaixo do mínimo
             CapabilityValue::Dpi(20000), // acima do máximo
             CapabilityValue::Dpi(1625),  // fora do passo
+            CapabilityValue::DpiStage {
+                stage: 3, // só há 3 estágios
+                value: 800,
+            },
+            CapabilityValue::DpiStage {
+                stage: 0,
+                value: 1625, // fora do passo
+            },
             CapabilityValue::PollingRate(250),
+            CapabilityValue::ScanRate(2000),
             rgb(Some(2), None, Some(VERDE)),
             rgb(None, Some("arco-íris"), None),
             rgb(None, None, None),

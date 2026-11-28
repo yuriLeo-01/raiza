@@ -8,7 +8,7 @@ Os perfis ficam em `profiles/<fabricante>/<modelo>.json` e são validados pelo c
 
 ## Segurança primeiro (pilar 1)
 
-- **Um perfil só descreve capacidades conhecidas** (`dpi`, `polling_rate`, `rgb`, `battery`).
+- **Um perfil só descreve capacidades conhecidas** (`dpi`, `polling_rate`, `scan_rate`, `rgb`, `battery`).
   Não existe "comando livre": um perfil não consegue mandar ao dispositivo nada além dos
   relatórios dessas capacidades.
 - **Todo perfil novo começa com `"verified": false`**, o que deixa tudo somente leitura: o
@@ -134,7 +134,8 @@ Campos aceitos por capacidade:
 | Capacidade | Escrita | Leitura |
 |---|---|---|
 | `dpi` | `value` e, opcional, `stage` | `value` e, opcional, `stage` |
-| `polling_rate` | `value` (código da tabela `rates`) | `value` (código, convertido de volta em Hz) |
+| `polling_rate`, `scan_rate` | `value` (código da tabela `rates`) | `value` (código, convertido de volta em Hz) |
+| `dpi.table` | — | `value` (o primeiro estágio; os outros vêm em seguida) |
 | `rgb` | `red`, `green`, `blue` (juntos), `mode`, `zone` | — (não lido na versão 1) |
 | `battery` | — | `percent` e, opcional, `charging` (≠ 0 = carregando) |
 
@@ -166,7 +167,13 @@ Campos aceitos por capacidade:
     leitura com `stage`. Um estágio lido fora de `0..stages` descarta a resposta, e sem estágio
     lido nada é escrito (pilar 1). Exemplo, Rapoo VT2 (tabela X em `0x0888`, 2 bytes por estágio):
     `"stage": {"at": 3, "encoding": "u16le", "scale": 2, "offset": 2184}`.
+  - **Tabela de estágios (`table`):** uma leitura com `request` fixo cuja resposta traz os
+    `stages` estágios em sequência; o campo `value` marca o primeiro, e os outros seguem na
+    mesma codificação (`at + i × largura`). Exige `stages`. Um estágio fora de `min..=max`
+    descarta a resposta. Com a tabela e o campo `stage` na escrita, qualquer estágio pode ser
+    gravado (`dpi_stage` no D-Bus), não só o em uso.
 - `polling_rate`: `rates` mapeia Hz para o código do dispositivo: `{"125": 8, "1000": 1}`.
+- `scan_rate`: taxa de varredura (Key Scan Rate), no mesmo formato de `polling_rate`.
 - `rgb`: `zones` (nomes; o índice é o código de zona), `modes` (nome → código) e `write`.
   `all_zones` é o código de "todas as zonas"; sem ele, o Raiza manda um relatório por zona.
   Com mais de uma zona, o relatório precisa do campo `zone`.

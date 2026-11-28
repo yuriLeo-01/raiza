@@ -60,8 +60,9 @@ Por que JSON e não `a{sv}`:
 | `kind` | Campos |
 |---|---|
 | `battery` | `percent` (0–100), `charging` |
-| `dpi` | `level`, `stages`, `active_stage` (opcional: índice do estágio em uso, a partir de 0), `writable` |
+| `dpi` | `level`, `stages` (tabela de estágios do aparelho; `[]` = desconhecida), `active_stage` (opcional: índice do estágio em uso, a partir de 0), `writable` |
 | `polling_rate` | `current` (Hz), `supported`, `writable` |
+| `scan_rate` | `current` (Hz), `supported`, `writable`: taxa de varredura (Key Scan Rate), diferente do polling |
 | `rgb` | `zones` (`[{"name", "color": "#rrggbb"}]`), `modes`, `current_mode`, `writable` |
 | `volume` | `level`, `writable` |
 | `mute` | `muted`, `writable` |
@@ -75,7 +76,9 @@ Por que JSON e não `a{sv}`:
 | JSON | Efeito |
 |---|---|
 | `{"kind": "dpi", "value": 1600}` | DPI |
+| `{"kind": "dpi_stage", "value": {"stage": 2, "value": 950}}` | DPI de um estágio da tabela (o em uso ou outro); altera a capacidade `dpi` e exige `stages` conhecida |
 | `{"kind": "polling_rate", "value": 1000}` | taxa em Hz |
+| `{"kind": "scan_rate", "value": 4000}` | taxa de varredura em Hz |
 | `{"kind": "rgb", "value": {"zone": 0, "mode": "static", "color": "#00ff00"}}` | `zone` `null` = todas; `mode` ou `color` podem ser `null`, mas não os dois |
 | `{"kind": "volume", "value": 50}` | volume (%) |
 | `{"kind": "mute", "value": true}` | mudo |

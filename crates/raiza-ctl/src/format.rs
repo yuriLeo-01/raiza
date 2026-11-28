@@ -24,6 +24,7 @@ pub fn capability_label(kind: CapabilityKind) -> &'static str {
         CapabilityKind::Battery => "bateria",
         CapabilityKind::Dpi => "DPI",
         CapabilityKind::PollingRate => "polling",
+        CapabilityKind::ScanRate => "key scan",
         CapabilityKind::Rgb => "RGB",
         CapabilityKind::Volume => "volume",
         CapabilityKind::Mute => "mudo",
@@ -64,7 +65,9 @@ pub fn capability_value(cap: &Capability) -> String {
             }
         }
         Capability::Dpi { level, .. } => level.current.to_string(),
-        Capability::PollingRate { current, .. } => format!("{current} Hz"),
+        Capability::PollingRate { current, .. } | Capability::ScanRate { current, .. } => {
+            format!("{current} Hz")
+        }
         Capability::Rgb {
             zones,
             current_mode,
@@ -149,13 +152,27 @@ pub fn format_list(devices: &[DeviceInfo]) -> String {
 /// Limites e opções de uma capacidade, quando há.
 fn capability_details(cap: &Capability) -> Vec<String> {
     match cap {
-        Capability::Dpi { level, stages, .. } => {
+        Capability::Dpi {
+            level,
+            stages,
+            active_stage,
+            ..
+        } => {
             let mut v = vec![format!(
                 "limites: {} a {}, passo {}",
                 level.min, level.max, level.step
             )];
             if !stages.is_empty() {
-                v.push(format!("estágios: {}", join(stages)));
+                // O estágio em uso entre colchetes: `400, [800], 1600`.
+                let marked: Vec<String> = stages
+                    .iter()
+                    .enumerate()
+                    .map(|(i, s)| match active_stage {
+                        Some(a) if *a as usize == i => format!("[{s}]"),
+                        _ => s.to_string(),
+                    })
+                    .collect();
+                v.push(format!("estágios: {}", marked.join(", ")));
             }
             v
         }
@@ -163,7 +180,7 @@ fn capability_details(cap: &Capability) -> Vec<String> {
             "limites: {} a {}, passo {}",
             level.min, level.max, level.step
         )],
-        Capability::PollingRate { supported, .. } => {
+        Capability::PollingRate { supported, .. } | Capability::ScanRate { supported, .. } => {
             vec![format!("aceitas: {} Hz", join(supported))]
         }
         Capability::Rgb { zones, modes, .. } => {

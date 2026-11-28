@@ -71,7 +71,10 @@ pub fn row_for(capability: &Capability, ctx: &RowContext<'_>) -> Box<dyn Capabil
         Capability::Connection { writable: true, .. } => {
             Box::new(basic::ToggleRow::new(capability, ctx.writer(capability)))
         }
-        Capability::Connection { .. } => Box::new(basic::ReadOnlyRow::new(capability)),
+        // A T23 troca a taxa de varredura por uma lista de opções.
+        Capability::Connection { .. } | Capability::ScanRate { .. } => {
+            Box::new(basic::ReadOnlyRow::new(capability))
+        }
         Capability::Rumble { .. } => {
             Box::new(basic::RumbleRow::new(capability, ctx.writer(capability)))
         }

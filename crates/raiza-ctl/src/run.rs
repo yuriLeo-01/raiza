@@ -69,7 +69,9 @@ pub async fn run(client: &RaizaClient, command: Command, out: &mut dyn Write) ->
 fn format_set(id: &DeviceId, value: &CapabilityValue) -> String {
     let what = match value {
         CapabilityValue::Dpi(v) => format!("dpi {v}"),
+        CapabilityValue::DpiStage { stage, value } => format!("dpi-stage {stage} {value}"),
         CapabilityValue::PollingRate(v) => format!("polling-rate {v} Hz"),
+        CapabilityValue::ScanRate(v) => format!("scan-rate {v} Hz"),
         CapabilityValue::Volume(v) => format!("volume {v}%"),
         CapabilityValue::Mute(v) => format!("mute {}", on_off(*v)),
         CapabilityValue::Connection(v) => format!("connection {}", on_off(*v)),
