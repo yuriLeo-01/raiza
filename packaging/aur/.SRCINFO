@@ -17,6 +17,7 @@ pkgbase = raiza-git
 	optdepends = wireplumber: volume e mudo (usa wpctl)
 	optdepends = bluez: dispositivos Bluetooth
 	optdepends = upower: nível de bateria
+	optdepends = gnome-shell: bateria dos periféricos no painel (extensão)
 	provides = raiza
 	conflicts = raiza
 	source = raiza-git::git+https://github.com/yuriLeo-01/raiza.git
