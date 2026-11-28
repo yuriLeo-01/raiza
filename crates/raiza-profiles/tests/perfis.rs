@@ -601,7 +601,14 @@ fn rapoo_vt2_le_o_status_documentado() {
         .filter(|c| c.is_writable())
         .map(|c| c.kind())
         .collect();
-    assert_eq!(writable, [CapabilityKind::Dpi, CapabilityKind::PollingRate]);
+    assert_eq!(
+        writable,
+        [
+            CapabilityKind::Dpi,
+            CapabilityKind::PollingRate,
+            CapabilityKind::ScanRate
+        ]
+    );
     let atual = p
         .capabilities()
         .into_iter()
@@ -944,14 +951,18 @@ fn rapoo_vt2_tabela_de_dpi_e_key_scan() {
         Capability::ScanRate {
             current: 4000,
             supported: vec![125, 250, 500, 1000, 2000, 4000, 8000],
-            writable: false,
+            writable: true,
         }
     );
-    // Sem escrita no perfil até o teste no aparelho (pilar 1).
-    assert!(matches!(
-        p.build_write(&scan, &CapabilityValue::ScanRate(1000)),
-        Err(RaizaError::ReadOnly(CapabilityKind::ScanRate))
-    ));
+    // 1 byte em 0x0881, testado no aparelho em 2026-11-28 (status e memória conferidos).
+    let reports = p
+        .build_write(&scan, &CapabilityValue::ScanRate(1000))
+        .unwrap();
+    assert_eq!(
+        &reports[0].bytes[..9],
+        &[0x06, 0xA5, 0xA5, 0x01, 0x81, 0x08, 0x00, 0x00, 0x03]
+    );
+    assert!(reports[0].bytes[9..].iter().all(|&b| b == 0));
 
     // O perfil do repositório também passa no schema.
     let schema: Value =
